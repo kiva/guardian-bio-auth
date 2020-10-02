@@ -21,8 +21,8 @@ For building and running the application you need:
 ### Installing
 
 Should always be built with a docker container given dependency on NFIQ2 which is an absolute pain to set up. Note that
-we use a kiva-hosted fork of the main https://github.com/usnistgov/NFIQ2 repo so that our builds are deterministic. If
-there's ever any useful updates in that repo we should sync them to ours.
+this project uses a kiva-hosted fork of the main [NFIQ](https://github.com/usnistgov/NFIQ2) repo so that builds are
+deterministic.
 
 ```
 ./gradlew clean
@@ -31,7 +31,7 @@ docker build -t bioanalyzerservice .
 docker run -it --rm -p 8080:8080 bioanalyzerservice
 ```
 
-Note that building this via docker takes a long time to install prerequisites so please grab coffee. If you're in an
+Note that building this via docker takes a long time to install prerequisites so please grab a coffee. If you're in an
 area with a low connectivity, maybe take a nap.
 
 
@@ -75,14 +75,7 @@ Where `test` is a key used to refer to the image allowing you to batch calls
 
 
 New analyzers can easily be added by implementing org.kiva.bioanalyzerservice.services.analyzers.BioDataAnalyzer. As
-long as the implementation is annotated as a spring component `@component` the analysis engine auto detects it.
-
-
-## Running the tests
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
+long as the implementation is annotated as a spring component `@component`, then the analysis engine will autodetect it.
 
 
 ## Built With
@@ -99,5 +92,3 @@ Add additional notes about how to deploy this on a live system
 ## TODO
 - Fix error handling
 - Benchmark performance
-
-## Wish List
