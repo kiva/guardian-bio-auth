@@ -1,0 +1,43 @@
+template:
+  name: template
+  driver: org.kiva.identityservice.services.backends.drivers.TemplateBackend
+  positions:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+  filters:
+    nationalId:
+      type: java.lang.String
+      unique: true
+      list: false
+      required: false
+      hashed: true
+      to: national_id
+      operator: =
+      validators:
+        -
+    voterId:
+      type: java.lang.String
+      unique: true
+      list: true
+      required: false
+      hashed: true
+      to: voter_id
+      operator: in
+      validators:
+        -
+  config:
+    connection:
+      host: ENV:$IDENTITYDB_TEMPLATE_POSTGRES_HOST
+      port: ENV:$IDENTITYDB_TEMPLATE_POSTGRES_PORT
+      database: ENV:$IDENTITYDB_TEMPLATE_POSTGRES_DB
+      table: ENV:$IDENTITYDB_TEMPLATE_CITIZEN_TABLE
+      user: ENV:$IDENTITYDB_TEMPLATE_POSTGRES_USER
+      password: ENV:$IDENTITYDB_TEMPLATE_POSTGRES_PASSWORD

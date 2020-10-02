@@ -1,0 +1,63 @@
+################################################################################
+#
+#   Build opencv and NQIS2 environnement
+#
+################################################################################
+
+FROM picoded/ubuntu-openjdk-8-jdk as builder
+# VOLUME /tmp
+
+RUN apt-get update -y && \
+    apt-get upgrade -y
+
+RUN apt-get install -y build-essential cmake make git libopencv-dev
+
+RUN git clone https://github.com/kiva/NFIQ2.git /tmp/NFIQ2
+
+RUN mkdir /tmp/NFIQ2/libOpenCV && \
+	cd /tmp/NFIQ2/libOpenCV && \
+	cmake -D CMAKE_MAKE_PROGRAM=make ../OpenCV && \
+	make opencv_core opencv_ts opencv_imgproc opencv_highgui opencv_flann \
+	     opencv_features2d opencv_calib3d opencv_ml opencv_video opencv_objdetect \
+	     opencv_contrib opencv_nonfree opencv_gpu opencv_photo opencv_stitching \
+	     opencv_videostab
+
+
+WORKDIR /tmp/NFIQ2
+RUN mkdir -p /usr/local/man/man1
+RUN make clean
+RUN make
+
+################################################################################
+#
+#   Running environnement
+#
+################################################################################
+FROM picoded/ubuntu-openjdk-8-jdk
+
+COPY --from=builder /tmp/NFIQ2/NFIQ2/NFIQ2Algorithm/bin/ /NFIQ2/NFIQ2/bin/
+COPY --from=builder /tmp/NFIQ2/NFIQ2/NFIQ2Algorithm/lib/ /NFIQ2/NFIQ2/lib/
+COPY --from=builder /tmp/NFIQ2/biomdi/common/lib/        /NFIQ2/biomdi/common/lib/
+COPY --from=builder /tmp/NFIQ2/biomdi/fingerminutia/lib/ /NFIQ2/biomdi/fingerminutia/lib/
+COPY --from=builder /tmp/NFIQ2/libOpenCV/lib/            /NFIQ2/libOpenCV/lib/
+COPY --from=builder /tmp/NFIQ2/complianceTestSet		 /NFIQ2/complianceTestSet
+
+ENV LD_LIBRARY_PATH=/NFIQ2/libOpenCV/lib:/NFIQ2/biomdi/common/lib:/NFIQ2/biomdi/fingerminutia/lib:/NFIQ2/NFIQ2/lib
+
+RUN ln -s /NFIQ2/NFIQ2/bin/NFIQ2 /usr/bin/NFIQ2
+RUN chmod +x /usr/bin/NFIQ2
+
+################################################################################
+#
+#   Set up spring boot microservice
+#
+################################################################################
+
+RUN useradd -ms /bin/bash -u 1000 app
+RUN mkdir /app
+WORKDIR /app
+COPY build/libs/bioanalyzerservice-0.0.1-SNAPSHOT.jar ./app.jar
+COPY lib/dd-java-agent.jar .
+RUN chown -R app /app
+USER app
+ENTRYPOINT ["java", "-javaagent:./dd-java-agent.jar", "-Djava.security.egd=file:/dev/./urandom", "-Dagentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000", "-jar","./app.jar"]
