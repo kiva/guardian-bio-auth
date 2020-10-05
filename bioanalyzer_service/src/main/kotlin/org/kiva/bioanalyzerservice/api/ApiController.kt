@@ -1,0 +1,48 @@
+package org.kiva.bioanalyzerservice.api
+
+import datadog.trace.api.Trace
+import org.kiva.bioanalyzerservice.domain.AnalysisType
+import org.kiva.bioanalyzerservice.services.BioDataAnalysisEngine
+import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.ResponseEntity
+import reactor.core.publisher.toMono
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import javax.validation.Valid
+
+@RequestMapping("/api/v1")
+@RestController
+class ApiController constructor(private val analysisEngine: BioDataAnalysisEngine) {
+
+    /**
+     * Test endpoint to ensure bioanalyzer is up and running.
+     */
+    @GetMapping("/healthz")
+    fun healthCheck(): Mono<ResponseEntity<String>> {
+        return ResponseEntity.ok("OK").toMono()
+    }
+
+    /**
+     * @param queryMap a map of query keyed by the name of the image or something unique associated with the result
+     */
+    @Trace
+    @PostMapping("/analyze", produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun verify(@Valid @RequestBody queryMap: Map<String, Query>): Mono<MutableMap<String, Map<AnalysisType, Any>>> {
+        try {
+            return Flux.fromIterable(queryMap.entries)
+                .onBackpressureBuffer()
+                .flatMap {
+                    analysisEngine.execute(it.value.imageByte, it.value.type, it.value.analysis)
+                            .map { result -> Pair<String, Map<AnalysisType, Any>>(it.key, result) }
+                }
+                .collectMap(Pair<String, Map<AnalysisType, Any>>::first, Pair<String, Map<AnalysisType, Any>>::second)
+        } catch (e: Exception) {
+            return Mono.error(e)
+        }
+    }
+}

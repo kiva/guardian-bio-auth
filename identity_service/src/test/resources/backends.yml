@@ -1,0 +1,53 @@
+template:
+  name: template
+  driver: org.kiva.identityservice.services.backends.drivers.TemplateBackend
+  positions:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+  filters:
+    nationalId:
+      type: java.lang.String
+      unique: true
+      list: false
+      required: false
+      hashed: true
+      to: national_id
+      operator: =
+      validators:
+        -
+    voterId:
+      type: java.lang.String
+      unique: true
+      list: true
+      required: false
+      hashed: true
+      to: voter_id
+      operator: IN
+      validators:
+        -
+    firstName:
+      type: java.lang.String
+      list: false
+      unique: true
+      required: false
+      hashed: false
+      operator: fuzzy
+      to: first_name
+      validators:
+        -
+  config:
+    connection:
+      host: localhost
+      port: 2357
+      database: template_test
+      table: kiva_biometric_template
+      user: dbuser
+      password: dbpass

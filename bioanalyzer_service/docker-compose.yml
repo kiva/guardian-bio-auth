@@ -1,0 +1,19 @@
+version: '3'
+
+networks:
+  local-network:
+    external: true
+
+services:
+  bioanalyzer-service:
+    build: ./
+    image: bioanalyzer-service
+    container_name: bioanalyzer-service
+    working_dir: /app
+    ports:
+      - "8089:8080"
+    env_file:
+      - .env
+    networks:
+      - local-network
+    tty: true

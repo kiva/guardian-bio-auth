@@ -1,0 +1,30 @@
+#
+#
+version: '3'
+
+networks:
+  local-network:
+    external: true
+
+services:
+  protocol-identity-template-db:
+    command: postgres -c logging_collector=on -c log_destination=stderr -c log_directory=/logs
+    image: postgres:11
+    container_name: protocol-identity-template-db
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - volume_data:/var/lib/postgres
+      - ./logs/postgres:/logs:z
+      - ./create-scripts:/docker-entrypoint-initdb.d/
+    networks:
+      - local-network
+    ports:
+      - "5434:5432"
+    tty: true
+
+volumes:
+  volume_data: {}
+
+
