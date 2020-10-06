@@ -28,9 +28,9 @@ jobs:
             docker-compose build
       - run:
           name: run identity service unit tests
-            command: |
-              ./gradlew test
-              cd ..
+          command: |
+            ./gradlew test
+            cd ..
       - run:
           name: Spin up bio-auth services to confirm they can actually execute
           command: docker-compose up -d
