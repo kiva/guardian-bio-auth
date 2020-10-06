@@ -11,18 +11,6 @@ jobs:
           name: Prepare Environment
           command: ./scripts/unpackageDevEnvFiles.sh
       - run:
-          name: build bioanalyzer service
-          command: |
-            cd bioanalyzer_service
-            ./gradlew clean
-            ./gradlew build
-            docker-compose build
-      - run:
-          name: run bioanalyzer service unit tests
-          command: |
-            ./gradlew test
-            cd ..
-      - run:
           name: build identity service
           command: |
             cd identity_service
@@ -31,6 +19,18 @@ jobs:
             docker-compose build
       - run:
           name: run identity service unit tests
+          command: |
+            ./gradlew test
+            cd ..
+      - run:
+          name: build bioanalyzer service
+          command: |
+            cd bioanalyzer_service
+            ./gradlew clean
+            ./gradlew build
+            docker-compose build
+      - run:
+          name: run bioanalyzer service unit tests
           command: |
             ./gradlew test
             cd ..
