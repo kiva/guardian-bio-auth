@@ -8,6 +8,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Prepare Environment
+          command: ./scripts/unpackageDevEnvFiles.sh
+      - run:
           name: build bioanalyzer service
           command: |
             cd bioanalyzer_service
