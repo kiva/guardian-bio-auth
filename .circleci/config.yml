@@ -32,7 +32,7 @@ jobs:
           name: Spin down bio-auth services
           command: |
             docker stop $(docker ps -aq)
-            docker-compose -f docker-compose.ci.yml down
+            docker-compose down
 
 workflows:
   build-test-deploy:
