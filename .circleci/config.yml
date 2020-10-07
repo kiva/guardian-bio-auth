@@ -16,7 +16,6 @@ jobs:
             cd identity_service
             ./gradlew clean
             ./gradlew build
-            docker-compose build
       - run:
           name: run identity service unit tests
           command: |
@@ -28,7 +27,6 @@ jobs:
             cd bioanalyzer_service
             ./gradlew clean
             ./gradlew build
-            docker-compose build
       - run:
           name: run bioanalyzer service unit tests
           command: |
