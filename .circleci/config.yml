@@ -49,6 +49,13 @@ workflows:
               only: /^([0-9]+)\.([0-9]+)\.([0-9]+)/
             branches:
               ignore: /.*/
+          after_checkout:
+            - run:
+                name: build bioanalyzer service
+                command: |
+                  cd bioanalyzer_service
+                  ./gradlew clean
+                  ./gradlew build
           update-description: true
           dockerfile: ./bioanalyzer_service/Dockerfile
           image: kivaprotocol/bioanalyzer
@@ -61,6 +68,13 @@ workflows:
               only: /^([0-9]+)\.([0-9]+)\.([0-9]+)/
             branches:
               ignore: /.*/
+          after_checkout:
+            - run:
+                name: build identity service
+                command: |
+                  cd identity_service
+                  ./gradlew clean
+                  ./gradlew build
           update-description: true
           dockerfile: ./identity_service/Dockerfile
           image: kivaprotocol/identity
