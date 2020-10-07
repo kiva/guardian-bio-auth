@@ -5,7 +5,7 @@ and volume so that the postgres instance doesn't persist on your host machine.
 
 ```
 docker-compose rm -f
-docker rm protocol-identity-template-db
-docker rmi protocol-identity-template-db
-docker volume rm identity-temoplate_db_db_data
+docker rm identity-template-db
+docker rmi identity-template-db
+docker volume rm identity-template_db_db_data
 ```

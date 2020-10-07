@@ -1,0 +1,70 @@
+version: 2.1
+
+jobs:
+  build-and-test:
+    machine:
+      docker_layer_caching: true
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run:
+          name: Prepare Environment
+          command: ./scripts/unpackageDevEnvFiles.sh
+      - run:
+          name: build and test identity service
+          command: |
+            cd identity_service
+            ./gradlew clean
+            ./gradlew build
+      - run:
+          name: build and test bioanalyzer service
+          command: |
+            cd bioanalyzer_service
+            ./gradlew clean
+            ./gradlew build
+      - run:
+          name: Spin up bio-auth services to confirm they can actually execute
+          command: docker-compose up -d
+      - run:
+          name: wait for bio-auth services to come up
+          command: ./scripts/healthstack.sh
+      - run:
+          name: Spin down bio-auth services
+          command: |
+            docker stop $(docker ps -aq)
+            docker-compose down
+
+workflows:
+  build-test-deploy:
+    jobs:
+      - build-and-test:
+          filters: # run for all branches AND tags
+            tags:
+              only: /.*/
+      - docker/publish:
+          requires:
+            - build-and-test
+          filters: # only run for semver tagged versions
+            tags:
+              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)/
+            branches:
+              ignore: /.*/
+          update-description: true
+          dockerfile: ./bioanalyzer_service/Dockerfile
+          image: kivaprotocol/bioanalyzer
+          tag: << pipeline.git.tag >>
+      - docker/publish:
+          requires:
+            - build-and-test
+          filters: # only run for semver tagged versions
+            tags:
+              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)/
+            branches:
+              ignore: /.*/
+          update-description: true
+          dockerfile: ./identity_service/Dockerfile
+          image: kivaprotocol/identity
+          tag: << pipeline.git.tag >>
+
+orbs:
+  docker: circleci/docker@1.3.0

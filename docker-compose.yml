@@ -1,0 +1,72 @@
+# Temporary docker compose file to spin up the services needed to support bio auth
+# TODO eventually this will all get moved over to the guardian-bio-auth repo
+#
+version: '3.5'
+
+networks:
+  internal-network:
+    name: internal-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.0.0/24
+
+services:
+  identity-service:
+    build: ./identity_service
+    image: identity-service
+    container_name: identity-service
+    ports:
+      - "8081:8080"
+    env_file:
+      - identity_service/.env
+    networks:
+      - internal-network
+    depends_on:
+      - identity-template-db
+      - identity-intelligence-db
+    tty: true
+
+  identity-template-db:
+    command: postgres -c logging_collector=on -c log_destination=stderr -c listen_addresses='*'
+    image: postgres:11
+    container_name: identity-template-db
+    restart: always
+    env_file:
+      - identity_template_db/.env
+    volumes:
+      - ./logs/postgres:/logs:z
+      - ./identity_template_db/create-scripts:/docker-entrypoint-initdb.d/
+    networks:
+      - internal-network
+    tty: true
+
+  identity-intelligence-db:
+    command: postgres -c logging_collector=on -c log_destination=stderr -c listen_addresses='*'
+    image: postgres:11
+    container_name: identity-intelligence-db
+    restart: always
+    env_file:
+      - identity-intelligence-db/.env
+    volumes:
+      - ./logs/postgres:/logs:z
+      - ./identity-intelligence-db/create-scripts:/docker-entrypoint-initdb.d/
+    networks:
+      - internal-network
+    tty: true
+
+  bioanalyzer-service:
+    build: ./bioanalyzer_service
+    image: bioanalyzer-service
+    container_name: bioanalyzer-service
+    working_dir: /app
+    env_file:
+      - bioanalyzer_service/.env
+    ports:
+      - "8089:8080"
+    networks:
+      - internal-network
+    depends_on:
+      - identity-service
+    tty: true
