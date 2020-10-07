@@ -29,7 +29,7 @@ services:
     tty: true
 
   identity-template-db:
-    command: postgres -c logging_collector=on -c log_destination=stderr -c log_directory=/logs
+    command: postgres -c logging_collector=on -c log_destination=stderr -c listen_addresses='*'
     image: postgres:11
     container_name: identity-template-db
     restart: always
@@ -43,7 +43,7 @@ services:
     tty: true
 
   identity-intelligence-db:
-    command: postgres -c logging_collector=on -c log_destination=stderr -c log_directory=/logs
+    command: postgres -c logging_collector=on -c log_destination=stderr -c listen_addresses='*'
     image: postgres:11
     container_name: identity-intelligence-db
     restart: always
