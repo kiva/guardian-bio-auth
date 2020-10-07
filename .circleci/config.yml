@@ -11,27 +11,19 @@ jobs:
           name: Prepare Environment
           command: ./scripts/unpackageDevEnvFiles.sh
       - run:
-          name: build identity service
+          name: build and test identity service
           command: |
             cd identity_service
             ./gradlew clean
             ./gradlew build
-      - run:
-          name: run identity service unit tests
-          command: |
             ./gradlew test
-            cd ..
       - run:
-          name: build bioanalyzer service
+          name: build and test bioanalyzer service
           command: |
             cd bioanalyzer_service
             ./gradlew clean
             ./gradlew build
-      - run:
-          name: run bioanalyzer service unit tests
-          command: |
             ./gradlew test
-            cd ..
       - run:
           name: Spin up bio-auth services to confirm they can actually execute
           command: docker-compose up -d
