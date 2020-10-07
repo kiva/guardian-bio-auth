@@ -7,10 +7,10 @@
 #
 #   ./healthcheck.sh http://localhost:8080/healthz 20
 #
-#   default timout is 60s
+#   default timout is 90s
 
 url="${1:-http://localhost:8080/healthz}"
-timeout="${2:-60}"
+timeout="${2:-90}"
 
 # wait for services to be up
 function waitup {
