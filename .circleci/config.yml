@@ -16,14 +16,12 @@ jobs:
             cd identity_service
             ./gradlew clean
             ./gradlew build
-            ./gradlew test
       - run:
           name: build and test bioanalyzer service
           command: |
             cd bioanalyzer_service
             ./gradlew clean
             ./gradlew build
-            ./gradlew test
       - run:
           name: Spin up bio-auth services to confirm they can actually execute
           command: docker-compose up -d
