@@ -77,7 +77,7 @@ abstract class ReactivePostgresSqlBackend : SqlBackend() {
     }
 
     /**
-     * Searches backend fingerprint store, return prints that match a criteria for comparism.
+     * Searches backend fingerprint store, return prints that match a criteria for comparison.
      * @todo only supports equality matches for now.
      *
      * @param query the search query.

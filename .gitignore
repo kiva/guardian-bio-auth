@@ -8,3 +8,9 @@ node_modules
 *.log
 .java-version
 
+.gradle
+/gradle/caches/
+/gradle/daemon/
+/gradle/native/
+/gradle/wrapper/dists
+!gradle/wrapper/gradle-wrapper.jar
