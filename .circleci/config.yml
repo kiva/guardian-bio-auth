@@ -24,7 +24,10 @@ jobs:
             ./gradlew build
       - run:
           name: Spin up bio-auth services to confirm they can actually execute
-          command: docker-compose up -d
+          command: |
+            docker stop $(docker ps -aq)
+            docker network prune -f
+            docker-compose up -d
       - run:
           name: wait for bio-auth services to come up
           command: ./scripts/healthstack.sh
