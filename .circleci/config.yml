@@ -25,7 +25,6 @@ jobs:
       - run:
           name: Spin up bio-auth services to confirm they can actually execute
           command: |
-            docker stop $(docker ps -aq)
             docker network prune -f
             docker-compose up -d
       - run:
