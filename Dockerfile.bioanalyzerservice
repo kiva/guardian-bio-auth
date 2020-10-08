@@ -56,8 +56,8 @@ RUN chmod +x /usr/bin/NFIQ2
 RUN useradd -ms /bin/bash -u 1000 app
 RUN mkdir /app
 WORKDIR /app
-COPY build/libs/bioanalyzerservice-0.0.1-SNAPSHOT.jar ./app.jar
-COPY lib/dd-java-agent.jar .
+COPY bioanalyzer_service/build/libs/bioanalyzerservice-0.0.1-SNAPSHOT.jar ./app.jar
+COPY bioanalyzer_service/lib/dd-java-agent.jar .
 RUN chown -R app /app
 USER app
 ENTRYPOINT ["java", "-javaagent:./dd-java-agent.jar", "-Djava.security.egd=file:/dev/./urandom", "-Dagentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000", "-jar","./app.jar"]

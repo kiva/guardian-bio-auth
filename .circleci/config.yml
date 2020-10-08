@@ -57,7 +57,7 @@ workflows:
                   ./gradlew clean
                   ./gradlew build
           update-description: true
-          dockerfile: ./bioanalyzer_service/Dockerfile
+          dockerfile: ./Dockerfile.bioanalyzerservice
           image: kivaprotocol/bioanalyzer
           tag: << pipeline.git.tag >>
       - docker/publish:
@@ -76,7 +76,7 @@ workflows:
                   ./gradlew clean
                   ./gradlew build
           update-description: true
-          dockerfile: ./identity_service/Dockerfile
+          dockerfile: ./Dockerfile.identityservice
           image: kivaprotocol/identity
           tag: << pipeline.git.tag >>
 
