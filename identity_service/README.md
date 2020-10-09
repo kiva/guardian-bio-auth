@@ -54,12 +54,9 @@ IDENTITYINTELLIGENCEDB_POSTGRES_USER
 REPLAY_ATTACK_ENABLED
 ```
 
-TODO: deprecate the environment variables that are no longer used.
-
 ## Ownership
 
-Development: Jeff Kennedy (backup from Salton Massally)
-
+Maintainer: Jeff Kennedy (backup from Salton Massally)
 Operations: @voutasaurus
 
 ## Features / Aspects
@@ -72,7 +69,7 @@ Primary API endpoints:
 - `/verify`: checks a caller provided fingerprint against the fingerprint template owned by the ID provided
 
 Secondary API endpoints:
-- `/templatizer/bulk/{backend}`: create fingerprint templates in bulk
+- `/templatizer/bulk/{backend}`: create & store fingerprint templates in bulk
 
 Informational / vestigial / unknown:
 - `/healthz`: always returns HTTP 200 (used to confirm that the HTTP server in the container is up)

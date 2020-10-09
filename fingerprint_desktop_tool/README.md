@@ -18,28 +18,25 @@ Zip generated in `build/distributions/` folder.
 
 ### Run from Desktop Tool
 
-The generated distribution should be package with the desktop tool. Instructions below are provided for nix systems
-however should trivial to translate to windows.
+The generated distribution should be package with the desktop tool. The instructions below are for *nix systems, but
+they should translate trivially to windows.
 
-Following commands are relative to the root of the unzip distribution folder.
+The following commands are relative to the root of the unzipped distribution folder.
 
-See help 
+* See help
+    ```bash
+    ./bin/fingerprint_desktop_tool -h
+    ```
 
-```bash
-./bin/fingerprint_desktop_tool -h
-```
+* Generate a template for an image and store in same folder, but with '.tmpl' extension
+    ```bash
+    ./bin/fingerprint_desktop_tool <image_path>
+    ```
 
-Generate a template for an image and store in same folder but with '.tmpl' extension
-
-```bash
-./bin/fingerprint_desktop_tool <image_path>
-```
-
-Generate template for an image and output to the specified path
-
-```bash
-./bin/fingerprint_desktop_tool <image_path> -o <output_path>
-```
+* Generate a template for an image and output to the specified path
+    ```bash
+    ./bin/fingerprint_desktop_tool <image_path> -o <output_path>
+    ```
 
 > **_WARNING:_**  Caller is responsible for deleting the generated template after consumption
 

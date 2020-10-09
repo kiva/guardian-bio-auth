@@ -1,11 +1,10 @@
-# Temporary docker compose file to spin up the services needed to support bio auth
-# TODO eventually this will all get moved over to the guardian-bio-auth repo
+# Docker compose file to spin up the services needed to support bio auth
 #
 version: '3.5'
 
 networks:
-  internal-network:
-    name: internal-network
+  agency-network:
+    name: agency-network
     driver: bridge
     ipam:
       driver: default
@@ -22,7 +21,7 @@ services:
     env_file:
       - identity_service/.env
     networks:
-      - internal-network
+      - agency-network
     depends_on:
       - identity-template-db
       - identity-intelligence-db
@@ -39,7 +38,7 @@ services:
       - ./logs/postgres:/logs:z
       - ./identity_template_db/create-scripts:/docker-entrypoint-initdb.d/
     networks:
-      - internal-network
+      - agency-network
     tty: true
 
   identity-intelligence-db:
@@ -48,12 +47,12 @@ services:
     container_name: identity-intelligence-db
     restart: always
     env_file:
-      - identity-intelligence-db/.env
+      - identity_intelligence_db/.env
     volumes:
       - ./logs/postgres:/logs:z
-      - ./identity-intelligence-db/create-scripts:/docker-entrypoint-initdb.d/
+      - ./identity_intelligence_db/create-scripts:/docker-entrypoint-initdb.d/
     networks:
-      - internal-network
+      - agency-network
     tty: true
 
   bioanalyzer-service:
@@ -66,7 +65,7 @@ services:
     ports:
       - "8089:8080"
     networks:
-      - internal-network
+      - agency-network
     depends_on:
       - identity-service
     tty: true
