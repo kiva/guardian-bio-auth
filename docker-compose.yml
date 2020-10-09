@@ -13,7 +13,9 @@ networks:
 
 services:
   identity-service:
-    build: ./identity_service
+    build:
+      context: .
+      dockerfile: Dockerfile.identityservice
     image: identity-service
     container_name: identity-service
     ports:
@@ -56,7 +58,9 @@ services:
     tty: true
 
   bioanalyzer-service:
-    build: ./bioanalyzer_service
+    build:
+      context: .
+      dockerfile: Dockerfile.bioanalyzerservice
     image: bioanalyzer-service
     container_name: bioanalyzer-service
     working_dir: /app
