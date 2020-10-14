@@ -20,7 +20,6 @@ import java.util.regex.Pattern
 import javax.imageio.ImageIO
 
 /**
- *
  * Check ths image quality and matching performance
  *
  * NFIQ 2.0 is developed for images captured at 500 dpi and as such it shall not be used for images of different
@@ -59,7 +58,7 @@ class NFIQ2FingerPrintQualityChecker : BioDataAnalyzer {
             BMPEncoder.write(ConvertUtil.convert8(ImageIO.read(ByteArrayInputStream(imageData))), tmpFile)
             return ProcessExecutor()
                     .command(mutableListOf("NFIQ2", "SINGLE", tmpFile.absolutePath, "BMP", "false", "false"))
-                    .timeout(5, TimeUnit.SECONDS)
+                    .timeout(10, TimeUnit.SECONDS)
                     .destroyOnExit()
                     .readOutput(true)
                     .execute()
