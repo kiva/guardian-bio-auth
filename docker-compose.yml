@@ -12,12 +12,12 @@ networks:
         - subnet: 10.0.0.0/24
 
 services:
-  identity-service:
+  protocol-identity-service:
     build:
       context: .
       dockerfile: Dockerfile.identityservice
-    image: identity-service
-    container_name: identity-service
+    image: protocol-identity-service
+    container_name: protocol-identity-service
     ports:
       - "8081:8080"
     env_file:
@@ -71,5 +71,5 @@ services:
     networks:
       - agency-network
     depends_on:
-      - identity-service
+      - protocol-identity-service
     tty: true
