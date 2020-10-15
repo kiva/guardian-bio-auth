@@ -9,7 +9,7 @@ jobs:
       - checkout
       - run:
           name: Prepare Environment
-          command: ./scripts/useDummyEnvFiles.sh
+          command: ./scripts/useDummyEnvFiles.sh --force
       - run:
           name: build and test identity service
           command: |

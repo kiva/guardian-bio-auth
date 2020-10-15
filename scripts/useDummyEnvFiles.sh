@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$PWD" == */guardian-bio-auth ]];
+if [[ "$1" == "-f" || "$1" == "--force" || "$PWD" == */guardian-bio-auth ]];
 then
   cp bioanalyzer_service/dummy.env bioanalyzer_service/.env
   cp identity_service/dummy.env identity_service/.env
