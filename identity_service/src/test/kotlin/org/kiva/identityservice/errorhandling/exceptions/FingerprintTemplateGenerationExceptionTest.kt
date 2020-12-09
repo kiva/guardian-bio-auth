@@ -16,7 +16,6 @@ class FingerprintTemplateGenerationExceptionTest {
         val ex = FingerprintTemplateGenerationException("did", FingerPosition.LEFT_THUMB, "error")
         Assert.assertNotNull("Exception should not be null", ex)
         Assert.assertEquals("Exception message mismatch", ex.message, "error")
-
-        Assert.assertEquals("Exception toString mismatch", ex.toString(), "Error happened generating template for did:did position: 6 Reason: error")
+        Assert.assertEquals("Exception toString mismatch", ex.toString(), "Error happened generating template for did: did position: 6 Reason: error")
     }
 }

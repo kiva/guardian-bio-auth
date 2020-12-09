@@ -65,8 +65,8 @@ class CheckReplayAttack : ICheckReplayAttack {
                 statement.execute(query)
 
                 val row = ImageTable
-                        .select({ ImageTable.hashCode eq hashValue })
-                        .first()
+                    .select({ ImageTable.hashCode eq hashValue })
+                    .first()
 
                 val countSeen = row[ImageTable.count]
                 val timeSeen = row[ImageTable.time]

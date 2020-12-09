@@ -45,8 +45,8 @@ class VerificationEngineTest {
         val query1 = query.copy(image = loadBase64FromResource(TEXT1_FILE))
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query1))
-                .expectSubscription()
-                .verifyError(InvalidImageFormatException::class.java)
+            .expectSubscription()
+            .verifyError(InvalidImageFormatException::class.java)
     }
 
     /**
@@ -61,8 +61,8 @@ class VerificationEngineTest {
         val templateQuery = generateQuery(DataType.TEMPLATE)
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(templateQuery))
-                .expectSubscription()
-                .verifyError(InvalidImageFormatException::class.java)
+            .expectSubscription()
+            .verifyError(InvalidImageFormatException::class.java)
     }
 
     /**
@@ -78,8 +78,8 @@ class VerificationEngineTest {
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
-                .expectSubscription()
-                .verifyError(InvalidBackendException::class.java)
+            .expectSubscription()
+            .verifyError(InvalidBackendException::class.java)
     }
 
     /**
@@ -95,8 +95,8 @@ class VerificationEngineTest {
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
-                .expectSubscription()
-                .verifyError(InvalidQueryFilterException::class.java)
+            .expectSubscription()
+            .verifyError(InvalidQueryFilterException::class.java)
     }
 
     /**
@@ -117,8 +117,8 @@ class VerificationEngineTest {
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
-                .expectSubscription()
-                .verifyError(FingerprintNoMatchException::class.java)
+            .expectSubscription()
+            .verifyError(FingerprintNoMatchException::class.java)
     }
 
     /**
@@ -140,8 +140,8 @@ class VerificationEngineTest {
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
-                .expectSubscription()
-                .verifyError(FingerprintLowQualityException::class.java)
+            .expectSubscription()
+            .verifyError(FingerprintLowQualityException::class.java)
     }
 
     /**
@@ -165,8 +165,8 @@ class VerificationEngineTest {
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer1)
         StepVerifier.create(verificationEngine.match(query))
-                .expectSubscription()
-                .verifyError(FingerprintNoMatchException::class.java)
+            .expectSubscription()
+            .verifyError(FingerprintNoMatchException::class.java)
     }
 
     /**
@@ -187,8 +187,8 @@ class VerificationEngineTest {
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
-                .expectSubscription()
-                .verifyError(FingerprintNoMatchException::class.java)
+            .expectSubscription()
+            .verifyError(FingerprintNoMatchException::class.java)
     }
 
     /**
@@ -209,8 +209,8 @@ class VerificationEngineTest {
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
-                .expectSubscription()
-                .verifyError(FingerprintNoMatchException::class.java)
+            .expectSubscription()
+            .verifyError(FingerprintNoMatchException::class.java)
     }
 
     /**
@@ -232,26 +232,26 @@ class VerificationEngineTest {
         var imageMatchingScore = 0.0
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
-                .expectSubscription()
-                .assertNext {
-                    Assert.assertThat(it.did, CoreMatchers.`is`(DID))
-                    imageMatchingScore = it.matchingScore
-                    Assert.assertTrue(imageMatchingScore >= 40.0)
-                }
-                .verifyComplete()
+            .expectSubscription()
+            .assertNext {
+                Assert.assertThat(it.did, CoreMatchers.`is`(DID))
+                imageMatchingScore = it.matchingScore
+                Assert.assertTrue(imageMatchingScore >= 40.0)
+            }
+            .verifyComplete()
 
         val template = FingerprintTemplate(FingerprintImage().decode(query.imageByte)).serialize()
         var templateQuery = generateTemplateQuery(template)
         var templateMatchingScore = 0.0
 
         StepVerifier.create(verificationEngine.match(templateQuery))
-                .expectSubscription()
-                .assertNext {
-                    Assert.assertThat(it.did, CoreMatchers.`is`(DID))
-                    templateMatchingScore = it.matchingScore
-                    Assert.assertTrue(templateMatchingScore >= 40.0)
-                }
-                .verifyComplete()
+            .expectSubscription()
+            .assertNext {
+                Assert.assertThat(it.did, CoreMatchers.`is`(DID))
+                templateMatchingScore = it.matchingScore
+                Assert.assertTrue(templateMatchingScore >= 40.0)
+            }
+            .verifyComplete()
 
         Assert.assertEquals("Image and its template matching score should be same", imageMatchingScore, templateMatchingScore, 0.0)
     }
@@ -276,12 +276,12 @@ class VerificationEngineTest {
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
-                .expectSubscription()
-                .assertNext {
-                    Assert.assertThat(it.did, CoreMatchers.`is`(DID))
-                    Assert.assertTrue(it.matchingScore >= 40.0)
-                }
-                .verifyComplete()
+            .expectSubscription()
+            .assertNext {
+                Assert.assertThat(it.did, CoreMatchers.`is`(DID))
+                Assert.assertTrue(it.matchingScore >= 40.0)
+            }
+            .verifyComplete()
     }
 
     /**
@@ -310,12 +310,12 @@ class VerificationEngineTest {
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
-                .expectSubscription()
-                .assertNext {
-                    Assert.assertThat("Invalid identity record returned", it.did, CoreMatchers.`is`(DID3))
-                    Assert.assertEquals("Invalid identity record returned", it.matchingScore, identity3.matchingScore, 0.0)
-                }
-                .verifyComplete()
+            .expectSubscription()
+            .assertNext {
+                Assert.assertThat("Invalid identity record returned", it.did, CoreMatchers.`is`(DID3))
+                Assert.assertEquals("Invalid identity record returned", it.matchingScore, identity3.matchingScore, 0.0)
+            }
+            .verifyComplete()
 
         /**
          * The matching sdk should run over all identity records and therefore the matching score should be set for all

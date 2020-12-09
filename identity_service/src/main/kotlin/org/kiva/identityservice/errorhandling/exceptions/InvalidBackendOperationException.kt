@@ -7,11 +7,9 @@ import org.springframework.http.HttpStatus
 /**
  * The exception class for invalid operations over a given backend.
  */
-class InvalidBackendOperationException
-    (private val backend: String, private val operation: String) : ApiException(HttpStatus.BAD_REQUEST, ApiExceptionCode.INVALID_BACKEND_OPERATION) {
-        override fun toString(): String {
-            return StringBuilder("Backend [")
-                    .append(backend)
-                    .append("] does not support operation: ").append(operation).toString()
-        }
+class InvalidBackendOperationException(
+    private val backend: String,
+    private val operation: String
+) : ApiException(HttpStatus.BAD_REQUEST, ApiExceptionCode.INVALID_BACKEND_OPERATION) {
+    override fun toString(): String = "Backend [$backend] does not support operation: $operation"
 }

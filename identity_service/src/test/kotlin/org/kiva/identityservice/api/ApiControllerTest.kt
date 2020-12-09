@@ -33,11 +33,11 @@ class ApiControllerTest {
     @Throws(Exception::class)
     fun verifyHealth() {
         webTestClient.get().uri("$BASE_END_POINT/healthz")
-                .exchange()
-                .expectStatus().isOk
-                .expectBodyList(String::class.java)
-                .hasSize(1)
-                .contains("OK")
+            .exchange()
+            .expectStatus().isOk
+            .expectBodyList(String::class.java)
+            .hasSize(1)
+            .contains("OK")
     }
 
     /**
@@ -61,9 +61,9 @@ class ApiControllerTest {
         val fp = Fingerprint(voterId, NATIONAL_ID, DID, 1, FingerPosition.RIGHT_THUMB, null, Timestamp(System.currentTimeMillis()), fingerprintStr)
 
         webTestClient.post().uri("$BASE_END_POINT/templatizer/bulk/$TEMPLATE_BACKEND")
-                .syncBody(listOf(fp))
-                .exchange()
-                .expectStatus().isOk
+            .syncBody(listOf(fp))
+            .exchange()
+            .expectStatus().isOk
 
         // STEP2: Verify the fingerprint image for the the national id and it should return match.
         val filters1 = HashMap<String, String>()
@@ -72,11 +72,11 @@ class ApiControllerTest {
         val query1 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters1)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
-                .syncBody(query1)
-                .exchange()
-                .expectStatus().isOk
-                .expectBody()
-                .json("{\"status\":\"matched\"}")
+            .syncBody(query1)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .json("{\"status\":\"matched\"}")
 
         // STEP3: Verify the fingerprint image for the the list of national ids and it should return match.
         val filters2 = HashMap<String, String>()
@@ -84,11 +84,11 @@ class ApiControllerTest {
         val query2 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters2)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
-                .syncBody(query2)
-                .exchange()
-                .expectStatus().isOk
-                .expectBody()
-                .json("{\"status\":\"matched\"}")
+            .syncBody(query2)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .json("{\"status\":\"matched\"}")
 
         // STEP4: Verify the fingerprint image for the an invalid voter id and no citizen found is expected.
         val filters3 = HashMap<String, String>()
@@ -96,11 +96,11 @@ class ApiControllerTest {
         val query3 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters3)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
-                .syncBody(query3)
-                .exchange()
-                .expectStatus().isBadRequest
-                .expectBody()
-                .json("{\"code\":\"NO_CITIZEN_FOUND\"}")
+            .syncBody(query3)
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
+            .json("{\"code\":\"NO_CITIZEN_FOUND\"}")
     }
 
     /**
@@ -112,10 +112,10 @@ class ApiControllerTest {
     @Throws(Exception::class)
     fun verifyBackendForTemplate() {
         webTestClient.get().uri("$BASE_END_POINT/backend/$TEMPLATE_BACKEND")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody()
-                .json("{\"positions\":[\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\"],\"filters\":[\"firstName\",\"nationalId\",\"voterId\"]}")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .json("{\"positions\":[\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\"],\"filters\":[\"firstName\",\"nationalId\",\"voterId\"]}")
     }
 
     /**
@@ -127,8 +127,8 @@ class ApiControllerTest {
     @Throws(Exception::class)
     fun verifyBackendForInvalidName() {
         webTestClient.get().uri("$BASE_END_POINT/backend/$INVALID_BACKEND")
-                .exchange()
-                .expectStatus().isNotFound
+            .exchange()
+            .expectStatus().isNotFound
     }
 
     /**
@@ -148,53 +148,53 @@ class ApiControllerTest {
         val voterId = "POSITION_VOTER_${System.currentTimeMillis()}"
         // STEP1- Call positions for a test nationalId and since there is no record in templatedb it returns empty list
         webTestClient.get().uri("$BASE_END_POINT/positions/$TEMPLATE_BACKEND/nationalId=$voterId")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody()
-                .json("[]")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .json("[]")
 
         // STEP2- Insert a sample record for right thumb finger in template db and this time the positions endpoint should return it
         val fingerprintStr = String(loadBytesFromResource("images/fingerprint_NIN55555.txt"))
         val fp1 = Fingerprint(voterId, "ID_POSITION", "DID_POSITION", 1, FingerPosition.RIGHT_THUMB, null, Timestamp(System.currentTimeMillis()), fingerprintStr)
 
         webTestClient.post().uri("$BASE_END_POINT/templatizer/bulk/$TEMPLATE_BACKEND")
-                .syncBody(listOf(fp1))
-                .exchange()
-                .expectStatus().isOk
+            .syncBody(listOf(fp1))
+            .exchange()
+            .expectStatus().isOk
 
         webTestClient.get().uri("$BASE_END_POINT/positions/$TEMPLATE_BACKEND/voterId=$voterId")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody()
-                .json("[\"1\"]")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .json("[\"1\"]")
 
         // STEP3- Insert another sample record for left thumb finger in template db and this time the positions endpoint should return two items
         val fp2 = Fingerprint(voterId, "ID_POSITION", "DID_POSITION", 1, FingerPosition.LEFT_THUMB, null, Timestamp(System.currentTimeMillis()), fingerprintStr)
 
         webTestClient.post().uri("$BASE_END_POINT/templatizer/bulk/$TEMPLATE_BACKEND")
-                .syncBody(listOf(fp2))
-                .exchange()
-                .expectStatus().isOk
+            .syncBody(listOf(fp2))
+            .exchange()
+            .expectStatus().isOk
 
         webTestClient.get().uri("$BASE_END_POINT/positions/$TEMPLATE_BACKEND/voterId=$voterId")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody()
-                .json("[\"1\",\"6\"]")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .json("[\"1\",\"6\"]")
 
         // STEP4- Insert another missing finger record for right index in template db and this time the positions endpoint should return two items again
         val fp3 = Fingerprint(voterId, "ID_POSITION", "DID_POSITION", 1, FingerPosition.RIGHT_INDEX, "NA", Timestamp(System.currentTimeMillis()), null)
 
         webTestClient.post().uri("$BASE_END_POINT/templatizer/bulk/$TEMPLATE_BACKEND")
-                .syncBody(listOf(fp3))
-                .exchange()
-                .expectStatus().isOk
+            .syncBody(listOf(fp3))
+            .exchange()
+            .expectStatus().isOk
 
         webTestClient.get().uri("$BASE_END_POINT/positions/$TEMPLATE_BACKEND/voterId=$voterId")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody()
-                .json("[\"1\",\"6\"]")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .json("[\"1\",\"6\"]")
     }
 
     /** The template backend name. */

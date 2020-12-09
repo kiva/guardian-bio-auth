@@ -53,8 +53,8 @@ class BackendManager(private val loader: IBackendLoader) : IBackendManager {
 
                 // let's load driver
                 val backendClass = ClassUtils
-                        .forName(definition.config.get("driver").asString(), ClassUtils.getDefaultClassLoader())
-                        .asSubclass(IBackend::class.java)
+                    .forName(definition.config.get("driver").asString(), ClassUtils.getDefaultClassLoader())
+                    .asSubclass(IBackend::class.java)
 
                 val ctor = backendClass.getConstructor()
                 val backend = ctor.newInstance() as IBackend
@@ -66,8 +66,8 @@ class BackendManager(private val loader: IBackendLoader) : IBackendManager {
                 backend.init(definition)
                 backends[name] = backend
 
-                // let's init valida finger position
-                for (i in definition.config.get("positions").`as`(List::class.java))
+                // let's init valid finger positions
+                for (i in definition.config.get("positions").`as`(List::class.java)) {
                     try {
                         backend.validFingerPositions.add(FingerPosition.fromCode(i as Int))
                     } catch (e: java.lang.Exception) {
@@ -75,50 +75,51 @@ class BackendManager(private val loader: IBackendLoader) : IBackendManager {
                         logger.error(msg, e)
                         throw InvalidBackendDefinitionException(msg)
                     }
+                }
 
                 // let's build our filter config
                 definition.config["filters"]
-                        .children()
-                        .forEach {
-                            val key: String = it.key().asString()
-                            backend.filters.add(key)
+                    .children()
+                    .forEach {
+                        val key: String = it.key().asString()
+                        backend.filters.add(key)
 
-                            // we can only make the code work by getting as java.lan.Boolean and then casting to kotlin's
-                            // if field is required
-                            if (it["required"].isPresent && it["required"].`as`(java.lang.Boolean::class.java).booleanValue()) {
-                                backend.requiredFilters.add(key)
-                            }
-
-                            // if field is unique
-                            if (it.get("unique").isPresent && it.get("unique").`as`(java.lang.Boolean::class.java).booleanValue()) {
-                                backend.uniqueFilters.add(key)
-                            }
-
-                            // if field presents comma separated list
-                            if (it["list"].isPresent && it["list"].`as`(java.lang.Boolean::class.java).booleanValue()) {
-                                backend.listFilters.add(key)
-                            }
-
-                            // if field is hashed
-                            if (it["hashed"].isPresent && it["hashed"].`as`(java.lang.Boolean::class.java).booleanValue()) {
-                                backend.hashedFilters.add(key)
-                            }
-
-                            // let's map each filter to a backend field + operator
-                            val toField = if (it.get("to").isPresent)
-                                it.get("to").`as`(java.lang.String::class.java).toString() else key
-                            val operatorStr = if (it.get("operator").isPresent)
-                                it.get("operator").`as`(java.lang.String::class.java).toString() else "="
-
-                            val operator = try {
-                                Operator.fromCode(operatorStr)
-                            } catch (e: IllegalArgumentException) {
-                                val msg = "Operator declared for backend $name filter $key is invalud"
-                                logger.error(msg, e)
-                                throw InvalidBackendDefinitionException(msg)
-                            }
-                            backend.filterMappers[key] = Pair(toField, operator)
+                        // we can only make the code work by getting as java.lan.Boolean and then casting to kotlin's
+                        // if field is required
+                        if (it["required"].isPresent && it["required"].`as`(java.lang.Boolean::class.java).booleanValue()) {
+                            backend.requiredFilters.add(key)
                         }
+
+                        // if field is unique
+                        if (it.get("unique").isPresent && it.get("unique").`as`(java.lang.Boolean::class.java).booleanValue()) {
+                            backend.uniqueFilters.add(key)
+                        }
+
+                        // if field presents comma separated list
+                        if (it["list"].isPresent && it["list"].`as`(java.lang.Boolean::class.java).booleanValue()) {
+                            backend.listFilters.add(key)
+                        }
+
+                        // if field is hashed
+                        if (it["hashed"].isPresent && it["hashed"].`as`(java.lang.Boolean::class.java).booleanValue()) {
+                            backend.hashedFilters.add(key)
+                        }
+
+                        // let's map each filter to a backend field + operator
+                        val toField = if (it.get("to").isPresent)
+                            it.get("to").`as`(java.lang.String::class.java).toString() else key
+                        val operatorStr = if (it.get("operator").isPresent)
+                            it.get("operator").`as`(java.lang.String::class.java).toString() else "="
+
+                        val operator = try {
+                            Operator.fromCode(operatorStr)
+                        } catch (e: IllegalArgumentException) {
+                            val msg = "Operator declared for backend $name filter $key is invalud"
+                            logger.error(msg, e)
+                            throw InvalidBackendDefinitionException(msg)
+                        }
+                        backend.filterMappers[key] = Pair(toField, operator)
+                    }
             }
             logger.info("Loaded  $backends.size backends: ${backends.keys}")
         } catch (ex: Exception) {
@@ -131,9 +132,9 @@ class BackendManager(private val loader: IBackendLoader) : IBackendManager {
         // let;s ensure that we have all the root keys we require
         val missingKeys = ArrayList<String>()
         val availableKeys = definition.config
-                .children()
-                .map { i -> i.key().asString() }
-                .collect(Collectors.toList<String>())
+            .children()
+            .map { i -> i.key().asString() }
+            .collect(Collectors.toList<String>())
 
         for (i in 0 until requiredKeys.size - 1) {
             if (!availableKeys.contains(requiredKeys[i])) {
@@ -153,39 +154,37 @@ class BackendManager(private val loader: IBackendLoader) : IBackendManager {
 
     @Throws(InvalidQueryFilterException::class, InvalidBackendException::class)
     override fun validateQuery(query: Query) {
-        val backend: String = query.backend
+        val backendName: String = query.backend
         val filters: Map<String, String> = query.filters
 
         // let's ensure backend exists
-        getbyName(backend)
+        val backend: IBackend = getbyName(backendName)
 
         // let's ensure that required filters are provided
-        val missingKeys = getbyName(backend).requiredFilters.filter { !filters.containsKey(it) }
-        if (missingKeys.isNotEmpty()) {
-            val msg = "Query is missing the required filters: $missingKeys"
+        val missingFilters = backend.requiredFilters.filter { !filters.containsKey(it) }
+        if (missingFilters.isNotEmpty()) {
+            val msg = "Query is missing the required filters: $missingFilters"
             logger.warn(msg)
             throw InvalidQueryFilterException(msg)
         }
 
-        // let's en sure that if unique field is provided, we do not provide the others
-        getbyName(backend).uniqueFilters
-                .forEach { field ->
-                    if (filters.containsKey(field) && filters.size > 1) {
-                        val msg = field + " is defined as a unique and can not be specified " +
-                                "in query with other params"
-                        throw InvalidQueryFilterException(msg)
-                    }
-                }
+        // let's ensure that if unique field is provided, we do not provide any others
+        backend.uniqueFilters.forEach { field ->
+            if (filters.containsKey(field) && filters.size > 1) {
+                val msg = "$field is defined as a unique and can not be specified in query with other params"
+                throw InvalidQueryFilterException(msg)
+            }
+        }
 
-        // let's ensure we do have params we don't want here
-        if (!getbyName(backend).filters.containsAll(filters.keys)) {
-            val msg = "Invalid filters detected; the list of valid filters are " + getbyName(backend).filters.toString()
+        // let's ensure we don't have params we don't want here
+        if (!backend.filters.containsAll(filters.keys)) {
+            val msg = "Invalid filters detected; the list of valid filters are ${backend.filters}"
             throw InvalidQueryFilterException(msg)
         }
 
         // let's ensure we have print position we need
-        if (!getbyName(backend).validFingerPositions.contains(query.position)) {
-            val msg = "Invalid finger position detected; the list of valid position are " + getbyName(backend).validFingerPositions
+        if (!backend.validFingerPositions.contains(query.position)) {
+            val msg = "Invalid finger position detected; the list of valid position are ${backend.validFingerPositions}"
             throw InvalidQueryFilterException(msg)
         }
     }

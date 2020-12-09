@@ -1,5 +1,6 @@
 package org.kiva.identityservice.services.backends.drivers
 
+import com.machinezoo.sourceafis.FingerprintTemplate
 import io.r2dbc.spi.Row
 import org.jooq.Record
 import org.jooq.SQLDialect
@@ -13,6 +14,7 @@ import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Fingerprint
 import org.kiva.identityservice.domain.Identity
 import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.StoreRequest
 import org.kiva.identityservice.errorhandling.exceptions.FingerprintTemplateGenerationException
 import org.kiva.identityservice.errorhandling.exceptions.ImageDecodeException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendOperationException
@@ -106,9 +108,37 @@ class TemplateBackend : ReactivePostgresSqlBackend(), IHasTemplateSupport {
     }
 
     override fun templateGenerate(records: Flux<Fingerprint>, throwException: Boolean, sdk: IBiometricSDKAdapter, bioAnalyzer: IBioAnalyzer): Flux<Int> {
-        return records.flatMap { it.image?.let { it -> findFingerprintScore(it, throwException, bioAnalyzer) }
-                ?.flatMap { score -> this.templateGenerateHelper(it, score, sdk) }
-                ?: this.templateGenerateHelper(it, 0.0, sdk) }
+        return records.flatMap { it.image?.let { image -> findFingerprintScore(image, throwException, bioAnalyzer) }
+            ?.flatMap { score -> this.templateGenerateHelper(it, score, sdk) }
+            ?: this.templateGenerateHelper(it, 0.0, sdk) }
+    }
+
+    override fun storeTemplate(sdk: IBiometricSDKAdapter, storeRequest: StoreRequest): Mono<FingerprintTemplate> {
+        return sdk.buildTemplate(storeRequest.imageByte).flatMap { template ->
+            val sqlUpdate = "INSERT INTO kiva_biometric_template(did,position,template_type,type_id,national_id,voter_id,version,capture_date,template,quality_score) " +
+                "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) " +
+                "ON CONFLICT ON CONSTRAINT unique_did_postion_template_constraint DO " +
+                "UPDATE SET national_id=$5,voter_id=$6,version=$7,capture_date=$8,missing_code=NULL,template=$9,quality_score=NULL"
+
+            client.inTransaction {
+                it.execute(
+                    sqlUpdate,
+                    storeRequest.did,
+                    storeRequest.position.code,
+                    sdk.templateType,
+                    storeRequest.type_id,
+                    storeRequest.national_id,
+                    storeRequest.voter_id,
+                    sdk.version,
+                    storeRequest.capture_date,
+                    template,
+                    storeRequest.quality_score
+                )
+                    .doOnNext { count -> logger.debug("$count rows affected by $sqlUpdate") }
+                    .last()
+                    .map { template }
+            }.last()
+        }
     }
 
     /**
@@ -146,7 +176,7 @@ class TemplateBackend : ReactivePostgresSqlBackend(), IHasTemplateSupport {
     private fun templateGenerateHelper(fp: Fingerprint, score: Any?, sdk: IBiometricSDKAdapter): Mono<Int> {
 
         try {
-            val imgTemplate = fp.image?.let { sdk.templatize(decodeImage(fp.image)).block() } ?: null
+            val imgTemplate = fp.image?.let { sdk.buildTemplateFromImage(decodeImage(fp.image)).block() } ?: null
 
             // The nationalId as well as voterId should be hashed before storing in backend.
             val hashPepper = System.getenv("HASH_PEPPER")
@@ -155,27 +185,27 @@ class TemplateBackend : ReactivePostgresSqlBackend(), IHasTemplateSupport {
 
             if (imgTemplate == null && fp.missing_code != null) {
                 val sqlUpdate = "INSERT INTO kiva_biometric_template(did,position,template_type,type_id,national_id,voter_id,version,capture_date,missing_code,quality_score) " +
-                        "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) " +
-                        "ON CONFLICT ON CONSTRAINT unique_did_postion_template_constraint DO " +
-                        "UPDATE SET national_id=$5,voter_id=$6,version=$7,capture_date=$8,missing_code=$9,template=NULL,quality_score=$10"
+                    "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) " +
+                    "ON CONFLICT ON CONSTRAINT unique_did_postion_template_constraint DO " +
+                    "UPDATE SET national_id=$5,voter_id=$6,version=$7,capture_date=$8,missing_code=$9,template=NULL,quality_score=$10"
 
                 return client.inTransaction {
                     it.execute(sqlUpdate, fp.did, fp.position.code, sdk.templateType, fp.type_id, nationalId, voterId, sdk.version, fp.capture_date, fp.missing_code, score)
-                            .doOnNext { count -> logger.debug("$count rows affected by $sqlUpdate") }.last()
+                        .doOnNext { count -> logger.debug("$count rows affected by $sqlUpdate") }.last()
                 }.last()
             } else if (imgTemplate != null && fp.missing_code == null) {
                 val sqlUpdate = "INSERT INTO kiva_biometric_template(did,position,template_type,type_id,national_id,voter_id,version,capture_date,template,quality_score) " +
-                        "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) " +
-                        "ON CONFLICT ON CONSTRAINT unique_did_postion_template_constraint DO " +
-                        "UPDATE SET national_id=$5,voter_id=$6,version=$7,capture_date=$8,missing_code=NULL,template=$9,quality_score=$10"
+                    "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) " +
+                    "ON CONFLICT ON CONSTRAINT unique_did_postion_template_constraint DO " +
+                    "UPDATE SET national_id=$5,voter_id=$6,version=$7,capture_date=$8,missing_code=NULL,template=$9,quality_score=$10"
 
                 return client.inTransaction {
                     it.execute(sqlUpdate, fp.did, fp.position.code, sdk.templateType, fp.type_id, nationalId, voterId, sdk.version, fp.capture_date, imgTemplate, score)
-                            .doOnNext { count -> logger.debug("$count rows affected by $sqlUpdate") }.last()
+                        .doOnNext { count -> logger.debug("$count rows affected by $sqlUpdate") }.last()
                 }.last()
             } else {
                 return Mono.error(FingerprintTemplateGenerationException(fp.did, fp.position,
-                        "Either fingerprint image or missing code should be present."))
+                    "Either fingerprint image or missing code should be present."))
             }
         } catch (ex: ImageDecodeException) {
             return Mono.error(FingerprintTemplateGenerationException(fp.did, fp.position, ex.message!!))
@@ -191,12 +221,12 @@ class TemplateBackend : ReactivePostgresSqlBackend(), IHasTemplateSupport {
     override fun positions(filters: Map<String, String>): Flux<FingerPosition> {
         val hashPepper = System.getenv("HASH_PEPPER")
         val table = config["table"]!! as String
-        var builder = DSL.using(SQLDialect.POSTGRES)
-                .select()
-                .from((table).trim()).query
+        val builder = DSL.using(SQLDialect.POSTGRES)
+            .select()
+            .from((table).trim()).query
 
         builder.addSelect(
-                field("position")
+            field("position")
         )
 
         /**
@@ -236,7 +266,7 @@ class TemplateBackend : ReactivePostgresSqlBackend(), IHasTemplateSupport {
 
         return client.withHandle { handle ->
             handle.select(builder.getSQL(ParamType.INLINED))
-                    .mapRow { row -> FingerPosition.fromCode(row["position"] as Int) }
+                .mapRow { row -> FingerPosition.fromCode(row["position"] as Int) }
         }
     }
 }

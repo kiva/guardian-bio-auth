@@ -74,25 +74,25 @@ class VerificationEngine(
             val backend: IBackend = backendManager.getbyName(query.backend)
 
             return sdk.match(query, fetchCandidates(backend, query, DataType.values()))
-                    .onErrorResume(FingerPrintTemplateException::class.java) {
-                        // we need to redo with only image if template fails for some reason
-                        val newCandidates = fetchCandidates(backend, query, arrayOf(DataType.IMAGE))
-                        sdk.match(query, newCandidates) }
-                    // Since no match found, let's run bio-analyzer service, just in case it might be because of fingerprint's low quality.
-                    // exception will be thrown back to consumer if quality is too low
-                    .switchIfEmpty(bioAnalyzer.analyze(query.image, true).timeout(BIOANALYZER_TIMEOUT).flatMap { Mono.empty<Identity>() })
-                    // If the bioanalyzer did not give us the low quality error, let's return FingerprintNoMatchException.
-                    .switchIfEmpty(Mono.error(FingerprintNoMatchException()))
-                    .last() // Return the highest matching score candidate
-                    .doOnError {
-                        logErrorMessage(it)
-                    }
-                    .onErrorResume(BioanalyzerServiceException::class.java) {
-                        Mono.error(FingerprintNoMatchException())
-                    }
-                    .onErrorResume(TimeoutException::class.java) {
-                        Mono.error(FingerprintNoMatchException())
-                    }
+                .onErrorResume(FingerPrintTemplateException::class.java) {
+                    // we need to redo with only image if template fails for some reason
+                    val newCandidates = fetchCandidates(backend, query, arrayOf(DataType.IMAGE))
+                    sdk.match(query, newCandidates) }
+                // Since no match found, let's run bio-analyzer service, just in case it might be because of fingerprint's low quality.
+                // exception will be thrown back to consumer if quality is too low
+                .switchIfEmpty(bioAnalyzer.analyze(query.image, true).timeout(BIOANALYZER_TIMEOUT).flatMap { Mono.empty<Identity>() })
+                // If the bioanalyzer did not give us the low quality error, let's return FingerprintNoMatchException.
+                .switchIfEmpty(Mono.error(FingerprintNoMatchException()))
+                .last() // Return the highest matching score candidate
+                .doOnError {
+                    logErrorMessage(it)
+                }
+                .onErrorResume(BioanalyzerServiceException::class.java) {
+                    Mono.error(FingerprintNoMatchException())
+                }
+                .onErrorResume(TimeoutException::class.java) {
+                    Mono.error(FingerprintNoMatchException())
+                }
         } catch (e: InvalidQueryFilterException) {
             logErrorMessage(e)
             return Mono.error(e)
@@ -112,15 +112,15 @@ class VerificationEngine(
 
         // we want to search with template and if not available image.
         return backend.search(query, types, sdk)
-                // let's return no citizens found exception if results come up empty
-                .switchIfEmpty(Flux.error(NoCitizenFoundException()))
-                // consider only people with the position we want
-                .filter { it.fingerprints.keys.contains(query.position) }
-                // we don't have prints for that position so let's throw the pertinent error message.
-                .switchIfEmpty(Flux.error(FingerprintMissingNotCapturedException()))
-                // let's force backend to be clever by limiting returned
-                .limitRequest(fetchLimit)
-                .take(fetchLimit)
+            // let's return no citizens found exception if results come up empty
+            .switchIfEmpty(Flux.error(NoCitizenFoundException()))
+            // consider only people with the position we want
+            .filter { it.fingerprints.keys.contains(query.position) }
+            // we don't have prints for that position so let's throw the pertinent error message.
+            .switchIfEmpty(Flux.error(FingerprintMissingNotCapturedException()))
+            // let's force backend to be clever by limiting returned
+            .limitRequest(fetchLimit)
+            .take(fetchLimit)
     }
 
     /**
