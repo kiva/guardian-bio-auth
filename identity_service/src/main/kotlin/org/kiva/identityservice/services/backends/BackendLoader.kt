@@ -22,8 +22,8 @@ class BackendLoader(val context: ApplicationContext) : IBackendLoader {
 
             loader.load()?.let {
                 it.entries.stream()
-                        .map { config -> Definition(config.key, config.value as Map<String, Any>) }
-                        .collect(Collectors.toList())
+                    .map { config -> Definition(config.key, config.value as Map<String, Any>) }
+                    .collect(Collectors.toList())
             } ?: listOf()
         } catch (ex: Exception) {
             logger.error("Error during yml load", ex)

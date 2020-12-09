@@ -44,17 +44,17 @@ class BioAnalyzer(
                 val bioAnalyserHost = System.getenv("BIOANALYZER_SERVICE_URL")
 
                 return WebClient.create(bioAnalyserHost)
-                        .post()
-                        .uri(ANALYZE_URL)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(REQUEST_ID_HEADER, reqId)
-                        .syncBody(mapOf(reqId to BioanalyzerRequestData("fingerprint", image)))
-                        .exchange()
-                        .onErrorResume(Exception::class.java) {
-                            logger.debug("Error happened in bioanalyzer call")
-                            Mono.error(BioanalyzerServiceException())
-                        }
-                        .flatMap { handleAnalyzerResponse(reqId, throwException, it) }
+                    .post()
+                    .uri(ANALYZE_URL)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .header(REQUEST_ID_HEADER, reqId)
+                    .syncBody(mapOf(reqId to BioanalyzerRequestData("fingerprint", image)))
+                    .exchange()
+                    .onErrorResume(Exception::class.java) {
+                        logger.debug("Error happened in bioanalyzer call")
+                        Mono.error(BioanalyzerServiceException())
+                    }
+                    .flatMap { handleAnalyzerResponse(reqId, throwException, it) }
             } else {
                 return Mono.empty()
             }
@@ -79,8 +79,9 @@ class BioAnalyzer(
             logger.warn("The bioanalyzer returned " + clientResponse.statusCode())
             return Mono.error(BioanalyzerServiceException())
         }
-        return clientResponse.bodyToMono(MutableMap::class.java)
-                .flatMap { handleAnalyzerData(requestID, throwException, it as Map<String, Any>) }
+        return clientResponse
+            .bodyToMono(MutableMap::class.java)
+            .flatMap { handleAnalyzerData(requestID, throwException, it as Map<String, Any>) }
     }
 
     /**

@@ -28,7 +28,7 @@ enum class FingerPosition constructor(val code: Int) {
         @JsonCreator
         fun fromCode(value: Int?): FingerPosition {
             val exception = InvalidFingerPositionException(
-                    "Invalid position, must be one of " + values().map { i -> i.toString() }.joinToString(", "))
+                "Invalid position, must be one of " + values().joinToString(", ") { i -> i.toString() })
             if (value == null) {
                 throw exception
             }

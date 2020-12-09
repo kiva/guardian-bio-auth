@@ -1,5 +1,6 @@
 package org.kiva.identityservice.services.sdks
 
+import com.machinezoo.sourceafis.FingerprintTemplate
 import org.kiva.identityservice.domain.Identity
 import org.kiva.identityservice.domain.Query
 import reactor.core.publisher.Flux
@@ -18,5 +19,7 @@ interface IBiometricSDKAdapter {
      */
     fun match(query: Query, people: Flux<Identity>): Flux<Identity>
 
-    fun templatize(image: ByteArray): Mono<Any>
+    fun buildTemplate(template: ByteArray): Mono<FingerprintTemplate>
+
+    fun buildTemplateFromImage(image: ByteArray): Mono<Any>
 }

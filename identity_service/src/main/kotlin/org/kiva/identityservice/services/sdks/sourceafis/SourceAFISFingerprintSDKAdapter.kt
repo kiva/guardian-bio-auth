@@ -1,5 +1,6 @@
 package org.kiva.identityservice.services.sdks.sourceafis
 
+import com.machinezoo.sourceafis.FingerprintCompatibility
 import com.machinezoo.sourceafis.FingerprintImage
 import com.machinezoo.sourceafis.FingerprintMatcher
 import com.machinezoo.sourceafis.FingerprintTemplate
@@ -15,6 +16,8 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import reactor.util.Loggers
+import java.io.ByteArrayInputStream
+import java.io.DataInputStream
 
 @Service
 class SourceAFISFingerprintSDKAdapter(
@@ -42,41 +45,57 @@ class SourceAFISFingerprintSDKAdapter(
             val matcher = FingerprintMatcher().index(queryTemplate)
 
             return people
-                    .onErrorStop()
-                    .parallel()
-                    .runOn(Schedulers.parallel())
-                    .filter {
-                        val template = when (it.type) {
-                            DataType.IMAGE -> FingerprintTemplate(FingerprintImage().decode(it.fingerprints[query.position]))
-                            DataType.TEMPLATE -> {
-                                // let's ensure we got sent in a version that works for us and that out backend isn't doing
-                                // something stupid. We won't refuse to process but scream in the line below just yet :)
-                                if (it.templateVersion == null) {
-                                    logger.error("Template version not specified for '${it.national_id}' in ${query.backend}")
-                                }
-
-                                // we check for exact equality here; other SDKs are free to check for version range
-                                it.templateVersion?.let { check ->
-                                    if (check != version)
-                                        throw FingerPrintTemplateException(ApiExceptionCode.INVALID_TEMPLATE_VERSION.msg)
-                                }
-                                FingerprintTemplate().deserialize(String(it.fingerprints[query.position]!!, Charsets.UTF_8))
+                .onErrorStop()
+                .parallel()
+                .runOn(Schedulers.parallel())
+                .filter {
+                    val template = when (it.type) {
+                        DataType.IMAGE -> FingerprintTemplate(FingerprintImage().decode(it.fingerprints[query.position]))
+                        DataType.TEMPLATE -> {
+                            // let's ensure we got sent in a version that works for us and that out backend isn't doing
+                            // something stupid. We won't refuse to process, but just scream in the line below :)
+                            if (it.templateVersion == null) {
+                                logger.error("Template version not specified for '${it.national_id}' in ${query.backend}")
                             }
-                        }
-                        it.matchingScore = matcher.match(template)
-                        val match = it.matchingScore >= matchThreshold
 
-                        logger.debug("SourceAFISFingerprintSDKAdapter identity match for : $it \n Score: ${it.matchingScore} \n Match : $match")
-                        match
+                            // we check for exact equality here; other SDKs are free to check for version range
+                            it.templateVersion?.let { check ->
+                                if (check != version)
+                                    throw FingerPrintTemplateException(ApiExceptionCode.INVALID_TEMPLATE_VERSION.msg)
+                            }
+                            FingerprintTemplate().deserialize(String(it.fingerprints[query.position]!!, Charsets.UTF_8))
+                        }
                     }
-                    .sequential()
-                    .sort(fun(o1: Identity, o2: Identity): Int { // Sort the list of matches from lowest matching score to highest.
-                        return o1.matchingScore.compareTo(o2.matchingScore) })
+                    it.matchingScore = matcher.match(template)
+                    val match = it.matchingScore >= matchThreshold
+
+                    logger.debug("SourceAFISFingerprintSDKAdapter identity match for : $it \n Score: ${it.matchingScore} \n Match : $match")
+                    match
+                }
+                .sequential()
+                .sort(fun(o1: Identity, o2: Identity): Int { // Sort the list of matches from lowest matching score to highest.
+                    return o1.matchingScore.compareTo(o2.matchingScore)
+                })
         } catch (e: Exception) {
             return Flux.error(e)
         }
     }
 
-    override fun templatize(image: ByteArray): Mono<Any> =
-            Mono.fromCallable { FingerprintTemplate(FingerprintImage().decode(image)).serialize() }
+    private fun isForeignTemplate(template: ByteArray): Boolean {
+        val input = DataInputStream(ByteArrayInputStream(template))
+        return input.readByte() == 'F'.toByte() && input.readByte() == 'M'.toByte() && input.readByte() == 'R'.toByte()
+    }
+
+    override fun buildTemplate(template: ByteArray): Mono<FingerprintTemplate> {
+        return Mono.fromCallable {
+            if (isForeignTemplate(template)) {
+                FingerprintCompatibility.convert(template)
+            } else {
+                FingerprintTemplate(template)
+            }
+        }
+    }
+
+    override fun buildTemplateFromImage(image: ByteArray): Mono<Any> =
+        Mono.fromCallable { FingerprintTemplate(FingerprintImage().decode(image)).serialize() }
 }

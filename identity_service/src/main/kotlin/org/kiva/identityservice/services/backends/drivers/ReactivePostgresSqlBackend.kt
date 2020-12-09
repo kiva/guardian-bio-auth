@@ -38,14 +38,13 @@ abstract class ReactivePostgresSqlBackend : SqlBackend() {
     @Value("\${namkha.backend.fetch_limit}")
     private var fetchLimit: Long? = null
 
-    /*
-    The default database port used when there is no environment/config set for it or there is error reading its value.
-    */
+    /**
+     * The default database port used when there is no environment/config set for it or there is error reading its value.
+     */
     private val DATABASE_DEFAULT_PORT = 5432
 
     /**
-     * initialization tasks required by backend.
-     * @return
+     * Initialization tasks required by backend.
      */
     override fun init(definition: Definition): Mono<Void> {
 
@@ -101,15 +100,14 @@ abstract class ReactivePostgresSqlBackend : SqlBackend() {
 
             // let's hash the filter value if it is a hashed filter.
             if (hashedFilters.contains(entry.key)) {
-                if (listFilters.contains(entry.key)) {
-                    /**
-                     * If the value is a comma separated items, we should hash each single item of them.
-                     * For list of v1,v2,v3,v4, the following code will return HASH(v1),HASH(v2),HASH(v3)
-                     */
-
-                    value = generateHashForList(entry.value.split(','), hashPepper).joinToString(",")
+                /*
+                 * If the value is a comma separated items, we should hash each single item of them.
+                 * For list of v1,v2,v3,v4, the following code will return HASH(v1),HASH(v2),HASH(v3)
+                 */
+                value = if (listFilters.contains(entry.key)) {
+                    generateHashForList(entry.value.split(','), hashPepper).joinToString(",")
                 } else {
-                    value = generateHash(entry.value, hashPepper)
+                    generateHash(entry.value, hashPepper)
                 }
             }
 
@@ -123,7 +121,7 @@ abstract class ReactivePostgresSqlBackend : SqlBackend() {
                 builder.addConditions(condition("$column <% ?", value))
             } else {
                 if (listFilters.contains(entry.key)) {
-                    /**
+                    /*
                      * For comma separated list of items, we generate a query chain of OR conditions for matching that list.
                      * For instance if we are looking for voter id in list of 'voter1, voter2, voter3' teh following code will generate the following condition
                      * (voterId = voter1) OR (voterId = voter2) OR (voterId = voter3)
@@ -171,15 +169,11 @@ abstract class ReactivePostgresSqlBackend : SqlBackend() {
 
     /**
      * Helper function that pings backend, testing for connectivity.
-     *
-     * @param query
-     * @return
      */
     override fun healthcheck(query: Query): Mono<Boolean> {
-        // let's use a library
         return client
-            .withHandle { handle ->
-                handle.select("SELECT version();")
+            .withHandle {
+                it.select("SELECT version();")
                     .mapRow { row -> row["version"] }
             }.hasElements()
     }

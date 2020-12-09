@@ -24,12 +24,12 @@ class SourceAFISFingerprintSDKAdapterTest {
         val identities = generateIdentities(20)
         identities.add(generateIdentity(DID1, query.imageByte))
         StepVerifier.create(sdk.match(query, Flux.fromIterable(identities)))
-                .expectSubscription()
-                .assertNext {
-                    Assert.assertThat(it.did, CoreMatchers.`is`(DID1))
-                    Assert.assertTrue(it.matchingScore >= MATCHING_THRESHOLD)
-                }
-                .verifyComplete()
+            .expectSubscription()
+            .assertNext {
+                Assert.assertThat(it.did, CoreMatchers.`is`(DID1))
+                Assert.assertTrue(it.matchingScore >= MATCHING_THRESHOLD)
+            }
+            .verifyComplete()
     }
 
     /**
@@ -40,12 +40,12 @@ class SourceAFISFingerprintSDKAdapterTest {
     fun testOnlyMatch() {
         val identity = generateIdentity(DID1, query.imageByte)
         StepVerifier.create(sdk.match(query, Flux.fromArray(Arrays.array(identity))))
-                .expectSubscription()
-                .assertNext {
-                    Assert.assertThat(it.did, CoreMatchers.`is`(DID1))
-                    Assert.assertTrue(it.matchingScore >= MATCHING_THRESHOLD)
-                }
-                .verifyComplete()
+            .expectSubscription()
+            .assertNext {
+                Assert.assertThat(it.did, CoreMatchers.`is`(DID1))
+                Assert.assertTrue(it.matchingScore >= MATCHING_THRESHOLD)
+            }
+            .verifyComplete()
     }
 
     /**
@@ -64,16 +64,16 @@ class SourceAFISFingerprintSDKAdapterTest {
         identities.add(identity2)
         identities.add(identity3)
         StepVerifier.create(sdk.match(query, Flux.fromIterable(identities)))
-                .expectSubscription()
-                .assertNext {
-                    Assert.assertThat("Invalid identity record returned", it.did, CoreMatchers.`is`(DID3))
-                    Assert.assertEquals("Invalid identity record returned", it.matchingScore, identity3.matchingScore, 0.0)
-                }
-                .assertNext {
-                    Assert.assertThat("Invalid identity record returned", it.did, CoreMatchers.`is`(DID1))
-                    Assert.assertEquals("Invalid identity record returned", it.matchingScore, identity1.matchingScore, 0.0)
-                }
-                .verifyComplete()
+            .expectSubscription()
+            .assertNext {
+                Assert.assertThat("Invalid identity record returned", it.did, CoreMatchers.`is`(DID3))
+                Assert.assertEquals("Invalid identity record returned", it.matchingScore, identity3.matchingScore, 0.0)
+            }
+            .assertNext {
+                Assert.assertThat("Invalid identity record returned", it.did, CoreMatchers.`is`(DID1))
+                Assert.assertEquals("Invalid identity record returned", it.matchingScore, identity1.matchingScore, 0.0)
+            }
+            .verifyComplete()
 
         /**
          * The matching sdk should run for all identity records and the matching score should be set for all identities.
@@ -93,8 +93,8 @@ class SourceAFISFingerprintSDKAdapterTest {
         val identities = generateIdentities(20)
         identities.add(generateIdentity(DID1, loadBytesFromResource(IMAGE_FILE)))
         StepVerifier.create(sdk.match(query, Flux.fromIterable(identities)))
-                .expectNextCount(0)
-                .verifyComplete()
+            .expectNextCount(0)
+            .verifyComplete()
     }
 
     /** The fingerprint sdk adapter matching threshold. */

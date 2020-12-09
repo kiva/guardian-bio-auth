@@ -18,7 +18,7 @@ data class Fingerprint(
 ) {
     override fun toString(): String {
         return "Fingerprint(voter_id='$voter_id', did='$did', national_id='$national_id', type_id=$type_id, position=$position, " +
-                "missing_code=$missing_code, capture_date=$capture_date, image=$image)"
+            "missing_code=$missing_code, capture_date=$capture_date, image=$image)"
     }
 
     override fun hashCode(): Int {

@@ -5,6 +5,5 @@ import org.springframework.stereotype.Service
 
 @Service
 interface ICheckReplayAttack {
-
     fun isReplayAttack(query: Query): Unit
 }

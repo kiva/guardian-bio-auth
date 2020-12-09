@@ -35,17 +35,15 @@ data class Query(
      *
      * Examples include:
      *
-     * `
      * filter by nationalID
-     * filters.put("nationalID", "123455")
+     * filters.put("nationalID", "123456")
      *
      * filter by voterID
-     * filters.put("voterID", "123455")
+     * filters.put("voterID", "123456")
      *
      * filter by first and last name
-     * filters.put("firstName", "Salton")
-     * filters.put("lastname", "Massally")
-     *
+     * filters.put("firstName", "John")
+     * filters.put("lastname", "Smith")
      */
     @NotEmpty
     val filters: Map<String, String>,

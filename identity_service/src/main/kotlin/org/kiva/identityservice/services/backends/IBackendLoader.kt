@@ -3,7 +3,7 @@ package org.kiva.identityservice.services.backends
 import java.io.IOException
 
 /**
- * Flexible way of load definitions of backends
+ * Flexible way to load backend definitions
  */
 interface IBackendLoader {
 

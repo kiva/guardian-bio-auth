@@ -24,7 +24,6 @@ interface IBackend {
 
     /**
      * initialization tasks required by backend can be thrown in here
-     * @return
      *
      * @throws InvalidBackendDefinitionException if there is error initializing the backend.
      */
@@ -41,25 +40,28 @@ interface IBackend {
     }
 
     /**
-     * Searches backend fingerprint store, return prints that match a criteria for comparison.
+     * Searches backend fingerprint store, return prints that match the provided criteria.
+     *
      * @param query query containing the search parameters
      * @param types helps us decide what types we which to search against
      */
     fun search(query: Query, types: Array<DataType> = arrayOf(DataType.IMAGE), sdk: IBiometricSDKAdapter? = null): Flux<Identity>
 
     /**
-     * Searches backend fingerprint store, and returns the positions of fingers for a given person stored in backend in the order of their quality
+     * Searches backend fingerprint store, and returns the positions of fingers for a given person stored in backend in
+     * order of their quality.
+     *
      * @param filters the search matching filters.
      */
     fun positions(filters: Map<String, String>): Flux<FingerPosition>
 
     /**
-     * Helper function that pings backend, testing for connectivity
+     * Helper function that pings backend, testing for connectivity.
      */
     fun healthcheck(query: Query): Mono<Boolean>
 
     /**
-     * Enables backends to validate definitions, ensuring that options they need to work is provided
+     * Enables backends to validate definitions, ensuring that any options they need to work are provided.
      */
     @Throws(InvalidBackendDefinitionException::class)
     fun validateDefinition(definition: Definition)

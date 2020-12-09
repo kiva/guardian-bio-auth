@@ -7,6 +7,7 @@ import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Fingerprint
 import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.StoreRequest
 import org.kiva.identityservice.errorhandling.exceptions.FingerprintTemplateGenerationException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendOperationException
@@ -56,6 +57,20 @@ class ApiController constructor(
                 .map { res -> Response(ResponseStatus.MATCHED, res.did, res.national_id, res.matchingScore) }
                 .doOnNext { logger.info("Sending Response: $it") }
                 .map { res -> ResponseEntity.ok(res) }
+        } catch (e: Exception) {
+            return Mono.error(e)
+        }
+    }
+
+    @PostMapping("/store", produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun store(@Valid @RequestBody storeRequest: StoreRequest): Mono<ResponseEntity<out Any>> {
+        try {
+            val backend: IBackend = backendManager.getbyName("template")
+            if (backend !is IHasTemplateSupport)
+                return Mono.just(
+                    ResponseEntity.status(HttpStatus.BAD_REQUEST).body("'template' backend does not support templates")
+                )
+            return templatizer.store(backend, storeRequest).map { ResponseEntity.ok(it.serialize()) }
         } catch (e: Exception) {
             return Mono.error(e)
         }

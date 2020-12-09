@@ -34,12 +34,11 @@ abstract class SqlBackend : IBackend {
      */
     override fun init(definition: Definition): Mono<Void> {
         try {
-            // let's set
             definition.config["config"]
-                    .children()
-                    .forEach {
-                        config = it.asMap<String, Any>()
-                    }
+                .children()
+                .forEach {
+                    config = it.asMap<String, Any>()
+                }
             return super.init(definition)
         } catch (ex: Exception) {
             return Mono.error(InvalidBackendDefinitionException(BACKEND_INITILIZAE_ERROR_MESSAGE))
@@ -47,29 +46,28 @@ abstract class SqlBackend : IBackend {
     }
 
     /**
-     * Searches backend fingerprint store, return prints that match a criteria for comparism
+     * Should search backend fingerprint store and return prints that match the provided criteria
      *
      * @param query the search query.
      * @param types the data types.
      * @param sdk the backend biometric matching service.
      */
     override fun search(query: Query, types: Array<DataType>, sdk: IBiometricSDKAdapter?): Flux<Identity> {
-        // for key search it is straight forwards
         return Flux.empty()
     }
 
     /**
-     * Searches backend fingerprint store, and returns the positions of fingers for a given person stored in backend in the order of their quality
+     * Should search backend fingerprint store and return the positions of fingers for a given person stored in the
+     * backend in the order of their quality
      *
      * @param filters the search matching filters.
      */
     override fun positions(filters: Map<String, String>): Flux<FingerPosition> {
-        // for key search it is straight forwards
         return Flux.empty()
     }
 
     /**
-     * Helper function that pings backend, testing for connectivity
+     * Helper function that should ping backend, testing for connectivity
      */
     override fun healthcheck(query: Query): Mono<Boolean> {
         return true.toMono()
@@ -82,15 +80,15 @@ abstract class SqlBackend : IBackend {
     override fun validateDefinition(definition: Definition) {
         // let's ensure that we have our connection parameters set in our backend
         definition.config["config"]
-                .children()
-                .forEach {
-                    val config = it.asMap<String, Any>()
-                    for (key in listOf("host", "port", "database", "table", "user", "password")) {
-                        if (!config.containsKey(key)) {
-                            throw InvalidBackendDefinitionException("Missing backend config key $key needed by " + javaClass.name)
-                        }
+            .children()
+            .forEach {
+                val config = it.asMap<String, Any>()
+                for (key in listOf("host", "port", "database", "table", "user", "password")) {
+                    if (!config.containsKey(key)) {
+                        throw InvalidBackendDefinitionException("Missing backend config key $key needed by " + javaClass.name)
                     }
                 }
+            }
     }
 
     @Throws(InvalidBackendDefinitionException::class)
