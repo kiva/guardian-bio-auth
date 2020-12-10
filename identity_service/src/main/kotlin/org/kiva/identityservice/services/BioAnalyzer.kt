@@ -41,9 +41,9 @@ class BioAnalyzer(
 
                 val reqId = MDC.get(REQUEST_ID)
 
-                val bioAnalyserHost = System.getenv("BIOANALYZER_SERVICE_URL")
+                val bioAnalyzerHost = System.getenv("BIOANALYZER_SERVICE_URL")
 
-                return WebClient.create(bioAnalyserHost)
+                return WebClient.create(bioAnalyzerHost)
                     .post()
                     .uri(ANALYZE_URL)
                     .accept(MediaType.APPLICATION_JSON)
@@ -56,7 +56,7 @@ class BioAnalyzer(
                     }
                     .flatMap { handleAnalyzerResponse(reqId, throwException, it) }
             } else {
-                return Mono.empty()
+                return Mono.just(0.0)
             }
         } catch (e: Exception) {
             /**

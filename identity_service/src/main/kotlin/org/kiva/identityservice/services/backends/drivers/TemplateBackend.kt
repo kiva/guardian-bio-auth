@@ -108,9 +108,13 @@ class TemplateBackend : ReactivePostgresSqlBackend(), IHasTemplateSupport {
     }
 
     override fun templateGenerate(records: Flux<Fingerprint>, throwException: Boolean, sdk: IBiometricSDKAdapter, bioAnalyzer: IBioAnalyzer): Flux<Int> {
-        return records.flatMap { it.image?.let { image -> findFingerprintScore(image, throwException, bioAnalyzer) }
-            ?.flatMap { score -> this.templateGenerateHelper(it, score, sdk) }
-            ?: this.templateGenerateHelper(it, 0.0, sdk) }
+        return records
+            .flatMap { fingerprint ->
+                fingerprint.image
+                    ?.let { image -> findFingerprintScore(image, throwException, bioAnalyzer) }
+                    ?.flatMap { score -> this.templateGenerateHelper(fingerprint, score, sdk) }
+                    ?: this.templateGenerateHelper(fingerprint, 0.0, sdk)
+            }
     }
 
     override fun storeTemplate(sdk: IBiometricSDKAdapter, storeRequest: StoreRequest): Mono<FingerprintTemplate> {
