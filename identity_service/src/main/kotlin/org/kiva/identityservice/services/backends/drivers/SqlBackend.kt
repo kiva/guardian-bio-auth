@@ -18,7 +18,6 @@ import reactor.core.publisher.toMono
  */
 abstract class SqlBackend : IBackend {
 
-    var config: MutableMap<String, Any> = mutableMapOf()
     override var requiredFilters: MutableSet<String> = mutableSetOf()
     override var uniqueFilters: MutableSet<String> = mutableSetOf()
     override var listFilters: MutableSet<String> = mutableSetOf()
@@ -27,23 +26,7 @@ abstract class SqlBackend : IBackend {
     override var validFingerPositions: MutableSet<FingerPosition> = mutableSetOf()
     override var filterMappers: MutableMap<String, Pair<String, Operator>> = mutableMapOf()
 
-    protected val BACKEND_INITILIZAE_ERROR_MESSAGE = "Error initializing the backend."
-
-    /**
-     * initialization tasks required by backend.
-     */
-    override fun init(definition: Definition): Mono<Void> {
-        try {
-            definition.config["config"]
-                .children()
-                .forEach {
-                    config = it.asMap<String, Any>()
-                }
-            return super.init(definition)
-        } catch (ex: Exception) {
-            return Mono.error(InvalidBackendDefinitionException(BACKEND_INITILIZAE_ERROR_MESSAGE))
-        }
-    }
+    protected val backendInitializeErrorMsg = "Error initializing the backend."
 
     /**
      * Should search backend fingerprint store and return prints that match the provided criteria
@@ -78,17 +61,6 @@ abstract class SqlBackend : IBackend {
      */
     @Throws(InvalidBackendDefinitionException::class)
     override fun validateDefinition(definition: Definition) {
-        // let's ensure that we have our connection parameters set in our backend
-        definition.config["config"]
-            .children()
-            .forEach {
-                val config = it.asMap<String, Any>()
-                for (key in listOf("host", "port", "database", "table", "user", "password")) {
-                    if (!config.containsKey(key)) {
-                        throw InvalidBackendDefinitionException("Missing backend config key $key needed by " + javaClass.name)
-                    }
-                }
-            }
     }
 
     @Throws(InvalidBackendDefinitionException::class)

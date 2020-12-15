@@ -52,7 +52,12 @@ data class Query(
      * Defines the type of submitted fingerprint which is either image or template
      */
     @NotEmpty
-    val imageType: DataType = DataType.IMAGE
+    val imageType: DataType = DataType.IMAGE,
+
+    /**
+     * If provided, return the DID with the score that matches highest with the provided fingerprint.
+     */
+    val dids: List<String> = emptyList()
 ) {
     var imageByte: ByteArray = base64ToByte(image)
 }

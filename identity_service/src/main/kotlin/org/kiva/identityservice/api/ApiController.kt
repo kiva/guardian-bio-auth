@@ -62,6 +62,10 @@ class ApiController constructor(
         }
     }
 
+    /**
+     * Directly store a fingerprint template with a provided quality score instead of deriving the template and quality
+     * score from a fingerprint image.
+     */
     @PostMapping("/store", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun store(@Valid @RequestBody storeRequest: StoreRequest): Mono<ResponseEntity<out Any>> {
         try {

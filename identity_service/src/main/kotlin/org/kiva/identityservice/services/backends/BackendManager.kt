@@ -1,5 +1,6 @@
 package org.kiva.identityservice.services.backends
 
+import org.kiva.identityservice.config.EnvConfig
 import java.util.stream.Collectors
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Query
@@ -12,7 +13,10 @@ import org.springframework.stereotype.Service
 import org.springframework.util.ClassUtils
 
 @Service
-class BackendManager(private val loader: IBackendLoader) : IBackendManager {
+class BackendManager(
+    private val loader: IBackendLoader,
+    private val env: EnvConfig
+) : IBackendManager {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     /**
@@ -24,8 +28,6 @@ class BackendManager(private val loader: IBackendLoader) : IBackendManager {
      * map of load backend drivers
      */
     private val backends: MutableMap<String, IBackend> = mutableMapOf()
-
-    private val BACKEND_INITILIZAE_ERROR_MESSAGE = "Error initializing the backend."
 
     @Throws(Exception::class)
     override fun afterPropertiesSet() {
@@ -56,8 +58,8 @@ class BackendManager(private val loader: IBackendLoader) : IBackendManager {
                     .forName(definition.config.get("driver").asString(), ClassUtils.getDefaultClassLoader())
                     .asSubclass(IBackend::class.java)
 
-                val ctor = backendClass.getConstructor()
-                val backend = ctor.newInstance() as IBackend
+                val ctor = backendClass.constructors[0]
+                val backend = ctor.newInstance(env) as IBackend
 
                 // let's give backend chances to validate definition
                 backend.validateDefinition(definition)
@@ -114,7 +116,7 @@ class BackendManager(private val loader: IBackendLoader) : IBackendManager {
                         val operator = try {
                             Operator.fromCode(operatorStr)
                         } catch (e: IllegalArgumentException) {
-                            val msg = "Operator declared for backend $name filter $key is invalud"
+                            val msg = "Operator declared for backend $name filter $key is invalid"
                             logger.error(msg, e)
                             throw InvalidBackendDefinitionException(msg)
                         }
@@ -123,13 +125,13 @@ class BackendManager(private val loader: IBackendLoader) : IBackendManager {
             }
             logger.info("Loaded  $backends.size backends: ${backends.keys}")
         } catch (ex: Exception) {
-            throw InvalidBackendDefinitionException("$BACKEND_INITILIZAE_ERROR_MESSAGE: ${ex.message}")
+            throw InvalidBackendDefinitionException("Error initializing the backend: ${ex.message}")
         }
     }
 
     @Throws(InvalidBackendFieldsDefinitionException::class)
     private fun validateDefinition(backend: String, definition: Definition) {
-        // let;s ensure that we have all the root keys we require
+        // let's ensure that we have all the root keys we require
         val missingKeys = ArrayList<String>()
         val availableKeys = definition.config
             .children()
@@ -185,6 +187,12 @@ class BackendManager(private val loader: IBackendLoader) : IBackendManager {
         // let's ensure we have print position we need
         if (!backend.validFingerPositions.contains(query.position)) {
             val msg = "Invalid finger position detected; the list of valid position are ${backend.validFingerPositions}"
+            throw InvalidQueryFilterException(msg)
+        }
+
+        // let's ensure we aren't provided too many DIDs to attempt to match
+        if (query.dids.size > env.maxDids) {
+            val msg = "Too many DIDs to match against; the maximum number of DIDs is ${env.maxDids}"
             throw InvalidQueryFilterException(msg)
         }
     }

@@ -110,11 +110,24 @@ class BackendManagerTest {
         backendManager.validateQuery(query.copy(backend = "template", position = FingerPosition.LEFT_INDEX))
     }
 
+    @Test(expected = InvalidQueryFilterException::class)
+    @Throws(Exception::class)
+    fun validateDids() {
+        val dids = mutableListOf<String>()
+        for (i in 0 until 101) {
+            dids.add(DID)
+        }
+        backendManager.validateQuery(query.copy(dids = dids.toList()))
+    }
+
     /** The sample first name used in this test. */
     private val FIRST_NAME = "first_name"
 
     /** The sample national id used in this test. */
     private val NATIONAL_ID = "112222"
+
+    /** The sample DID used in this test. */
+    private val DID = "14hnHFRjaiwVjZVtZPsPCv"
 
     /** The sample query used in this test. */
     private val query = generateQuery()

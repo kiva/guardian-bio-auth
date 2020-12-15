@@ -9,6 +9,7 @@ import org.hamcrest.CoreMatchers
 import org.junit.Assert
 import org.junit.Test
 import org.kiva.identityservice.EnvironmentsTest
+import org.kiva.identityservice.config.EnvConfig
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
 import org.kiva.identityservice.errorhandling.exceptions.api.FingerprintLowQualityException
@@ -160,7 +161,7 @@ class VerificationEngineTest {
         val identity = generateIdentity(DID, query.imageByte)
         Mockito.doReturn(Flux.just(identity)).`when`(backend).search(any(), any(), any())
 
-        val bioAnalyzer1 = BioAnalyzer(listOf("image/jpeg", "image/bmp", "image/png"))
+        val bioAnalyzer1 = BioAnalyzer(listOf("image/jpeg", "image/bmp", "image/png"), EnvConfig())
         environmentsTest.injectEnvironmentVariable("BIOANALYZER_ENABLED", "true")
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer1)
