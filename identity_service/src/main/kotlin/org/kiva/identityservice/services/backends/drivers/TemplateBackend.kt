@@ -61,8 +61,8 @@ class TemplateBackend(private val env: EnvConfig) : ReactivePostgresSqlBackend(
     /**
      * allows to add the joins needed.
      */
-    override fun customize(sqlQuery: SelectQuery<Record>, query: Query, type: Array<DataType>, sdk: IBiometricSDKAdapter?): SelectQuery<Record> {
-        val q = super.customize(sqlQuery, query, type, sdk)
+    override fun customize(sqlQuery: SelectQuery<Record>, query: Query, types: Array<DataType>, sdk: IBiometricSDKAdapter?): SelectQuery<Record> {
+        val q = super.customize(sqlQuery, query, types, sdk)
 
         q.addSelect(
             field("voter_id"),
@@ -74,7 +74,11 @@ class TemplateBackend(private val env: EnvConfig) : ReactivePostgresSqlBackend(
         q.addConditions(condition("position = ?", query.position.code))
         q.addConditions(condition("type_id = ?", 1))
 
-        if (DataType.TEMPLATE in type) {
+        if (query.dids.isNotEmpty()) {
+            q.addConditions(condition("did in ?", query.dids))
+        }
+
+        if (DataType.TEMPLATE in types) {
             q.addSelect(
                 field("version"),
                 field("template_type"),
@@ -102,7 +106,7 @@ class TemplateBackend(private val env: EnvConfig) : ReactivePostgresSqlBackend(
                 "NA" -> throw FingerprintMissingNotCapturedException()
                 "XX" -> throw FingerprintMissingAmputationException()
                 "UP" -> throw FingerprintMissingUnableToPrintException()
-                else -> throw FingerprintMissingNotCapturedException() // let's default no NA if not available.
+                else -> throw FingerprintMissingNotCapturedException() // let's default to NA if not available.
             }
         }
 
@@ -189,7 +193,7 @@ class TemplateBackend(private val env: EnvConfig) : ReactivePostgresSqlBackend(
     private fun templateGenerateHelper(fp: Fingerprint, score: Any?, sdk: IBiometricSDKAdapter): Mono<Int> {
 
         try {
-            val imgTemplate = fp.image?.let { sdk.buildTemplateFromImage(decodeImage(fp.image)).block() } ?: null
+            val imgTemplate = fp.image?.let { sdk.buildTemplateFromImage(decodeImage(fp.image)).block() }
 
             // The nationalId as well as voterId should be hashed before storing in backend.
             val nationalId = generateHash(fp.national_id!!, env.hashPepper)

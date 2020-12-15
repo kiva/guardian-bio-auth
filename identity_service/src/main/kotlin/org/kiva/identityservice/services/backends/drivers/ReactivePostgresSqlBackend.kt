@@ -84,7 +84,8 @@ abstract class ReactivePostgresSqlBackend(
     override fun search(query: Query, types: Array<DataType>, sdk: IBiometricSDKAdapter?): Flux<Identity> {
         var builder = DSL.using(SQLDialect.POSTGRES)
             .select()
-            .from((table).trim()).query
+            .from((table).trim())
+            .query
 
         for (entry in query.filters) {
             // @TODO we want to coerce into preferred datatype here
@@ -132,6 +133,7 @@ abstract class ReactivePostgresSqlBackend(
                 }
             }
         }
+
         // let's give implementations a chance to edit this
         builder = customize(builder, query, types, sdk)
         fetchLimit?.let { builder.addLimit(it.toInt()) }
@@ -159,7 +161,7 @@ abstract class ReactivePostgresSqlBackend(
     /**
      * drivers wishing to provide more specific implementation can override this and add to query.
      */
-    open fun customize(sqlQuery: SelectQuery<Record>, query: Query, type: Array<DataType>, sdk: IBiometricSDKAdapter?) =
+    open fun customize(sqlQuery: SelectQuery<Record>, query: Query, types: Array<DataType>, sdk: IBiometricSDKAdapter?) =
         sqlQuery
 
     /**
