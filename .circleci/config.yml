@@ -7,6 +7,8 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - openjdk-install/openjdk:
+          version: 11
       - run:
           name: Prepare Environment
           command: ./scripts/useDummyEnvFiles.sh --force
@@ -39,8 +41,6 @@ jobs:
 workflows:
   build-test-deploy:
     jobs:
-      - openjdk:
-          version: 11
       - build-and-test:
           filters: # run for all branches AND tags
             tags:
