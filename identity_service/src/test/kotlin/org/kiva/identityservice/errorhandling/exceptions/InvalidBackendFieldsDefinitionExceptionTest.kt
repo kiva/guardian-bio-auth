@@ -1,7 +1,8 @@
 package org.kiva.identityservice.errorhandling.exceptions
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 
 /**
  * The unit tests for InvalidBackendFieldsDefinitionException.
@@ -13,9 +14,9 @@ class InvalidBackendFieldsDefinitionExceptionTest {
     @Test
     fun testMessage() {
         val ex = InvalidBackendFieldsDefinitionException("template", listOf("did, name"))
-        Assert.assertNotNull("Exception should not be null", ex)
+        assertNotNull(ex, "Exception should not be null")
 
-        Assert.assertEquals("Exception message mismatch", ex.message, "template")
-        Assert.assertEquals("Exception toString mismatch", ex.toString(), "Backend [template] configuration definition is missing fields: did, name")
+        assertEquals("template", ex.message, "Exception message mismatch")
+        assertEquals("Backend [template] configuration definition is missing fields: did, name", ex.toString(), "Exception toString mismatch")
     }
 }

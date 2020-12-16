@@ -5,9 +5,9 @@ import com.machinezoo.sourceafis.FingerprintTemplate
 import com.nhaarman.mockitokotlin2.any
 import java.time.Duration
 import java.util.concurrent.TimeoutException
-import org.hamcrest.CoreMatchers
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.kiva.identityservice.EnvironmentsTest
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
@@ -234,9 +234,9 @@ class VerificationEngineTest {
         StepVerifier.create(verificationEngine.match(query))
             .expectSubscription()
             .assertNext {
-                Assert.assertThat(it.did, CoreMatchers.`is`(DID))
+                assertEquals(DID, it.did)
                 imageMatchingScore = it.matchingScore
-                Assert.assertTrue(imageMatchingScore >= 40.0)
+                assertTrue(imageMatchingScore >= 40.0)
             }
             .verifyComplete()
 
@@ -247,13 +247,13 @@ class VerificationEngineTest {
         StepVerifier.create(verificationEngine.match(templateQuery))
             .expectSubscription()
             .assertNext {
-                Assert.assertThat(it.did, CoreMatchers.`is`(DID))
+                assertEquals(DID, it.did)
                 templateMatchingScore = it.matchingScore
-                Assert.assertTrue(templateMatchingScore >= 40.0)
+                assertTrue(templateMatchingScore >= 40.0)
             }
             .verifyComplete()
 
-        Assert.assertEquals("Image and its template matching score should be same", imageMatchingScore, templateMatchingScore, 0.0)
+        assertEquals(templateMatchingScore, imageMatchingScore, 0.0, "Image and its template matching score should be same")
     }
 
     /**
@@ -278,8 +278,8 @@ class VerificationEngineTest {
         StepVerifier.create(verificationEngine.match(query))
             .expectSubscription()
             .assertNext {
-                Assert.assertThat(it.did, CoreMatchers.`is`(DID))
-                Assert.assertTrue(it.matchingScore >= 40.0)
+                assertEquals(DID, it.did)
+                assertTrue(it.matchingScore >= 40.0)
             }
             .verifyComplete()
     }
@@ -312,8 +312,8 @@ class VerificationEngineTest {
         StepVerifier.create(verificationEngine.match(query))
             .expectSubscription()
             .assertNext {
-                Assert.assertThat("Invalid identity record returned", it.did, CoreMatchers.`is`(DID3))
-                Assert.assertEquals("Invalid identity record returned", it.matchingScore, identity3.matchingScore, 0.0)
+                assertEquals(DID3, it.did, "Invalid identity record returned")
+                assertEquals(identity3.matchingScore, it.matchingScore, 0.0, "Invalid identity record returned")
             }
             .verifyComplete()
 
@@ -321,17 +321,17 @@ class VerificationEngineTest {
          * The matching sdk should run over all identity records and therefore the matching score should be set for all
          * identities.
          */
-        Assert.assertTrue("Invalid matching score returned", identity1.matchingScore >= 0.0)
-        Assert.assertTrue("Invalid matching score returned", identity2.matchingScore >= 0.0)
-        Assert.assertTrue("Invalid matching score returned", identity3.matchingScore >= 0.0)
-        Assert.assertTrue("Invalid matching score returned", identity4.matchingScore >= 0.0)
+        assertTrue(identity1.matchingScore >= 0.0, "Invalid matching score returned")
+        assertTrue(identity2.matchingScore >= 0.0, "Invalid matching score returned")
+        assertTrue(identity3.matchingScore >= 0.0, "Invalid matching score returned")
+        assertTrue(identity4.matchingScore >= 0.0, "Invalid matching score returned")
 
-        Assert.assertTrue("Sme fingerprints should have have same matching scores as well ", (identity1.matchingScore == identity4.matchingScore))
-        Assert.assertTrue("Higher quality fingerprint should have higher matching score as well", identity1.matchingScore > identity2.matchingScore)
+        assertTrue((identity1.matchingScore == identity4.matchingScore), "Some fingerprints should have have same matching scores as well")
+        assertTrue(identity1.matchingScore > identity2.matchingScore, "Higher quality fingerprint should have higher matching score as well")
 
-        Assert.assertTrue("Higher quality fingerprint should have higher matching score as well", identity3.matchingScore > identity1.matchingScore)
-        Assert.assertTrue("Higher quality fingerprint should have higher matching score as well", identity3.matchingScore > identity2.matchingScore)
-        Assert.assertTrue("Higher quality fingerprint should have higher matching score as well", identity3.matchingScore > identity4.matchingScore)
+        assertTrue(identity3.matchingScore > identity1.matchingScore, "Higher quality fingerprint should have higher matching score as well")
+        assertTrue(identity3.matchingScore > identity2.matchingScore, "Higher quality fingerprint should have higher matching score as well")
+        assertTrue(identity3.matchingScore > identity4.matchingScore, "Higher quality fingerprint should have higher matching score as well")
     }
 
     /** The sample did used in this test. */

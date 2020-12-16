@@ -1,7 +1,8 @@
 package org.kiva.identityservice.errorhandling.exceptions
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 import org.kiva.identityservice.domain.FingerPosition
 
 /**
@@ -14,8 +15,8 @@ class FingerprintTemplateGenerationExceptionTest {
     @Test
     fun testMessage() {
         val ex = FingerprintTemplateGenerationException("did", FingerPosition.LEFT_THUMB, "error")
-        Assert.assertNotNull("Exception should not be null", ex)
-        Assert.assertEquals("Exception message mismatch", ex.message, "error")
-        Assert.assertEquals("Exception toString mismatch", ex.toString(), "Error happened generating template for did: did position: 6 Reason: error")
+        assertNotNull(ex, "Exception should not be null")
+        assertEquals("error", ex.message, "Exception message mismatch")
+        assertEquals("Error happened generating template for did: did position: 6 Reason: error", ex.toString(), "Exception toString mismatch")
     }
 }

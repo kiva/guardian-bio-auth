@@ -1,7 +1,7 @@
 package org.kiva.identityservice.domain
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 /**
  * The unit tests for verifying BioanalyzerRequestData class.
@@ -14,8 +14,8 @@ class BioanalyzerRequestDataTest {
     @Test
     fun testFields() {
         val bioanalyzerRequestData = BioanalyzerRequestData("type", "image")
-        Assert.assertEquals("Mismatch in type field", bioanalyzerRequestData.type, "type")
-        Assert.assertEquals("Mismatch in image field", bioanalyzerRequestData.image, "image")
+        assertEquals("type", bioanalyzerRequestData.type, "Mismatch in type field")
+        assertEquals("image", bioanalyzerRequestData.image, "Mismatch in image field")
     }
 
     /**
@@ -24,7 +24,7 @@ class BioanalyzerRequestDataTest {
     @Test
     fun testEmptyFields() {
         val bioanalyzerRequestData = BioanalyzerRequestData("", "")
-        Assert.assertEquals("Mismatch in type field", bioanalyzerRequestData.type, "")
-        Assert.assertEquals("Mismatch in image field", bioanalyzerRequestData.image, "")
+        assertEquals("", bioanalyzerRequestData.type, "Mismatch in type field")
+        assertEquals("", bioanalyzerRequestData.image, "Mismatch in image field")
     }
 }

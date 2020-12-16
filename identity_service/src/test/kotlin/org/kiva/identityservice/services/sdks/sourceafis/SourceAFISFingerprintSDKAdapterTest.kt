@@ -1,9 +1,9 @@
 package org.kiva.identityservice.services.sdks.sourceafis
 
 import org.assertj.core.util.Arrays
-import org.hamcrest.CoreMatchers
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.kiva.identityservice.generateIdentities
 import org.kiva.identityservice.generateIdentity
 import org.kiva.identityservice.generateQuery
@@ -26,8 +26,8 @@ class SourceAFISFingerprintSDKAdapterTest {
         StepVerifier.create(sdk.match(query, Flux.fromIterable(identities)))
             .expectSubscription()
             .assertNext {
-                Assert.assertThat(it.did, CoreMatchers.`is`(DID1))
-                Assert.assertTrue(it.matchingScore >= MATCHING_THRESHOLD)
+                assertEquals(DID1, it.did)
+                assertTrue(it.matchingScore >= MATCHING_THRESHOLD)
             }
             .verifyComplete()
     }
@@ -42,8 +42,8 @@ class SourceAFISFingerprintSDKAdapterTest {
         StepVerifier.create(sdk.match(query, Flux.fromArray(Arrays.array(identity))))
             .expectSubscription()
             .assertNext {
-                Assert.assertThat(it.did, CoreMatchers.`is`(DID1))
-                Assert.assertTrue(it.matchingScore >= MATCHING_THRESHOLD)
+                assertEquals(DID1, it.did)
+                assertTrue(it.matchingScore >= MATCHING_THRESHOLD)
             }
             .verifyComplete()
     }
@@ -66,22 +66,22 @@ class SourceAFISFingerprintSDKAdapterTest {
         StepVerifier.create(sdk.match(query, Flux.fromIterable(identities)))
             .expectSubscription()
             .assertNext {
-                Assert.assertThat("Invalid identity record returned", it.did, CoreMatchers.`is`(DID3))
-                Assert.assertEquals("Invalid identity record returned", it.matchingScore, identity3.matchingScore, 0.0)
+                assertEquals(DID3, it.did, "Invalid identity record returned")
+                assertEquals(identity3.matchingScore, it.matchingScore, 0.0, "Invalid identity record returned")
             }
             .assertNext {
-                Assert.assertThat("Invalid identity record returned", it.did, CoreMatchers.`is`(DID1))
-                Assert.assertEquals("Invalid identity record returned", it.matchingScore, identity1.matchingScore, 0.0)
+                assertEquals(DID1, it.did, "Invalid identity record returned")
+                assertEquals(identity1.matchingScore, it.matchingScore, 0.0, "Invalid identity record returned")
             }
             .verifyComplete()
 
         /**
          * The matching sdk should run for all identity records and the matching score should be set for all identities.
          */
-        Assert.assertTrue("Invalid matching score returned", identity1.matchingScore >= MATCHING_THRESHOLD)
-        Assert.assertTrue("Invalid matching score returned", identity2.matchingScore < MATCHING_THRESHOLD)
-        Assert.assertTrue("Invalid matching score returned", identity3.matchingScore >= MATCHING_THRESHOLD)
-        Assert.assertTrue("Higher quality fingerprint should have higher matching score as well", identity1.matchingScore > identity3.matchingScore)
+        assertTrue(identity1.matchingScore >= MATCHING_THRESHOLD, "Invalid matching score returned")
+        assertTrue(identity2.matchingScore < MATCHING_THRESHOLD, "Invalid matching score returned")
+        assertTrue(identity3.matchingScore >= MATCHING_THRESHOLD, "Invalid matching score returned")
+        assertTrue(identity1.matchingScore > identity3.matchingScore, "Higher quality fingerprint should have higher matching score as well")
     }
 
     /**

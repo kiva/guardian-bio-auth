@@ -40,7 +40,7 @@ class SourceAFISFingerprintSDKAdapter(
             val queryTemplate = if (query.imageType == DataType.IMAGE) {
                 FingerprintTemplate(FingerprintImage().decode(query.imageByte))
             } else {
-                FingerprintTemplate().deserialize(String(query.imageByte, Charsets.UTF_8))
+                FingerprintTemplate(query.imageByte)
             }
             val matcher = FingerprintMatcher().index(queryTemplate)
 
@@ -63,7 +63,7 @@ class SourceAFISFingerprintSDKAdapter(
                                 if (check != version)
                                     throw FingerPrintTemplateException(ApiExceptionCode.INVALID_TEMPLATE_VERSION.msg)
                             }
-                            FingerprintTemplate().deserialize(String(it.fingerprints[query.position]!!, Charsets.UTF_8))
+                            FingerprintTemplate(it.fingerprints[query.position]!!)
                         }
                     }
                     it.matchingScore = matcher.match(template)

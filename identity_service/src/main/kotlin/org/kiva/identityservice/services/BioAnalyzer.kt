@@ -48,13 +48,15 @@ class BioAnalyzer(
                     .uri(ANALYZE_URL)
                     .accept(MediaType.APPLICATION_JSON)
                     .header(REQUEST_ID_HEADER, reqId)
-                    .syncBody(mapOf(reqId to BioanalyzerRequestData("fingerprint", image)))
-                    .exchange()
-                    .onErrorResume(Exception::class.java) {
-                        logger.debug("Error happened in bioanalyzer call")
-                        Mono.error(BioanalyzerServiceException())
+                    .bodyValue(mapOf(reqId to BioanalyzerRequestData("fingerprint", image)))
+                    .exchangeToMono { response ->
+                        if (response.statusCode().is2xxSuccessful) {
+                            handleAnalyzerResponse(reqId, throwException, response)
+                        } else {
+                            logger.debug("Error happened in bioanalyzer call")
+                            Mono.error(BioanalyzerServiceException())
+                        }
                     }
-                    .flatMap { handleAnalyzerResponse(reqId, throwException, it) }
             } else {
                 return Mono.just(0.0)
             }

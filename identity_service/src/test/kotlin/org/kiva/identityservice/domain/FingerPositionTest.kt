@@ -1,7 +1,10 @@
 package org.kiva.identityservice.domain
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.kiva.identityservice.errorhandling.exceptions.api.InvalidFingerPositionException
 
 /**
@@ -14,16 +17,16 @@ class FingerPositionTest {
      */
     @Test
     fun testFrom() {
-        Assert.assertEquals("FingerPosition mismatch", FingerPosition.fromCode(1), FingerPosition.RIGHT_THUMB)
-        Assert.assertEquals("FingerPosition mismatch", FingerPosition.fromCode(2), FingerPosition.RIGHT_INDEX)
-        Assert.assertEquals("FingerPosition mismatch", FingerPosition.fromCode(3), FingerPosition.RIGHT_MIDDLE)
-        Assert.assertEquals("FingerPosition mismatch", FingerPosition.fromCode(4), FingerPosition.RIGHT_RING)
-        Assert.assertEquals("FingerPosition mismatch", FingerPosition.fromCode(5), FingerPosition.RIGHT_PINKY)
-        Assert.assertEquals("FingerPosition mismatch", FingerPosition.fromCode(6), FingerPosition.LEFT_THUMB)
-        Assert.assertEquals("FingerPosition mismatch", FingerPosition.fromCode(7), FingerPosition.LEFT_INDEX)
-        Assert.assertEquals("FingerPosition mismatch", FingerPosition.fromCode(8), FingerPosition.LEFT_MIDDLE)
-        Assert.assertEquals("FingerPosition mismatch", FingerPosition.fromCode(9), FingerPosition.LEFT_RING)
-        Assert.assertEquals("FingerPosition mismatch", FingerPosition.fromCode(10), FingerPosition.LEFT_PINKY)
+        assertEquals(FingerPosition.RIGHT_THUMB, FingerPosition.fromCode(1), "FingerPosition mismatch")
+        assertEquals(FingerPosition.RIGHT_INDEX, FingerPosition.fromCode(2), "FingerPosition mismatch")
+        assertEquals(FingerPosition.RIGHT_MIDDLE, FingerPosition.fromCode(3), "FingerPosition mismatch")
+        assertEquals(FingerPosition.RIGHT_RING, FingerPosition.fromCode(4), "FingerPosition mismatch")
+        assertEquals(FingerPosition.RIGHT_PINKY, FingerPosition.fromCode(5), "FingerPosition mismatch")
+        assertEquals(FingerPosition.LEFT_THUMB, FingerPosition.fromCode(6), "FingerPosition mismatch")
+        assertEquals(FingerPosition.LEFT_INDEX, FingerPosition.fromCode(7), "FingerPosition mismatch")
+        assertEquals(FingerPosition.LEFT_MIDDLE, FingerPosition.fromCode(8), "FingerPosition mismatch")
+        assertEquals(FingerPosition.LEFT_RING, FingerPosition.fromCode(9), "FingerPosition mismatch")
+        assertEquals(FingerPosition.LEFT_PINKY, FingerPosition.fromCode(10), "FingerPosition mismatch")
     }
 
     /**
@@ -33,20 +36,21 @@ class FingerPositionTest {
     fun testValidFingerPosition() {
         val fp1 = FingerPosition.fromCode(1)
         val fp2 = FingerPosition.fromCode(2)
-        Assert.assertNotNull("FingerPosition should not be null", fp1)
-        Assert.assertNotNull("FingerPosition should not be null", fp2)
-        Assert.assertNotEquals("Different codes should generate different enums.", fp1, fp2)
+        assertNotNull(fp1, "FingerPosition should not be null")
+        assertNotNull(fp2, "FingerPosition should not be null")
+        assertNotEquals(fp1, fp2, "Different codes should generate different enums.")
 
-        Assert.assertEquals("Unexpected toString value", fp1.toString(), "1")
-        Assert.assertEquals("Unexpected toString value", fp2.toString(), "2")
+        assertEquals("1", fp1.toString(), "Unexpected toString value")
+        assertEquals("2", fp2.toString(), "Unexpected toString value")
     }
 
     /**
      * Tests FingerPosition invalid code where InvalidFingerPositionException must be thrown.
      */
-    @Test(expected = InvalidFingerPositionException::class)
+    @Test
     fun testInvalidFingerPosition() {
-        FingerPosition.fromCode(11)
-        Assert.fail("Should not run this code!")
+        assertThrows<InvalidFingerPositionException> {
+            FingerPosition.fromCode(11)
+        }
     }
 }
