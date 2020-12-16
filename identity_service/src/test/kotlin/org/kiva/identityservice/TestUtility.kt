@@ -1,7 +1,5 @@
 package org.kiva.identityservice
 
-import java.util.Base64
-import kotlin.collections.HashMap
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Identity
@@ -9,6 +7,8 @@ import org.kiva.identityservice.domain.Query
 import org.kiva.identityservice.utils.base64ToByte
 import org.kiva.identityservice.utils.loadBase64FromResource
 import org.kiva.identityservice.utils.loadBytesFromResource
+import java.util.Base64
+import kotlin.collections.HashMap
 
 /**
  * The utility functions used by different tests.

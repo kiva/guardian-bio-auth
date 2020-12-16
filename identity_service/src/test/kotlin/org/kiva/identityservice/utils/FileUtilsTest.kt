@@ -1,8 +1,5 @@
 package org.kiva.identityservice.utils
 
-import java.nio.file.Files
-import java.util.Arrays
-import java.util.Base64
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -10,6 +7,9 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.kiva.identityservice.errorhandling.exceptions.ImageDecodeException
+import java.nio.file.Files
+import java.util.Arrays
+import java.util.Base64
 
 class FileUtilsTest {
 

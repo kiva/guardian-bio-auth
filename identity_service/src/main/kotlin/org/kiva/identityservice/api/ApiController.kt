@@ -1,7 +1,6 @@
 package org.kiva.identityservice.api
 
 import datadog.trace.api.Trace
-import javax.validation.Valid
 import org.jnbis.api.Jnbis
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.FingerPosition
@@ -30,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
+import javax.validation.Valid
 
 @RequestMapping("/api/v1")
 @RestController
@@ -116,8 +116,7 @@ class ApiController constructor(
     fun templatizerGenerateForFingerprints(
         @PathVariable("backend") backendName: String,
         @Valid @RequestBody records: List<Fingerprint>
-    ):
-        Mono<ResponseEntity<out Any>> {
+    ): Mono<ResponseEntity<out Any>> {
         try {
             val backend = backendManager.getbyName(backendName)
             if (backend !is IHasTemplateSupport)

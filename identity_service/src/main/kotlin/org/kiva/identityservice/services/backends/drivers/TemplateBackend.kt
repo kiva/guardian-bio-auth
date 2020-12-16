@@ -208,8 +208,12 @@ class TemplateBackend : ReactivePostgresSqlBackend(), IHasTemplateSupport {
                         .doOnNext { count -> logger.debug("$count rows affected by $sqlUpdate") }.last()
                 }.last()
             } else {
-                return Mono.error(FingerprintTemplateGenerationException(fp.did, fp.position,
-                    "Either fingerprint image or missing code should be present."))
+                return Mono.error(
+                    FingerprintTemplateGenerationException(
+                        fp.did, fp.position,
+                        "Either fingerprint image or missing code should be present."
+                    )
+                )
             }
         } catch (ex: ImageDecodeException) {
             return Mono.error(FingerprintTemplateGenerationException(fp.did, fp.position, ex.message!!))

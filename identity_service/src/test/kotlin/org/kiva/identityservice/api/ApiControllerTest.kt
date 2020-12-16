@@ -3,7 +3,6 @@ package org.kiva.identityservice.api
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.sql.Timestamp
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Fingerprint
 import org.kiva.identityservice.domain.Query
@@ -13,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
+import java.sql.Timestamp
 
 @SpringBootTest
 @ExtendWith(SpringExtension::class)

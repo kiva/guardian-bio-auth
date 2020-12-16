@@ -3,8 +3,6 @@ package org.kiva.identityservice.services
 import com.machinezoo.sourceafis.FingerprintImage
 import com.machinezoo.sourceafis.FingerprintTemplate
 import com.nhaarman.mockitokotlin2.any
-import java.time.Duration
-import java.util.concurrent.TimeoutException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -29,6 +27,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
+import java.time.Duration
+import java.util.concurrent.TimeoutException
 
 @SpringBootTest
 class VerificationEngineTest {

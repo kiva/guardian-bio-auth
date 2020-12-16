@@ -1,9 +1,9 @@
 package org.kiva.identityservice.validators
 
-import javax.validation.ConstraintValidator
-import javax.validation.ConstraintValidatorContext
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
 import org.kiva.identityservice.services.backends.IBackendManager
+import javax.validation.ConstraintValidator
+import javax.validation.ConstraintValidatorContext
 
 class BackendValidator(val backendManager: IBackendManager) : ConstraintValidator<Backend, String> {
 

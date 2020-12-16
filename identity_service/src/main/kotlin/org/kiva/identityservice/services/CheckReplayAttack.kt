@@ -1,6 +1,5 @@
 package org.kiva.identityservice.services
 
-import java.security.MessageDigest
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
@@ -10,6 +9,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.kiva.identityservice.domain.Query
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.security.MessageDigest
 
 @Service
 class CheckReplayAttack : ICheckReplayAttack {
@@ -47,33 +47,35 @@ class CheckReplayAttack : ICheckReplayAttack {
         // if not in the database, add it.  store: hash value, timestamp, # of times seen
         // if in the database, increment count.  probably a replay attack -- do something  (for now, just log it).
 
-        Database.connect(System.getenv("IDENTITYINTELLIGENCEDB_POSTGRES_URL"),
+        Database.connect(
+            System.getenv("IDENTITYINTELLIGENCEDB_POSTGRES_URL"),
             driver = System.getenv("IDENTITYINTELLIGENCEDB_POSTGRES_DRIVER"),
             user = System.getenv("IDENTITYINTELLIGENCEDB_POSTGRES_USER"),
-            password = System.getenv("IDENTITYINTELLIGENCEDB_POSTGRES_PASSWORD"))
+            password = System.getenv("IDENTITYINTELLIGENCEDB_POSTGRES_PASSWORD")
+        )
 
-            transaction {
-                SchemaUtils.create(ImageTable)
-                val conn = TransactionManager.current().connection
-                val statement = conn.createStatement()
+        transaction {
+            SchemaUtils.create(ImageTable)
+            val conn = TransactionManager.current().connection
+            val statement = conn.createStatement()
 
-                val query = "INSERT INTO fingerprint_images (hash_code) VALUES ('$hashValue') \n" +
-                    "ON CONFLICT (hash_code) DO UPDATE \n" +
-                    "SET count_seen=fingerprint_images.count_seen + 1, \n" +
-                    "\t\ttime_seen=CURRENT_TIMESTAMP"
+            val query = "INSERT INTO fingerprint_images (hash_code) VALUES ('$hashValue') \n" +
+                "ON CONFLICT (hash_code) DO UPDATE \n" +
+                "SET count_seen=fingerprint_images.count_seen + 1, \n" +
+                "\t\ttime_seen=CURRENT_TIMESTAMP"
 
-                statement.execute(query)
+            statement.execute(query)
 
-                val row = ImageTable
-                    .select({ ImageTable.hashCode eq hashValue })
-                    .first()
+            val row = ImageTable
+                .select({ ImageTable.hashCode eq hashValue })
+                .first()
 
-                val countSeen = row[ImageTable.count]
-                val timeSeen = row[ImageTable.time]
+            val countSeen = row[ImageTable.count]
+            val timeSeen = row[ImageTable.time]
 
-                if (countSeen > 1) {
-                    logger.info("Possible replay attack seen at $timeSeen. Image has been used $countSeen times.")
-                }
+            if (countSeen > 1) {
+                logger.info("Possible replay attack seen at $timeSeen. Image has been used $countSeen times.")
             }
+        }
     }
 }
