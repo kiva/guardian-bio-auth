@@ -13,27 +13,13 @@ import java.util.Base64
 
 class FileUtilsTest {
 
-    private var pngFingerprint: ByteArray? = null
-    private var jpgFingerprint: ByteArray? = null
-    private var tiffFingerprint: ByteArray? = null
-
-    @BeforeAll
-    @Throws(Exception::class)
-    fun setUp() {
-        pngFingerprint = loadBytesFromResource("images/fingerprint.png")
-        jpgFingerprint = loadBytesFromResource("images/fingerprint.jpg")
-        tiffFingerprint = loadBytesFromResource("images/fingerprint.tif")
-    }
-
     @Test
-    @Throws(Exception::class)
     fun test_base64ToByte() {
         val encoded = Base64.getEncoder().encodeToString(pngFingerprint)
         assertTrue(Arrays.equals(pngFingerprint, base64ToByte(encoded)))
     }
 
     @Test
-    @Throws(Exception::class)
     fun test_writeTempImageFile() {
         val file = writeTempImageFile(jpgFingerprint!!, "BMP")
         assertNotNull(file)
@@ -57,6 +43,21 @@ class FileUtilsTest {
         val imageStr = "Invalid_Hex_Formatted_Image"
         assertThrows<ImageDecodeException> {
             decodeImage(imageStr)
+        }
+    }
+
+    companion object {
+
+        private var pngFingerprint: ByteArray? = null
+        private var jpgFingerprint: ByteArray? = null
+        private var tiffFingerprint: ByteArray? = null
+
+        @BeforeAll
+        @JvmStatic
+        fun setUp() {
+            pngFingerprint = loadBytesFromResource("images/fingerprint.png")
+            jpgFingerprint = loadBytesFromResource("images/fingerprint.jpg")
+            tiffFingerprint = loadBytesFromResource("images/fingerprint.tif")
         }
     }
 }
