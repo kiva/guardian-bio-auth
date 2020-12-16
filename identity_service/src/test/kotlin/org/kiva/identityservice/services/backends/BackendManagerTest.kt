@@ -12,6 +12,8 @@ import org.kiva.identityservice.errorhandling.exceptions.api.InvalidQueryFilterE
 import org.kiva.identityservice.generateQuery
 import org.kiva.identityservice.services.backends.drivers.SqlBackend
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -19,6 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @SpringBootTest
 @ExtendWith(SpringExtension::class)
 @AutoConfigureWebTestClient
+@EnableAutoConfiguration(exclude = [R2dbcAutoConfiguration::class])
 class BackendManagerTest {
 
     @Autowired

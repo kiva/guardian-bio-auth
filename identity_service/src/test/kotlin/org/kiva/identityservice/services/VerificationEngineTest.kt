@@ -23,6 +23,8 @@ import org.kiva.identityservice.services.sdks.sourceafis.SourceAFISFingerprintSD
 import org.kiva.identityservice.utils.base64ToByte
 import org.kiva.identityservice.utils.loadBase64FromResource
 import org.mockito.Mockito
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -31,6 +33,7 @@ import java.time.Duration
 import java.util.concurrent.TimeoutException
 
 @SpringBootTest
+@EnableAutoConfiguration(exclude = [R2dbcAutoConfiguration::class])
 class VerificationEngineTest {
 
     /**

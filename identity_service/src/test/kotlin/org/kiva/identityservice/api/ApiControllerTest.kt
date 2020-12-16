@@ -8,6 +8,8 @@ import org.kiva.identityservice.domain.Fingerprint
 import org.kiva.identityservice.domain.Query
 import org.kiva.identityservice.utils.loadBytesFromResource
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -17,6 +19,7 @@ import java.sql.Timestamp
 @SpringBootTest
 @ExtendWith(SpringExtension::class)
 @AutoConfigureWebTestClient
+@EnableAutoConfiguration(exclude = [R2dbcAutoConfiguration::class])
 class ApiControllerTest {
 
     @Autowired
