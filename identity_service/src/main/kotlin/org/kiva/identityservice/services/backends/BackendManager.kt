@@ -1,5 +1,6 @@
 package org.kiva.identityservice.services.backends
 
+import org.kiva.identityservice.config.EnvConfig
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Query
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendDefinitionException
@@ -12,7 +13,10 @@ import org.springframework.util.ClassUtils
 import java.util.stream.Collectors
 
 @Service
-class BackendManager(private val loader: IBackendLoader) : IBackendManager {
+class BackendManager(
+    private val loader: IBackendLoader,
+    private val env: EnvConfig
+) : IBackendManager {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     /**
@@ -56,8 +60,8 @@ class BackendManager(private val loader: IBackendLoader) : IBackendManager {
                     .forName(definition.config.get("driver").asString(), ClassUtils.getDefaultClassLoader())
                     .asSubclass(IBackend::class.java)
 
-                val ctor = backendClass.getConstructor()
-                val backend = ctor.newInstance() as IBackend
+                val ctor = backendClass.constructors[0]
+                val backend = ctor.newInstance(env) as IBackend
 
                 // let's give backend chances to validate definition
                 backend.validateDefinition(definition)

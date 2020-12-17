@@ -51,6 +51,7 @@ dependencies {
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
     implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '6.3'
     compile group: 'com.datadoghq', name: 'dd-trace-api', version: '0.42.0'
+    compile 'io.github.cdimascio:dotenv-kotlin:6.2.1'
 }
 
 compileKotlin {

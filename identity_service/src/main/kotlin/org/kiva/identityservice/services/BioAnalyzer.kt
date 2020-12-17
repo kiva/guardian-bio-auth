@@ -1,5 +1,6 @@
 package org.kiva.identityservice.services
 
+import org.kiva.identityservice.config.EnvConfig
 import org.kiva.identityservice.domain.BioanalyzerRequestData
 import org.kiva.identityservice.errorhandling.exceptions.BioanalyzerServiceException
 import org.kiva.identityservice.errorhandling.exceptions.api.FingerprintLowQualityException
@@ -15,7 +16,8 @@ import reactor.core.publisher.Mono
 @Service
 class BioAnalyzer(
     @param:Value("#{'\${namkha.valid_image_types}'.split(',')}")
-    private val validImageTypes: List<String>
+    private val validImageTypes: List<String>,
+    private val env: EnvConfig
 ) : IBioAnalyzer {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -31,19 +33,11 @@ class BioAnalyzer(
     override fun analyze(image: String, throwException: Boolean): Mono<Double> {
 
         try {
-            val runBioAnalyzer: Boolean = try {
-                System.getenv("BIOANALYZER_ENABLED").toBoolean()
-            } catch (ex: Exception) {
-                false
-            }
-
-            if (runBioAnalyzer) {
+            if (env.bioanalyzerEnabled) {
 
                 val reqId = MDC.get(REQUEST_ID)
 
-                val bioAnalyzerHost = System.getenv("BIOANALYZER_SERVICE_URL")
-
-                return WebClient.create(bioAnalyzerHost)
+                return WebClient.create(env.bioanalyzerServiceUrl)
                     .post()
                     .uri(ANALYZE_URL)
                     .accept(MediaType.APPLICATION_JSON)
@@ -94,7 +88,9 @@ class BioAnalyzer(
      */
     private fun handleAnalyzerData(requestID: String, throwException: Boolean, data: Map<String, Any>): Mono<Double> {
         try {
-            val result = data.get(requestID) as Map<String, Any>
+            val result = data.get(requestID)
+                ?.let { it as Map<String, Any> }
+                ?: run { mapOf<String, Any>() }
             logger.info("Successful call to bioanalyzer " + result)
 
             // logger.info("Successful call to bioanalyzer $result")
@@ -110,18 +106,13 @@ class BioAnalyzer(
             // let's ensure that quality is what we want however what is a good quality score for our case?
             // more reading + measuring necessary
 
-            val qualityThreshold = System.getenv("BIOANALYZER_QUALITY_THRESHOLD").toDouble()
-            val fingerprintQuality = result["quality"] as Double
-            if (fingerprintQuality != null) {
-                if (fingerprintQuality < qualityThreshold && throwException == true) {
-                    val msg = "Low image quality! Min threshold is $qualityThreshold, whereas computed quality is $fingerprintQuality"
-                    logger.warn(msg)
-                    return Mono.error(FingerprintLowQualityException(msg))
-                }
-            } else {
-                val msg = "No quality field in bioanalyzer response"
+            val fingerprintQuality = result["quality"]
+                ?.let { it as Double }
+                ?: run { -1.0 } // Quality is negative: autofail
+            if (fingerprintQuality < env.bioanalyzerQualityThreshold && throwException) {
+                val msg = "Low image quality! Min threshold is ${env.bioanalyzerQualityThreshold}, whereas computed quality is $fingerprintQuality"
                 logger.warn(msg)
-                return Mono.error(BioanalyzerServiceException(msg))
+                return Mono.error(FingerprintLowQualityException(msg))
             }
 
             return Mono.just(fingerprintQuality)

@@ -7,12 +7,6 @@ open class YamlLoader(vararg resources: Resource) : YamlProcessor() {
 
     private var map: Map<String, Any>? = null
 
-    /*
-    If the config value starts with ENV_CONFIG_PREFIX, it means that the value is a reference to environmental variables.
-    For instance, if a config value is defined as ENV:$ENV_POSTGRES_PASS the actual config value would be System.getEnv(ENV_POSTGRES_PASS).
-    */
-    private val ENV_CONFIG_PREFIX = "ENV:$"
-
     init {
         setResources(*resources)
     }
@@ -39,14 +33,7 @@ open class YamlLoader(vararg resources: Resource) : YamlProcessor() {
                 merge(result, value as Map<String, Any>)
                 output[key] = result
             } else {
-                if (value.toString().startsWith(ENV_CONFIG_PREFIX)) {
-                    val valueStr = value.toString()
-                    // The prefix is ignored getting the environment variable value.
-                    val envVariableName = valueStr.drop(ENV_CONFIG_PREFIX.length)
-                    output[key] = if (System.getenv(envVariableName).isNullOrEmpty()) envVariableName else System.getenv(envVariableName)
-                } else {
-                    output[key] = value
-                }
+                output[key] = value
             }
         }
     }

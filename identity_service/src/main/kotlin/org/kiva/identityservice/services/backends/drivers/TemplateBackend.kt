@@ -9,6 +9,7 @@ import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.condition
 import org.jooq.impl.DSL.field
+import org.kiva.identityservice.config.EnvConfig
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Fingerprint
@@ -39,7 +40,17 @@ import reactor.core.publisher.Mono
  * Driver for fetching identity records and storing template from template backend.
  */
 @Component
-class TemplateBackend : ReactivePostgresSqlBackend(), IHasTemplateSupport {
+class TemplateBackend(private val env: EnvConfig) :
+    ReactivePostgresSqlBackend(
+        env,
+        env.identityDbTemplatePostgresPort,
+        env.identityDbTemplatePostgresHost,
+        env.identityDbTemplateCitizenTable,
+        env.identityDbTemplatePostgresDb,
+        env.identityDbTemplatePostgresUser,
+        env.identityDbTemplatePostgresPassword
+    ),
+    IHasTemplateSupport {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -183,9 +194,8 @@ class TemplateBackend : ReactivePostgresSqlBackend(), IHasTemplateSupport {
             val imgTemplate = fp.image?.let { sdk.buildTemplateFromImage(decodeImage(fp.image)).block() } ?: null
 
             // The nationalId as well as voterId should be hashed before storing in backend.
-            val hashPepper = System.getenv("HASH_PEPPER")
-            val nationalId = generateHash(fp.national_id!!, hashPepper)
-            val voterId = generateHash(fp.voter_id!!, hashPepper)
+            val nationalId = generateHash(fp.national_id!!, env.hashPepper)
+            val voterId = generateHash(fp.voter_id!!, env.hashPepper)
 
             if (imgTemplate == null && fp.missing_code != null) {
                 val sqlUpdate = "INSERT INTO kiva_biometric_template(did,position,template_type,type_id,national_id,voter_id,version,capture_date,missing_code,quality_score) " +
@@ -227,8 +237,7 @@ class TemplateBackend : ReactivePostgresSqlBackend(), IHasTemplateSupport {
      * @param filters the search matching filters.
      */
     override fun positions(filters: Map<String, String>): Flux<FingerPosition> {
-        val hashPepper = System.getenv("HASH_PEPPER")
-        val table = config["table"]!! as String
+        val table = env.identityDbTemplateCitizenTable
         val builder = DSL.using(SQLDialect.POSTGRES)
             .select()
             .from((table).trim()).query
@@ -260,7 +269,7 @@ class TemplateBackend : ReactivePostgresSqlBackend(), IHasTemplateSupport {
 
             // let's hash the filter value if it is a hashed filter.
             if (hashedFilters.contains(entry.key)) {
-                value = generateHash(entry.value, hashPepper)
+                value = generateHash(entry.value, env.hashPepper)
             }
 
             if (operator == Operator.FUZZY) {

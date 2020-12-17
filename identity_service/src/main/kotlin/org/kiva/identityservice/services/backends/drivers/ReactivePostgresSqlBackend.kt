@@ -12,6 +12,7 @@ import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.condition
 import org.jooq.impl.DSL.field
+import org.kiva.identityservice.config.EnvConfig
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.Identity
 import org.kiva.identityservice.domain.Query
@@ -31,17 +32,20 @@ import kotlin.streams.asSequence
 /**
  * Driver for fetching identity records from an sql backend
  */
-abstract class ReactivePostgresSqlBackend : SqlBackend() {
+abstract class ReactivePostgresSqlBackend(
+    private val env: EnvConfig,
+    private val port: Int,
+    private val host: String,
+    private val table: String,
+    private val database: String?,
+    private val user: String?,
+    private val password: String?
+) : SqlBackend() {
     lateinit var client: R2dbc
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @Value("\${namkha.backend.fetch_limit}")
     private var fetchLimit: Long? = null
-
-    /**
-     * The default database port used when there is no environment/config set for it or there is error reading its value.
-     */
-    private val DATABASE_DEFAULT_PORT = 5432
 
     /**
      * Initialization tasks required by backend.
@@ -51,27 +55,20 @@ abstract class ReactivePostgresSqlBackend : SqlBackend() {
         try {
             val res = super.init(definition)
 
-            val dbPort: Int = try {
-                config["port"]?.let { if (it is Int) it else Integer.parseInt(it as String) }!!
-            } catch (ex: Exception) {
-                DATABASE_DEFAULT_PORT
-            }
-
             val builder = PostgresqlConnectionConfiguration
                 .builder()
-                .host(config["host"]?.let { it as String } ?: "127.0.0.1")
-                .port(dbPort)
-                .database(config["database"]?.let { it as String })
-
-            config["user"]?.let { builder.username(it as String) }
-            config["password"]?.let { builder.password(it as String) }
+                .host(host)
+                .port(port)
+                .database(database)
+            user?.let { builder.username(it) }
+            password?.let { builder.password(it) }
 
             client = R2dbc(
                 PostgresqlConnectionFactory(builder.build())
             )
             return res
         } catch (ex: Exception) {
-            return Mono.error(InvalidBackendDefinitionException(BACKEND_INITILIZAE_ERROR_MESSAGE))
+            return Mono.error(InvalidBackendDefinitionException(backendInitializeErrorMsg))
         }
     }
 
@@ -85,8 +82,6 @@ abstract class ReactivePostgresSqlBackend : SqlBackend() {
      * @return
      */
     override fun search(query: Query, types: Array<DataType>, sdk: IBiometricSDKAdapter?): Flux<Identity> {
-        val hashPepper = System.getenv("HASH_PEPPER")
-        val table = config["table"]!! as String
         var builder = DSL.using(SQLDialect.POSTGRES)
             .select()
             .from((table).trim()).query
@@ -105,9 +100,9 @@ abstract class ReactivePostgresSqlBackend : SqlBackend() {
                  * For list of v1,v2,v3,v4, the following code will return HASH(v1),HASH(v2),HASH(v3)
                  */
                 value = if (listFilters.contains(entry.key)) {
-                    generateHashForList(entry.value.split(','), hashPepper).joinToString(",")
+                    generateHashForList(entry.value.split(','), env.hashPepper).joinToString(",")
                 } else {
-                    generateHash(entry.value, hashPepper)
+                    generateHash(entry.value, env.hashPepper)
                 }
             }
 
