@@ -24,14 +24,14 @@ jobs:
             cd bioanalyzer_service
             ./gradlew clean
             ./gradlew build
-     - run:
-         name: Spin up bio-auth services to confirm they can actually execute
-         command: |
-           docker network prune -f
-           docker-compose up -d
-     - run:
-         name: wait for bio-auth services to come up
-         command: ./scripts/healthstack.sh
+      - run:
+          name: Spin up bio-auth services to confirm they can actually execute
+          command: |
+            docker network prune -f
+            docker-compose up -d
+      - run:
+          name: wait for bio-auth services to come up
+          command: ./scripts/healthstack.sh
       - run:
           name: Spin down bio-auth services
           command: |
