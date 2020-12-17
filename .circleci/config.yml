@@ -13,19 +13,6 @@ jobs:
           name: Prepare Environment
           command: ./scripts/useDummyEnvFiles.sh --force
       - run:
-          name: Spin up bio-auth services to confirm they can actually execute
-          command: |
-            docker network prune -f
-            docker-compose up -d
-      - run:
-          name: wait for bio-auth services to come up
-          command: ./scripts/healthstack.sh
-      - run:
-          name: Spin down bio-auth services
-          command: |
-            docker stop $(docker ps -aq)
-            docker-compose down
-      - run:
           name: build and test identity service
           command: |
             cd identity_service
@@ -37,6 +24,19 @@ jobs:
             cd bioanalyzer_service
             ./gradlew clean
             ./gradlew build
+     - run:
+         name: Spin up bio-auth services to confirm they can actually execute
+         command: |
+           docker network prune -f
+           docker-compose up -d
+     - run:
+         name: wait for bio-auth services to come up
+         command: ./scripts/healthstack.sh
+      - run:
+          name: Spin down bio-auth services
+          command: |
+            docker stop $(docker ps -aq)
+            docker-compose down
 
 workflows:
   build-test-deploy:
