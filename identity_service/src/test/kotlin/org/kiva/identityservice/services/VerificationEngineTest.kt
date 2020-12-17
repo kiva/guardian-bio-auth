@@ -360,5 +360,4 @@ class VerificationEngineTest {
 
     /** The BioAnalyzer instance. */
     private val bioAnalyzer = Mockito.mock(IBioAnalyzer::class.java)
-
 }
