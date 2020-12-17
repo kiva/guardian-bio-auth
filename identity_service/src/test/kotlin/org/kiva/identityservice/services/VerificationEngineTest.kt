@@ -6,8 +6,8 @@ import com.nhaarman.mockitokotlin2.any
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.kiva.identityservice.EnvironmentsTest
 import org.kiva.identityservice.domain.DataType
+import org.kiva.identityservice.errorhandling.exceptions.BioanalyzerServiceException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
 import org.kiva.identityservice.errorhandling.exceptions.api.FingerprintLowQualityException
 import org.kiva.identityservice.errorhandling.exceptions.api.FingerprintNoMatchException
@@ -40,7 +40,6 @@ class VerificationEngineTest {
      * Negative test for wrong query image type.
      */
     @Test
-    @Throws(Exception::class)
     fun testFailWrongContentType() {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = Mockito.mock(SourceAFISFingerprintSDKAdapter::class.java)
@@ -56,7 +55,6 @@ class VerificationEngineTest {
      * Negative test for wrong query image when the submitted image is template type.
      */
     @Test
-    @Throws(Exception::class)
     fun testFailWrongTemplateContentType() {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = Mockito.mock(SourceAFISFingerprintSDKAdapter::class.java)
@@ -72,7 +70,6 @@ class VerificationEngineTest {
      * Negative test for invalid backend name.
      */
     @Test
-    @Throws(Exception::class)
     fun testFailInvalidBackendName() {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = Mockito.mock(SourceAFISFingerprintSDKAdapter::class.java)
@@ -89,7 +86,6 @@ class VerificationEngineTest {
      * Negative test for invalid query filter.
      */
     @Test
-    @Throws(Exception::class)
     fun testFailInvalidQueryFilter() {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = Mockito.mock(SourceAFISFingerprintSDKAdapter::class.java)
@@ -106,7 +102,6 @@ class VerificationEngineTest {
      * Negative test when there is no fingerprint match as the matching threshold is set to a high value
      */
     @Test
-    @Throws(Exception::class)
     fun testFailNoFingerprintMatch() {
 
         Mockito.doReturn(backend).`when`(backendManager).getbyName(Mockito.anyString())
@@ -130,7 +125,6 @@ class VerificationEngineTest {
      * be no match for sure and bioanalyzer will run.
      */
     @Test
-    @Throws(Exception::class)
     fun testFailVeryLowQualityImage() {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = SourceAFISFingerprintSDKAdapter(100000.0)
@@ -155,7 +149,6 @@ class VerificationEngineTest {
      * FingerprintLowQualityException.
      */
     @Test
-    @Throws(Exception::class)
     fun testFailBioanalyzerServiceError() {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = SourceAFISFingerprintSDKAdapter(100000.0)
@@ -163,10 +156,10 @@ class VerificationEngineTest {
         val identity = generateIdentity(DID, query.imageByte)
         Mockito.doReturn(Flux.just(identity)).`when`(backend).search(any(), any(), any())
 
-        val bioAnalyzer1 = BioAnalyzer(listOf("image/jpeg", "image/bmp", "image/png"))
-        environmentsTest.injectEnvironmentVariable("BIOANALYZER_ENABLED", "true")
+        val error: Mono<Any> = Mono.error(BioanalyzerServiceException("error"))
+        Mockito.doReturn(error).`when`(bioAnalyzer).analyze(any(), any())
 
-        val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer1)
+        val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
             .expectSubscription()
             .verifyError(FingerprintNoMatchException::class.java)
@@ -177,7 +170,6 @@ class VerificationEngineTest {
      * FingerprintNoMatchException.
      */
     @Test
-    @Throws(Exception::class)
     fun testFailBioanalyzerServiceTimeout() {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = SourceAFISFingerprintSDKAdapter(100000.0)
@@ -199,7 +191,6 @@ class VerificationEngineTest {
      * verification engine, however, times out in five seconds and returns no fingerprint match error.
      */
     @Test
-    @Throws(Exception::class)
     fun testBioanalyzerServiceLateAnswer() {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = SourceAFISFingerprintSDKAdapter(100000.0)
@@ -221,7 +212,6 @@ class VerificationEngineTest {
      * of fingerprint image and verifies that the matching score for template is equal to matching score of image.
      */
     @Test
-    @Throws(Exception::class)
     fun testMatchVerifyAgainstOnePerson() {
         Mockito.doReturn(backend).`when`(backendManager).getbyName(Mockito.anyString())
         val sdk = SourceAFISFingerprintSDKAdapter(40.0)
@@ -263,7 +253,6 @@ class VerificationEngineTest {
      * Tests the match when the backend returns list of candidates.
      */
     @Test
-    @Throws(Exception::class)
     fun testMatchAmongListOfCandidates() {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = SourceAFISFingerprintSDKAdapter(40.0)
@@ -293,7 +282,6 @@ class VerificationEngineTest {
      * matches even very low quality fingerprints.
      */
     @Test
-    @Throws(Exception::class)
     fun testMatchScoreSort() {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = SourceAFISFingerprintSDKAdapter(1.0)
@@ -373,6 +361,4 @@ class VerificationEngineTest {
     /** The BioAnalyzer instance. */
     private val bioAnalyzer = Mockito.mock(IBioAnalyzer::class.java)
 
-    /** The EnvironmentVariable setter. */
-    private val environmentsTest = EnvironmentsTest()
 }
