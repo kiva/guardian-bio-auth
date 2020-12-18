@@ -28,7 +28,6 @@ class BackendManagerTest {
     private lateinit var backendManager: IBackendManager
 
     @Test
-    @Throws(Exception::class)
     fun initialize() {
         assertTrue(backendManager.filtersAllFields("template").containsAll(listOf("nationalId", "voterId", "firstName")))
 
@@ -66,7 +65,6 @@ class BackendManagerTest {
 
     @Disabled
     @Test
-    @Throws(Exception::class)
     fun validateFilterMissingKeys() {
         val filter = HashMap<String, String>()
         filter["firstName"] = FIRST_NAME
@@ -77,7 +75,6 @@ class BackendManagerTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun invalidBackendName() {
         val filter = HashMap<String, String>()
 
@@ -87,7 +84,6 @@ class BackendManagerTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun validateFilterUniqueKeys() {
         val filter = HashMap<String, String>()
         filter["firstName"] = FIRST_NAME
@@ -98,7 +94,6 @@ class BackendManagerTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun validateFilterNonDeclaredFields() {
         val filter = HashMap<String, String>()
         filter["firstNameddsd"] = FIRST_NAME
@@ -108,7 +103,6 @@ class BackendManagerTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun validateFilterOk() {
         val filter = HashMap<String, String>()
         filter["nationalId"] = FIRST_NAME
@@ -124,7 +118,6 @@ class BackendManagerTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun validateDids() {
         val dids = mutableListOf<String>()
         for (i in 0 until 101) {

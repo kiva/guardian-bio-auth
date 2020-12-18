@@ -29,8 +29,6 @@ class ApiControllerTest {
 
     /**
      * Tests the healthz endpoint.
-     *
-     * @throws Exception if there is any.
      */
     @Test
     fun verifyHealth() {
@@ -48,8 +46,6 @@ class ApiControllerTest {
      * STEP2: Verify the fingerprint image for the the voter id and it should return match.
      * STEP3: Verify the fingerprint image for the the list of voter ids and it should return match.
      * STEP4: Verify the fingerprint image for the an invalid voter id and no citizen found is expected.
-     *
-     * @throws Exception if there is any.
      */
     @Disabled
     @Test
@@ -106,8 +102,6 @@ class ApiControllerTest {
 
     /**
      * Tests the backend endpoint for template backend.
-     *
-     * @throws Exception if there is any.
      */
     @Test
     fun verifyBackendForTemplate() {
@@ -120,8 +114,6 @@ class ApiControllerTest {
 
     /**
      * Tests the backend endpoint for invalid backend name.
-     *
-     * @throws Exception if there is any.
      */
     @Test
     fun verifyBackendForInvalidName() {
@@ -136,8 +128,6 @@ class ApiControllerTest {
      * STEP2- Insert a sample record for right thumb finger in template db and this time the positions endpoint should return it
      * STEP3- Insert another sample record for left thumb finger in template db and this time the positions endpoint should return two items
      * STEP4- Insert another missing finger record for right index in template db and this time the positions endpoint should return two items again
-     *
-     * @throws Exception if there is any.
      */
     @Disabled
     @Test

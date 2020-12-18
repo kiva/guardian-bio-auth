@@ -19,7 +19,6 @@ class SourceAFISFingerprintSDKAdapterTest {
      * Tests the case when there is a match among list of identities.
      */
     @Test
-    @Throws(Exception::class)
     fun testMatch() {
         val identities = generateIdentities(20)
         identities.add(generateIdentity(DID1, query.imageByte))
@@ -36,7 +35,6 @@ class SourceAFISFingerprintSDKAdapterTest {
      * Tests the case when there is a match and there us only one identity.
      */
     @Test
-    @Throws(Exception::class)
     fun testOnlyMatch() {
         val identity = generateIdentity(DID1, query.imageByte)
         StepVerifier.create(sdk.match(query, Flux.fromArray(Arrays.array(identity))))
@@ -54,7 +52,6 @@ class SourceAFISFingerprintSDKAdapterTest {
      * lower than matching threshold.
      */
     @Test
-    @Throws(Exception::class)
     fun testMultipleMatch() {
         val identities = generateIdentities(20)
         val identity1 = generateIdentity(DID1, query.imageByte)
@@ -88,7 +85,6 @@ class SourceAFISFingerprintSDKAdapterTest {
      * Tests the case when there is no match.
      */
     @Test
-    @Throws(Exception::class)
     fun testNoMatch() {
         val identities = generateIdentities(20)
         identities.add(generateIdentity(DID1, loadBytesFromResource(IMAGE_FILE)))
