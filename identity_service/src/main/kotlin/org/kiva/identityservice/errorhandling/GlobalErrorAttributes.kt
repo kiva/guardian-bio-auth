@@ -9,12 +9,8 @@ import org.springframework.web.reactive.function.server.ServerRequest
 @Component
 class GlobalErrorAttributes : DefaultErrorAttributes() {
 
-    override fun getErrorAttributes(request: ServerRequest, includeStackTrace: Boolean): Map<String, Any> {
-        val map = if (includeStackTrace) {
-            super.getErrorAttributes(request, ErrorAttributeOptions.defaults())
-        } else {
-            super.getErrorAttributes(request, ErrorAttributeOptions.of(ErrorAttributeOptions.Include.STACK_TRACE))
-        }
+    override fun getErrorAttributes(request: ServerRequest, options: ErrorAttributeOptions): Map<String, Any> {
+        val map = super.getErrorAttributes(request, options)
         val error = getError(request)
         if (error is ApiException) {
             map["code"] = error.code.name
