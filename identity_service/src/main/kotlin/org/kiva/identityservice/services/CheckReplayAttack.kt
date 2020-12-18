@@ -1,6 +1,5 @@
 package org.kiva.identityservice.services
 
-import java.security.MessageDigest
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
@@ -11,6 +10,7 @@ import org.kiva.identityservice.config.EnvConfig
 import org.kiva.identityservice.domain.Query
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.security.MessageDigest
 
 @Service
 class CheckReplayAttack(private val env: EnvConfig) : ICheckReplayAttack {

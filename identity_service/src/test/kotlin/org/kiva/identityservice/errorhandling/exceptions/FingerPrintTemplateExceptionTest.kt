@@ -1,7 +1,8 @@
 package org.kiva.identityservice.errorhandling.exceptions
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 
 /**
  * The unit tests for FingerPrintTemplateException.
@@ -13,7 +14,7 @@ class FingerPrintTemplateExceptionTest {
     @Test
     fun testMessage() {
         val ex = FingerPrintTemplateException("error")
-        Assert.assertNotNull("Exception should not be null", ex)
-        Assert.assertEquals("Exception message mismatch", ex.message, "error")
+        assertNotNull(ex, "Exception should not be null")
+        assertEquals("error", ex.message, "Exception message mismatch")
     }
 }

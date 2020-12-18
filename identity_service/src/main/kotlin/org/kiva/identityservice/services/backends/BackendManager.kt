@@ -1,7 +1,6 @@
 package org.kiva.identityservice.services.backends
 
 import org.kiva.identityservice.config.EnvConfig
-import java.util.stream.Collectors
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Query
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendDefinitionException
@@ -11,6 +10,7 @@ import org.kiva.identityservice.errorhandling.exceptions.api.InvalidQueryFilterE
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.util.ClassUtils
+import java.util.stream.Collectors
 
 @Service
 class BackendManager(

@@ -1,7 +1,7 @@
 package org.kiva.bioanalyzerservice.api
 
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.kiva.bioanalyzerservice.domain.AnalysisType
 import org.kiva.bioanalyzerservice.domain.BioType
 import org.kiva.bioanalyzerservice.services.analyzers.NFIQ2FingerPrintQualityChecker
@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.util.StreamUtils
 import reactor.core.publisher.Mono
@@ -20,9 +20,9 @@ import java.util.Base64
 import java.util.concurrent.TimeoutException
 
 @SpringBootTest
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @AutoConfigureWebTestClient
-class ApiControllerTest() {
+class ApiControllerTest {
 
     @MockBean
     lateinit var analysisEngine: NFIQ2FingerPrintQualityChecker
@@ -45,11 +45,11 @@ class ApiControllerTest() {
     @Test
     fun verifyHealth() {
         webTestClient.get().uri("$endpointBaseUrl/healthz")
-                .exchange()
-                .expectStatus().isOk
-                .expectBodyList(String::class.java)
-                .hasSize(1)
-                .contains("OK")
+            .exchange()
+            .expectStatus().isOk
+            .expectBodyList(String::class.java)
+            .hasSize(1)
+            .contains("OK")
     }
 
     /**
@@ -59,7 +59,8 @@ class ApiControllerTest() {
     fun analyzeJpg() {
 
         val imageBase64: String = Base64.getEncoder().encodeToString(
-                StreamUtils.copyToByteArray(ClassPathResource(jpgFingerprint).inputStream))
+            StreamUtils.copyToByteArray(ClassPathResource(jpgFingerprint).inputStream)
+        )
         val query = Query(imageBase64, BioType.FINGERPRINT)
 
         Mockito.doReturn(Mono.just(50F)).`when`(analysisEngine).analyze(query.imageByte, BioType.FINGERPRINT, "image/jpeg")
@@ -67,12 +68,12 @@ class ApiControllerTest() {
         Mockito.doReturn(AnalysisType.QUALITY).`when`(analysisEngine).type()
 
         webTestClient.post().uri("$endpointBaseUrl/analyze")
-                .syncBody(mapOf("key" to query))
-                .exchange()
-                .expectStatus().isOk
-                .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-                .expectBody()
-                .json("{\"key\":{\"format\":\"image/jpeg\",\"quality\":50.0}}")
+            .bodyValue(mapOf("key" to query))
+            .exchange()
+            .expectStatus().isOk
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .json("{\"key\":{\"format\":\"image/jpeg\",\"quality\":50.0}}")
     }
 
     /**
@@ -82,7 +83,8 @@ class ApiControllerTest() {
     fun analyzeWsq() {
 
         val imageBase64: String = Base64.getEncoder().encodeToString(
-                StreamUtils.copyToByteArray(ClassPathResource(wsqFingerprint).inputStream))
+            StreamUtils.copyToByteArray(ClassPathResource(wsqFingerprint).inputStream)
+        )
         val query = Query(imageBase64, BioType.FINGERPRINT)
 
         Mockito.doReturn(Mono.just(40F)).`when`(analysisEngine).analyze(query.imageByte, BioType.FINGERPRINT, "image/wsq")
@@ -91,12 +93,12 @@ class ApiControllerTest() {
         Mockito.doReturn(AnalysisType.QUALITY).`when`(analysisEngine).type()
 
         webTestClient.post().uri("$endpointBaseUrl/analyze")
-                .syncBody(mapOf("key" to query))
-                .exchange()
-                .expectStatus().isOk
-                .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-                .expectBody()
-                .json("{\"key\":{\"format\":\"image/wsq\",\"quality\":40.0}}")
+            .bodyValue(mapOf("key" to query))
+            .exchange()
+            .expectStatus().isOk
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .json("{\"key\":{\"format\":\"image/wsq\",\"quality\":40.0}}")
     }
 
     /**
@@ -106,12 +108,14 @@ class ApiControllerTest() {
     fun analyzeImages() {
 
         val image1Base64: String = Base64.getEncoder().encodeToString(
-                StreamUtils.copyToByteArray(ClassPathResource(jpgFingerprint).inputStream))
+            StreamUtils.copyToByteArray(ClassPathResource(jpgFingerprint).inputStream)
+        )
         val query1 = Query(image1Base64, BioType.FINGERPRINT)
         Mockito.doReturn(Mono.just(40F)).`when`(analysisEngine).analyze(query1.imageByte, BioType.FINGERPRINT, "image/jpeg")
 
         val image2Base64: String = Base64.getEncoder().encodeToString(
-                StreamUtils.copyToByteArray(ClassPathResource(wsqFingerprint).inputStream))
+            StreamUtils.copyToByteArray(ClassPathResource(wsqFingerprint).inputStream)
+        )
         val query2 = Query(image2Base64, BioType.FINGERPRINT)
         Mockito.doReturn(Mono.just(50F)).`when`(analysisEngine).analyze(query2.imageByte, BioType.FINGERPRINT, "image/wsq")
 
@@ -119,12 +123,12 @@ class ApiControllerTest() {
         Mockito.doReturn(AnalysisType.QUALITY).`when`(analysisEngine).type()
 
         webTestClient.post().uri("$endpointBaseUrl/analyze")
-                .syncBody(mapOf("key1" to query1, "key2" to query2))
-                .exchange()
-                .expectStatus().isOk
-                .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-                .expectBody()
-                .json("{\"key1\":{\"format\":\"image/jpeg\",\"quality\":40.0},\"key2\":{\"format\":\"image/wsq\",\"quality\":50.0}}")
+            .bodyValue(mapOf("key1" to query1, "key2" to query2))
+            .exchange()
+            .expectStatus().isOk
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .json("{\"key1\":{\"format\":\"image/jpeg\",\"quality\":40.0},\"key2\":{\"format\":\"image/wsq\",\"quality\":50.0}}")
     }
 
     /**
@@ -134,22 +138,23 @@ class ApiControllerTest() {
     fun analyzeWhenBioTypeNotSupported() {
 
         val imageBase64: String = Base64.getEncoder().encodeToString(
-                StreamUtils.copyToByteArray(ClassPathResource(jpgFingerprint).inputStream))
+            StreamUtils.copyToByteArray(ClassPathResource(jpgFingerprint).inputStream)
+        )
         val query = Query(imageBase64, BioType.FINGERPRINT)
 
         Mockito.doReturn(Mono.just(50F)).`when`(analysisEngine).analyze(query.imageByte, BioType.FINGERPRINT, "image/jpeg")
         Mockito.doReturn(emptyList<BioType>()).`when`(analysisEngine).supported()
 
         webTestClient.post().uri("$endpointBaseUrl/analyze")
-                .syncBody(mapOf("key" to query))
-                .exchange()
-                .expectStatus().isOk
-                .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-                .expectBody()
-                .jsonPath("$.key.format")
-                .exists()
-                .jsonPath("$.key.quality")
-                .doesNotExist()
+            .bodyValue(mapOf("key" to query))
+            .exchange()
+            .expectStatus().isOk
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.key.format")
+            .exists()
+            .jsonPath("$.key.quality")
+            .doesNotExist()
     }
 
     /**
@@ -159,7 +164,8 @@ class ApiControllerTest() {
     fun analyzeNfiqTimeout() {
 
         val imageBase64: String = Base64.getEncoder().encodeToString(
-                StreamUtils.copyToByteArray(ClassPathResource(jpgFingerprint).inputStream))
+            StreamUtils.copyToByteArray(ClassPathResource(jpgFingerprint).inputStream)
+        )
         val query = Query(imageBase64, BioType.FINGERPRINT)
 
         Mockito.doReturn(Mono.error<Any>(TimeoutException())).`when`(analysisEngine).analyze(query.imageByte, BioType.FINGERPRINT, "image/jpeg")
@@ -167,8 +173,8 @@ class ApiControllerTest() {
         Mockito.doReturn(AnalysisType.QUALITY).`when`(analysisEngine).type()
 
         webTestClient.post().uri("$endpointBaseUrl/analyze")
-                .syncBody(mapOf("key" to query))
-                .exchange()
-                .expectStatus().is5xxServerError
+            .bodyValue(mapOf("key" to query))
+            .exchange()
+            .expectStatus().is5xxServerError
     }
 }

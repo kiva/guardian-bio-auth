@@ -1,22 +1,25 @@
 package org.kiva.identityservice.api
 
-import java.sql.Timestamp
-import org.junit.Ignore
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Fingerprint
 import org.kiva.identityservice.domain.Query
 import org.kiva.identityservice.utils.loadBytesFromResource
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
+import java.sql.Timestamp
 
 @SpringBootTest
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @AutoConfigureWebTestClient
+@EnableAutoConfiguration(exclude = [R2dbcAutoConfiguration::class])
 class ApiControllerTest {
 
     @Autowired
@@ -30,7 +33,6 @@ class ApiControllerTest {
      * @throws Exception if there is any.
      */
     @Test
-    @Throws(Exception::class)
     fun verifyHealth() {
         webTestClient.get().uri("$BASE_END_POINT/healthz")
             .exchange()
@@ -49,9 +51,8 @@ class ApiControllerTest {
      *
      * @throws Exception if there is any.
      */
-    @Ignore
+    @Disabled
     @Test
-    @Throws(Exception::class)
     fun testVerify() {
 
         val voterId = "VERIFY_VOTER_${System.currentTimeMillis()}"
@@ -61,7 +62,7 @@ class ApiControllerTest {
         val fp = Fingerprint(voterId, NATIONAL_ID, DID, 1, FingerPosition.RIGHT_THUMB, null, Timestamp(System.currentTimeMillis()), fingerprintStr)
 
         webTestClient.post().uri("$BASE_END_POINT/templatizer/bulk/$TEMPLATE_BACKEND")
-            .syncBody(listOf(fp))
+            .bodyValue(listOf(fp))
             .exchange()
             .expectStatus().isOk
 
@@ -72,7 +73,7 @@ class ApiControllerTest {
         val query1 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters1)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
-            .syncBody(query1)
+            .bodyValue(query1)
             .exchange()
             .expectStatus().isOk
             .expectBody()
@@ -84,7 +85,7 @@ class ApiControllerTest {
         val query2 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters2)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
-            .syncBody(query2)
+            .bodyValue(query2)
             .exchange()
             .expectStatus().isOk
             .expectBody()
@@ -96,7 +97,7 @@ class ApiControllerTest {
         val query3 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters3)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
-            .syncBody(query3)
+            .bodyValue(query3)
             .exchange()
             .expectStatus().isBadRequest
             .expectBody()
@@ -109,7 +110,6 @@ class ApiControllerTest {
      * @throws Exception if there is any.
      */
     @Test
-    @Throws(Exception::class)
     fun verifyBackendForTemplate() {
         webTestClient.get().uri("$BASE_END_POINT/backend/$TEMPLATE_BACKEND")
             .exchange()
@@ -124,7 +124,6 @@ class ApiControllerTest {
      * @throws Exception if there is any.
      */
     @Test
-    @Throws(Exception::class)
     fun verifyBackendForInvalidName() {
         webTestClient.get().uri("$BASE_END_POINT/backend/$INVALID_BACKEND")
             .exchange()
@@ -140,9 +139,8 @@ class ApiControllerTest {
      *
      * @throws Exception if there is any.
      */
-    @Ignore
+    @Disabled
     @Test
-    @Throws(Exception::class)
     fun testPositions() {
 
         val voterId = "POSITION_VOTER_${System.currentTimeMillis()}"
@@ -158,7 +156,7 @@ class ApiControllerTest {
         val fp1 = Fingerprint(voterId, "ID_POSITION", "DID_POSITION", 1, FingerPosition.RIGHT_THUMB, null, Timestamp(System.currentTimeMillis()), fingerprintStr)
 
         webTestClient.post().uri("$BASE_END_POINT/templatizer/bulk/$TEMPLATE_BACKEND")
-            .syncBody(listOf(fp1))
+            .bodyValue(listOf(fp1))
             .exchange()
             .expectStatus().isOk
 
@@ -172,7 +170,7 @@ class ApiControllerTest {
         val fp2 = Fingerprint(voterId, "ID_POSITION", "DID_POSITION", 1, FingerPosition.LEFT_THUMB, null, Timestamp(System.currentTimeMillis()), fingerprintStr)
 
         webTestClient.post().uri("$BASE_END_POINT/templatizer/bulk/$TEMPLATE_BACKEND")
-            .syncBody(listOf(fp2))
+            .bodyValue(listOf(fp2))
             .exchange()
             .expectStatus().isOk
 
@@ -186,7 +184,7 @@ class ApiControllerTest {
         val fp3 = Fingerprint(voterId, "ID_POSITION", "DID_POSITION", 1, FingerPosition.RIGHT_INDEX, "NA", Timestamp(System.currentTimeMillis()), null)
 
         webTestClient.post().uri("$BASE_END_POINT/templatizer/bulk/$TEMPLATE_BACKEND")
-            .syncBody(listOf(fp3))
+            .bodyValue(listOf(fp3))
             .exchange()
             .expectStatus().isOk
 

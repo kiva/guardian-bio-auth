@@ -4,8 +4,6 @@ import io.r2dbc.client.R2dbc
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
 import io.r2dbc.spi.Row
-import java.util.Random
-import kotlin.streams.asSequence
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.SQLDialect
@@ -28,6 +26,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.Random
+import kotlin.streams.asSequence
 
 /**
  * Driver for fetching identity records from an sql backend

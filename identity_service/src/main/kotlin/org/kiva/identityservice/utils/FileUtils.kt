@@ -1,15 +1,15 @@
 package org.kiva.identityservice.utils
 
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.io.IOException
-import java.util.Base64
-import javax.imageio.ImageIO
 import org.apache.commons.codec.binary.Hex
 import org.apache.tika.Tika
 import org.kiva.identityservice.errorhandling.exceptions.ImageDecodeException
 import org.springframework.core.io.ClassPathResource
 import org.springframework.util.StreamUtils
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.io.IOException
+import java.util.Base64
+import javax.imageio.ImageIO
 
 @Throws(IOException::class)
 fun writeTempImageFile(image: ByteArray, format: String): File {

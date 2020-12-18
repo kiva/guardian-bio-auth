@@ -3,18 +3,20 @@ package org.kiva.fingerprint_desktop_tool
 import com.machinezoo.sourceafis.FingerprintImage
 import com.machinezoo.sourceafis.FingerprintTemplate
 import picocli.CommandLine
-import picocli.CommandLine.*
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import picocli.CommandLine.Parameters
 import java.io.File
 import java.nio.file.Files
-import java.util.*
+import java.util.Base64
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
-
 
 @Command(
     description = [
         "Converts an image into a fingerprint template.\n " +
-            "Currently ony supports sourceAFIS but can easily be extended to support other templating algorithms"],
+            "Currently ony supports sourceAFIS but can easily be extended to support other templating algorithms"
+    ],
     name = "templatize",
     mixinStandardHelpOptions = true,
     version = ["templatize 1.0"]
@@ -34,10 +36,11 @@ class Templatize : Callable<Int> {
     @Throws(Exception::class)
     override fun call(): Int {
 
-       // println("Generating $algorithm template for ${file.toPath()}")
+        // println("Generating $algorithm template for ${file.toPath()}")
         val fileContents = Files.readAllBytes(file.toPath())
         val template = Base64.getEncoder().encodeToString(
-            FingerprintTemplate(FingerprintImage().decode(fileContents)).toByteArray())
+            FingerprintTemplate(FingerprintImage().decode(fileContents)).toByteArray()
+        )
 
         outputFile?.let {
             outputFile!!.writeText(template)

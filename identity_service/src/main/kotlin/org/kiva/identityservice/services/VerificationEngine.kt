@@ -1,7 +1,5 @@
 package org.kiva.identityservice.services
 
-import java.time.Duration
-import java.util.concurrent.TimeoutException
 import org.jnbis.api.Jnbis
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.Identity
@@ -26,6 +24,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.time.Duration
+import java.util.concurrent.TimeoutException
 
 @Service
 class VerificationEngine(
@@ -77,7 +77,8 @@ class VerificationEngine(
                 .onErrorResume(FingerPrintTemplateException::class.java) {
                     // we need to redo with only image if template fails for some reason
                     val newCandidates = fetchCandidates(backend, query, arrayOf(DataType.IMAGE))
-                    sdk.match(query, newCandidates) }
+                    sdk.match(query, newCandidates)
+                }
                 // Since no match found, let's run bio-analyzer service, just in case it might be because of fingerprint's low quality.
                 // exception will be thrown back to consumer if quality is too low
                 .switchIfEmpty(bioAnalyzer.analyze(query.image, true).timeout(BIOANALYZER_TIMEOUT).flatMap { Mono.empty<Identity>() })

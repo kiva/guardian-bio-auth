@@ -40,15 +40,17 @@ import reactor.core.publisher.Mono
  * Driver for fetching identity records and storing template from template backend.
  */
 @Component
-class TemplateBackend(private val env: EnvConfig) : ReactivePostgresSqlBackend(
-    env,
-    env.identityDbTemplatePostgresPort,
-    env.identityDbTemplatePostgresHost,
-    env.identityDbTemplateCitizenTable,
-    env.identityDbTemplatePostgresDb,
-    env.identityDbTemplatePostgresUser,
-    env.identityDbTemplatePostgresPassword
-), IHasTemplateSupport {
+class TemplateBackend(private val env: EnvConfig) :
+    ReactivePostgresSqlBackend(
+        env,
+        env.identityDbTemplatePostgresPort,
+        env.identityDbTemplatePostgresHost,
+        env.identityDbTemplateCitizenTable,
+        env.identityDbTemplatePostgresDb,
+        env.identityDbTemplatePostgresUser,
+        env.identityDbTemplatePostgresPassword
+    ),
+    IHasTemplateSupport {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -220,8 +222,12 @@ class TemplateBackend(private val env: EnvConfig) : ReactivePostgresSqlBackend(
                         .doOnNext { count -> logger.debug("$count rows affected by $sqlUpdate") }.last()
                 }.last()
             } else {
-                return Mono.error(FingerprintTemplateGenerationException(fp.did, fp.position,
-                    "Either fingerprint image or missing code should be present."))
+                return Mono.error(
+                    FingerprintTemplateGenerationException(
+                        fp.did, fp.position,
+                        "Either fingerprint image or missing code should be present."
+                    )
+                )
             }
         } catch (ex: ImageDecodeException) {
             return Mono.error(FingerprintTemplateGenerationException(fp.did, fp.position, ex.message!!))
