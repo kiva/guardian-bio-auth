@@ -54,7 +54,7 @@ class ApiController constructor(
     fun verify(@Valid @RequestBody query: Query): Mono<ResponseEntity<Response>> {
         try {
             return verificationEngine.match(query)
-                .map { res -> Response(ResponseStatus.MATCHED, res.did, res.national_id, res.matchingScore) }
+                .map { res -> Response(ResponseStatus.MATCHED, res.did, res.did, res.national_id, res.matchingScore) }
                 .doOnNext { logger.info("Sending Response: $it") }
                 .map { res -> ResponseEntity.ok(res) }
         } catch (e: Exception) {
