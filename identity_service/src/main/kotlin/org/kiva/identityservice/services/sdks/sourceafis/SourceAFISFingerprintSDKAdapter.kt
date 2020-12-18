@@ -73,9 +73,11 @@ class SourceAFISFingerprintSDKAdapter(
                     match
                 }
                 .sequential()
-                .sort(fun(o1: Identity, o2: Identity): Int { // Sort the list of matches from lowest matching score to highest.
-                    return o1.matchingScore.compareTo(o2.matchingScore)
-                })
+                .sort(
+                    fun(o1: Identity, o2: Identity): Int { // Sort the list of matches from lowest matching score to highest.
+                        return o1.matchingScore.compareTo(o2.matchingScore)
+                    }
+                )
         } catch (e: Exception) {
             return Flux.error(e)
         }

@@ -33,7 +33,7 @@ RUN make
 #   Running environnement
 #
 ################################################################################
-FROM picoded/ubuntu-openjdk-8-jdk
+FROM adoptopenjdk:11-openj9
 
 COPY --from=builder /tmp/NFIQ2/NFIQ2/NFIQ2Algorithm/bin/ /NFIQ2/NFIQ2/bin/
 COPY --from=builder /tmp/NFIQ2/NFIQ2/NFIQ2Algorithm/lib/ /NFIQ2/NFIQ2/lib/

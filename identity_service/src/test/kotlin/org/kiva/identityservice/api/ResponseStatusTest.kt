@@ -1,7 +1,8 @@
 package org.kiva.identityservice.api
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 /**
  * The unit tests for verifying ResponseStatus enum.
@@ -13,7 +14,7 @@ class ResponseStatusTest {
      */
     @Test
     fun testEnumSize() {
-        Assert.assertEquals("ResponseStatus enum has two values", ResponseStatus.values().size, 2)
+        assertEquals(2, ResponseStatus.values().size, "ResponseStatus enum has two values")
     }
 
     /**
@@ -21,8 +22,8 @@ class ResponseStatusTest {
      */
     @Test
     fun testToString() {
-        Assert.assertEquals("ToString mismatch", ResponseStatus.fromCode("MATCHED").toString(), "matched")
-        Assert.assertEquals("ToString mismatch", ResponseStatus.fromCode("NOT_MATCHED").toString(), "not_matched")
+        assertEquals("matched", ResponseStatus.fromCode("MATCHED").toString(), "ToString mismatch")
+        assertEquals("not_matched", ResponseStatus.fromCode("NOT_MATCHED").toString(), "ToString mismatch")
     }
 
     /**
@@ -31,26 +32,28 @@ class ResponseStatusTest {
     @Test
     fun testFrom() {
         val rs1 = ResponseStatus.fromCode("matched")
-        Assert.assertEquals("Response status mismatch", rs1, ResponseStatus.MATCHED)
+        assertEquals(ResponseStatus.MATCHED, rs1, "Response status mismatch")
         val rs2 = ResponseStatus.fromCode("not_matched")
-        Assert.assertEquals("Response status mismatch", rs2, ResponseStatus.NOT_MATCHED)
+        assertEquals(ResponseStatus.NOT_MATCHED, rs2, "Response status mismatch")
     }
 
     /**
      * Tests invalid case for null status code where IllegalArgumentException must be thrown.
      */
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun testFromNullStatusCode() {
-        ResponseStatus.fromCode(null)
-        Assert.fail("Should not run this code!")
+        assertThrows<IllegalArgumentException> {
+            ResponseStatus.fromCode(null)
+        }
     }
 
     /**
      * Tests invalid case for invalid status code where IllegalArgumentException must be thrown.
      */
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun testFromInvalidStatusCode() {
-        ResponseStatus.fromCode("invalid_code")
-        Assert.fail("Should not run this code!")
+        assertThrows<IllegalArgumentException> {
+            ResponseStatus.fromCode("invalid_code")
+        }
     }
 }

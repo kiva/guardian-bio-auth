@@ -1,8 +1,10 @@
 package org.kiva.identityservice.domain
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 import java.sql.Timestamp
-import org.junit.Assert
-import org.junit.Test
 
 /**
  * The unit tests for verifying Fingerprint data class.
@@ -20,14 +22,14 @@ class FingerprintTest {
         val fp3 = Fingerprint("voter1", "did1", "national_id1", 1, FingerPosition.RIGHT_INDEX, "NA", Timestamp(System.currentTimeMillis()), null)
         val fp4 = Fingerprint("voter2", "did2", "national_id2", 1, FingerPosition.LEFT_THUMB, "NA", Timestamp(System.currentTimeMillis()), null)
 
-        Assert.assertNotNull("Fingerprint should not be null", fp1)
-        Assert.assertNotNull("Fingerprint should not be null", fp2)
-        Assert.assertNotNull("Fingerprint should not be null", fp3)
-        Assert.assertNotNull("Fingerprint should not be null", fp4)
+        assertNotNull(fp1, "Fingerprint should not be null")
+        assertNotNull(fp2, "Fingerprint should not be null")
+        assertNotNull(fp3, "Fingerprint should not be null")
+        assertNotNull(fp4, "Fingerprint should not be null")
 
-        Assert.assertEquals("Fingerprints with same did and finger position are equal", fp1, fp2)
-        Assert.assertNotEquals("Fingerprints with different finger position are not equal", fp1, fp3)
-        Assert.assertNotEquals("Fingerprints with different did are not equal", fp1, fp4)
+        assertEquals(fp1, fp2, "Fingerprints with same did and finger position are equal")
+        assertNotEquals(fp1, fp3, "Fingerprints with different finger position are not equal")
+        assertNotEquals(fp1, fp4, "Fingerprints with different did are not equal")
     }
 
     /**
@@ -41,17 +43,17 @@ class FingerprintTest {
         val fp2 = Fingerprint("voter1", "did1", "national_id1", 1, FingerPosition.LEFT_THUMB, "NA", time, null)
         val fp3 = Fingerprint("voter1", "did1", "national_id1", 1, FingerPosition.RIGHT_INDEX, "NA", time, null)
 
-        Assert.assertNotNull("Fingerprint should not be null", fp1)
-        Assert.assertNotNull("Fingerprint should not be null", fp2)
-        Assert.assertNotNull("Fingerprint should not be null", fp3)
+        assertNotNull(fp1, "Fingerprint should not be null")
+        assertNotNull(fp2, "Fingerprint should not be null")
+        assertNotNull(fp3, "Fingerprint should not be null")
 
         val hash1 = fp1.hashCode()
         val hash2 = fp2.hashCode()
         val hash3 = fp3.hashCode()
-        Assert.assertNotNull("Fingerprint hashcode should not be null", hash1)
-        Assert.assertNotNull("Fingerprint hashcode should not be null", hash2)
-        Assert.assertNotNull("Fingerprint hashcode should not be null", hash3)
-        Assert.assertEquals("Same Fingerprints should have same hash codes", hash1, hash2)
-        Assert.assertNotEquals("Different Fingerprints should have different hash codes", hash1, hash3)
+        assertNotNull(hash1, "Fingerprint hashcode should not be null")
+        assertNotNull(hash2, "Fingerprint hashcode should not be null")
+        assertNotNull(hash3, "Fingerprint hashcode should not be null")
+        assertEquals(hash1, hash2, "Same Fingerprints should have same hash codes")
+        assertNotEquals(hash1, hash3, "Different Fingerprints should have different hash codes")
     }
 }

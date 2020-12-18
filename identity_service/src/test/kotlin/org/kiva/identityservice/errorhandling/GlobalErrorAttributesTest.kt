@@ -1,7 +1,7 @@
 package org.kiva.identityservice.errorhandling
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 
 /**
  * The unit tests for GlobalErrorAttributes.
@@ -13,6 +13,6 @@ class GlobalErrorAttributesTest {
     @Test
     fun testGetErrorAttributes() {
         val globalErrorAttributes = GlobalErrorAttributes()
-        Assert.assertNotNull("GlobalErrorAttributes map should not be null", globalErrorAttributes)
+        assertNotNull(globalErrorAttributes, "GlobalErrorAttributes map should not be null")
     }
 }

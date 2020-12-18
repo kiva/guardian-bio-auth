@@ -1,7 +1,9 @@
 package org.kiva.identityservice.domain
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 
 /**
  * The unit tests for verifying Identity class.
@@ -19,16 +21,16 @@ class IdentityTest {
         val id2 = Identity("did1", "national_id1", fingerprints, DataType.IMAGE, 2)
         val id3 = Identity("did1", "national_id2", fingerprints, DataType.TEMPLATE, 1)
 
-        Assert.assertNotNull("Identity should not be null", id1)
-        Assert.assertNotNull("Identity should not be null", id2)
-        Assert.assertNotNull("Identity should not be null", id3)
+        assertNotNull(id1, "Identity should not be null")
+        assertNotNull(id2, "Identity should not be null")
+        assertNotNull(id3, "Identity should not be null")
 
-        Assert.assertEquals("Identities with same national_id are equal", id1, id2)
-        Assert.assertNotEquals("Identities with different national_id are not equal", id1, id3)
+        assertEquals(id1, id2, "Identities with same national_id are equal")
+        assertNotEquals(id1, id3, "Identities with different national_id are not equal")
 
-        Assert.assertEquals("Mismatch in matching score", id1.matchingScore, 0.0, 0.0)
+        assertEquals(id1.matchingScore, 0.0, 0.0, "Mismatch in matching score")
         id1.matchingScore = 15.0
-        Assert.assertEquals("Mismatch in matching score", id1.matchingScore, 15.0, 0.0)
+        assertEquals(id1.matchingScore, 15.0, 0.0, "Mismatch in matching score")
     }
 
     /**
@@ -39,6 +41,6 @@ class IdentityTest {
         val fingerprints: Map<FingerPosition, ByteArray> = mapOf(FingerPosition.fromCode(1) to byteArrayOf(1, 2, 3, 4))
 
         val id = Identity("did", "national_id", fingerprints, DataType.TEMPLATE, 1)
-        Assert.assertEquals("Unexpected string value", id.toString(), "Identity(id='national_id', fingerprints=[1])")
+        assertEquals("Identity(id='national_id', fingerprints=[1])", id.toString(), "Unexpected string value")
     }
 }

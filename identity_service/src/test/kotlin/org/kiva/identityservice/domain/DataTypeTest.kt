@@ -1,7 +1,7 @@
 package org.kiva.identityservice.domain
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 /**
  * The unit tests for verifying DataType enum.
@@ -13,12 +13,12 @@ class DataTypeTest {
      */
     @Test
     fun testEnumSize() {
-        Assert.assertEquals("DataType enum has two values", DataType.values().size, 2)
+        assertEquals(2, DataType.values().size, "DataType enum has two values")
 
         val dt1 = DataType.valueOf("IMAGE")
-        Assert.assertEquals("DataType mismatch", dt1, DataType.IMAGE)
+        assertEquals(DataType.IMAGE, dt1, "DataType mismatch")
 
         val dt2 = DataType.valueOf("TEMPLATE")
-        Assert.assertEquals("DataType mismatch", dt2, DataType.TEMPLATE)
+        assertEquals(DataType.TEMPLATE, dt2, "DataType mismatch")
     }
 }

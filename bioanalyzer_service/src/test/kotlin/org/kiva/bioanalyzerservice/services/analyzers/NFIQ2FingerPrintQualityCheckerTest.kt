@@ -1,16 +1,16 @@
 package org.kiva.bioanalyzerservice.services.analyzers
 
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.kiva.bioanalyzerservice.domain.BioType
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.ClassPathResource
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.util.StreamUtils
 import reactor.test.StepVerifier
 
 @SpringBootTest
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 class NFIQ2FingerPrintQualityCheckerTest {
 
     /**
@@ -21,8 +21,8 @@ class NFIQ2FingerPrintQualityCheckerTest {
         val bioDataAnalyzer = NFIQ2FingerPrintQualityChecker()
 
         StepVerifier.create(bioDataAnalyzer.analyze(pngFingerprint, BioType.FINGERPRINT, "text/txt"))
-                .expectSubscription()
-                .verifyComplete()
+            .expectSubscription()
+            .verifyComplete()
     }
 
     /**
@@ -33,8 +33,8 @@ class NFIQ2FingerPrintQualityCheckerTest {
         val bioDataAnalyzer = NFIQ2FingerPrintQualityChecker()
 
         StepVerifier.create(bioDataAnalyzer.analyze(emptyFingerprint, BioType.FINGERPRINT, "image/png"))
-                .expectSubscription()
-                .expectError(IllegalArgumentException::class.java)
+            .expectSubscription()
+            .expectError(IllegalArgumentException::class.java)
     }
 
     private var emptyFingerprint: ByteArray = byteArrayOf()

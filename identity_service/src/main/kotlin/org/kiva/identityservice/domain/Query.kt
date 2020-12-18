@@ -1,9 +1,9 @@
 package org.kiva.identityservice.domain
 
-import javax.validation.constraints.NotBlank
-import javax.validation.constraints.NotEmpty
 import org.kiva.identityservice.utils.base64ToByte
 import org.kiva.identityservice.validators.Backend
+import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotEmpty
 
 /**
  * Query used to check search backend and compare result against a fingerprint

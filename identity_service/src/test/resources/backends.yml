@@ -43,11 +43,3 @@ template:
       to: first_name
       validators:
         -
-  config:
-    connection:
-      host: localhost
-      port: 2357
-      database: template_test
-      table: kiva_biometric_template
-      user: dbuser
-      password: dbpass

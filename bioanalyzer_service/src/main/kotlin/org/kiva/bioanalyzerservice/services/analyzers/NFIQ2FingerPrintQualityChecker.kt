@@ -57,13 +57,13 @@ class NFIQ2FingerPrintQualityChecker : BioDataAnalyzer {
             ImageIO.write(ImageIO.read(ByteArrayInputStream(imageData)), "BMP", tmpFile)
             BMPEncoder.write(ConvertUtil.convert8(ImageIO.read(ByteArrayInputStream(imageData))), tmpFile)
             return ProcessExecutor()
-                    .command(mutableListOf("NFIQ2", "SINGLE", tmpFile.absolutePath, "BMP", "false", "false"))
-                    .timeout(10, TimeUnit.SECONDS)
-                    .destroyOnExit()
-                    .readOutput(true)
-                    .execute()
-                    .outputUTF8()
-                    .let { Mono.just(getScore(it)) }
+                .command(mutableListOf("NFIQ2", "SINGLE", tmpFile.absolutePath, "BMP", "false", "false"))
+                .timeout(10, TimeUnit.SECONDS)
+                .destroyOnExit()
+                .readOutput(true)
+                .execute()
+                .outputUTF8()
+                .let { Mono.just(getScore(it)) }
         } catch (e: Exception) {
             logger.error("NFIQ2 error - ${e.message}", e)
             return Mono.error(e)

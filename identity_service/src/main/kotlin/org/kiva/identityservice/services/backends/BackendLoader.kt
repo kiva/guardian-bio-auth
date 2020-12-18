@@ -1,12 +1,12 @@
 package org.kiva.identityservice.services.backends
 
-import java.io.IOException
-import java.util.stream.Collectors
 import org.kiva.identityservice.utils.YamlLoader
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.PropertySource
+import java.io.IOException
+import java.util.stream.Collectors
 
 /**
  * Loads backend definition from yaml configuration file.

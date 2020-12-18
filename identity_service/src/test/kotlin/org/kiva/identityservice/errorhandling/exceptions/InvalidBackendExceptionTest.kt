@@ -1,7 +1,8 @@
 package org.kiva.identityservice.errorhandling.exceptions
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Test
 
 /**
  * The unit tests for InvalidBackendExceptionTest.
@@ -13,7 +14,7 @@ class InvalidBackendExceptionTest {
     @Test
     fun testMessage() {
         val ex = InvalidBackendException()
-        Assert.assertNotNull("Exception should not be null", ex)
-        Assert.assertNull("Exception message should be null", ex.message)
+        assertNotNull(ex, "Exception should not be null")
+        assertNull(ex.message, "Exception message should be null")
     }
 }

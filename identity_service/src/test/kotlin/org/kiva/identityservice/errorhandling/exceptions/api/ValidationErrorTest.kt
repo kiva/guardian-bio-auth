@@ -1,7 +1,8 @@
 package org.kiva.identityservice.errorhandling.exceptions.api
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 
 /**
@@ -15,11 +16,11 @@ class ValidationErrorTest {
     @Test
     fun testValidationError() {
         val ex = ValidationError(ApiExceptionCode.NO_CITIZEN_FOUND, "error")
-        Assert.assertNotNull("Exception should not be null", ex)
-        Assert.assertEquals("Exception message mismatch", ex.message, "400 BAD_REQUEST \"error\"")
-        Assert.assertEquals("Exception reason mismatch", ex.reason, "error")
-        Assert.assertEquals("Exception status mismatch", ex.status, HttpStatus.BAD_REQUEST)
-        Assert.assertEquals("Exception code mismatch", ex.code, ApiExceptionCode.NO_CITIZEN_FOUND)
+        assertNotNull(ex, "Exception should not be null")
+        assertEquals("400 BAD_REQUEST \"error\"", ex.message, "Exception message mismatch")
+        assertEquals("error", ex.reason, "Exception reason mismatch")
+        assertEquals(HttpStatus.BAD_REQUEST, ex.status, "Exception status mismatch")
+        assertEquals(ApiExceptionCode.NO_CITIZEN_FOUND, ex.code, "Exception code mismatch")
     }
 
     /**
@@ -28,10 +29,10 @@ class ValidationErrorTest {
     @Test
     fun testValidationErrorNullReason() {
         val ex = ValidationError(ApiExceptionCode.NO_CITIZEN_FOUND, null)
-        Assert.assertNotNull("Exception should not be null", ex)
-        Assert.assertEquals("Exception message mismatch", ex.message, "400 BAD_REQUEST \"No citizen found for specified filters\"")
-        Assert.assertEquals("Exception reason mismatch", ex.reason, "No citizen found for specified filters")
-        Assert.assertEquals("Exception status mismatch", ex.status, HttpStatus.BAD_REQUEST)
-        Assert.assertEquals("Exception code mismatch", ex.code, ApiExceptionCode.NO_CITIZEN_FOUND)
+        assertNotNull(ex, "Exception should not be null")
+        assertEquals("400 BAD_REQUEST \"No citizen found for specified filters\"", ex.message, "Exception message mismatch")
+        assertEquals("No citizen found for specified filters", ex.reason, "Exception reason mismatch")
+        assertEquals(HttpStatus.BAD_REQUEST, ex.status, "Exception status mismatch")
+        assertEquals(ApiExceptionCode.NO_CITIZEN_FOUND, ex.code, "Exception code mismatch")
     }
 }
