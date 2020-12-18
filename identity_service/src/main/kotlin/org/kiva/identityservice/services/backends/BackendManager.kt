@@ -179,8 +179,10 @@ class BackendManager(
         }
 
         // let's ensure we don't have params we don't want here
-        if (!backend.filters.containsAll(filters.keys)) {
-            val msg = "Invalid filters detected; the list of valid filters are ${backend.filters}"
+        val validFilters = backend.filters
+        val invalidFilters = filters.keys.minus(validFilters)
+        if (invalidFilters.isNotEmpty()) {
+            val msg = "$invalidFilters are invalid filters; the list of valid filters are $validFilters"
             throw InvalidQueryFilterException(msg)
         }
 
@@ -191,7 +193,8 @@ class BackendManager(
         }
 
         // let's ensure we aren't provided too many DIDs to attempt to match
-        if (query.dids.size > env.maxDids) {
+        val dids = filters["dids"]?.split(",") ?: emptyList()
+        if (dids.size > env.maxDids) {
             val msg = "Too many DIDs to match against; the maximum number of DIDs is ${env.maxDids}"
             throw InvalidQueryFilterException(msg)
         }

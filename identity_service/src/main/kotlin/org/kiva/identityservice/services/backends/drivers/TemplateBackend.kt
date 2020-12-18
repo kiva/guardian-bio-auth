@@ -76,10 +76,6 @@ class TemplateBackend(private val env: EnvConfig) :
         q.addConditions(condition("position = ?", query.position.code))
         q.addConditions(condition("type_id = ?", 1))
 
-        if (query.dids.isNotEmpty()) {
-            q.addConditions(condition("did in ?", query.dids))
-        }
-
         if (DataType.TEMPLATE in types) {
             q.addSelect(
                 field("version"),

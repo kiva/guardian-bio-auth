@@ -115,7 +115,7 @@ class ApiControllerTest {
             .exchange()
             .expectStatus().isOk
             .expectBody()
-            .json("{\"positions\":[\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\"],\"filters\":[\"firstName\",\"nationalId\",\"voterId\"]}")
+            .json("{\"positions\":[\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\"],\"filters\":[\"firstName\",\"nationalId\",\"voterId\",\"dids\"]}")
     }
 
     /**

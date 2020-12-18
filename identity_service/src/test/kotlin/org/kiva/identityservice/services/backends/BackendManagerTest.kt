@@ -130,8 +130,10 @@ class BackendManagerTest {
         for (i in 0 until 101) {
             dids.add(DID)
         }
+        val filter = HashMap<String, String>()
+        filter["dids"] = dids.joinToString(",")
         assertThrows<InvalidQueryFilterException> {
-            backendManager.validateQuery(query.copy(dids = dids.toList()))
+            backendManager.validateQuery(query.copy(backend = "template", filters = filter))
         }
     }
 

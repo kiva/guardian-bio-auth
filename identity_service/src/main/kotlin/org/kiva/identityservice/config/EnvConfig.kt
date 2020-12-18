@@ -36,7 +36,7 @@ class EnvConfig {
 
     final val hashPepper: String
 
-    constructor() {
+    init {
         bioanalyzerEnabled = "BIOANALYZER_ENABLED"
             .optionalEnvVar()
             .withDefault({ it.toBoolean() }, false)
@@ -46,7 +46,6 @@ class EnvConfig {
         bioanalyzerQualityThreshold = "BIOANALYZER_QUALITY_THRESHOLD"
             .optionalEnvVar()
             .withDefault({ it.toDouble() }, 0.0)
-
         replayAttackEnabled = "REPLAY_ATTACK_ENABLED"
             .optionalEnvVar()
             .withDefault({ it.toBoolean() }, false)
@@ -62,7 +61,6 @@ class EnvConfig {
         identityIntelligenceDbPostgresPassword = "IDENTITYINTELLIGENCEDB_POSTGRES_PASSWORD"
             .optionalEnvVar()
             .withDefault({ it }, "")
-
         identityDbTemplatePostgresHost = "IDENTITYDB_TEMPLATE_POSTGRES_HOST"
             .optionalEnvVar()
             .withDefault({ it }, "127.0.0.1")

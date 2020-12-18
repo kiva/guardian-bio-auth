@@ -43,3 +43,13 @@ template:
       to: first_name
       validators:
         -
+    dids:
+      type: java.lang.String
+      unique: true
+      list: true
+      required: false
+      hashed: false
+      to: did
+      operator: in
+      validators:
+        -

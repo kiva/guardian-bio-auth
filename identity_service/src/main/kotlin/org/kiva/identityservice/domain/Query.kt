@@ -44,6 +44,9 @@ data class Query(
      * filter by first and last name
      * filters.put("firstName", "John")
      * filters.put("lastname", "Smith")
+     *
+     * filter by comma-separated list of DIDs
+     * filters.put("dids", "abcd1234,efgh5678")
      */
     @NotEmpty
     val filters: Map<String, String>,
@@ -52,12 +55,7 @@ data class Query(
      * Defines the type of submitted fingerprint which is either image or template
      */
     @NotEmpty
-    val imageType: DataType = DataType.IMAGE,
-
-    /**
-     * If provided, return the DID with the score that matches highest with the provided fingerprint.
-     */
-    val dids: List<String> = emptyList()
+    val imageType: DataType = DataType.IMAGE
 ) {
     var imageByte: ByteArray = base64ToByte(image)
 }
