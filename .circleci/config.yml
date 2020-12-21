@@ -53,6 +53,8 @@ workflows:
             branches:
               ignore: /.*/
           after_checkout:
+            - openjdk-install/openjdk:
+                version: 11
             - run:
                 name: build bioanalyzer service
                 command: |
@@ -72,6 +74,8 @@ workflows:
             branches:
               ignore: /.*/
           after_checkout:
+            - openjdk-install/openjdk:
+                version: 11
             - run:
                 name: build identity service
                 command: |
