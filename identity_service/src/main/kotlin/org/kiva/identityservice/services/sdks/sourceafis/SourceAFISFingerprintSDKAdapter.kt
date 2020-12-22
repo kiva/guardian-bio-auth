@@ -50,7 +50,7 @@ class SourceAFISFingerprintSDKAdapter(
                 .runOn(Schedulers.parallel())
                 .filter {
                     val template = when (it.type) {
-                        DataType.IMAGE -> FingerprintTemplate(FingerprintImage().decode(it.fingerprints[query.position]))
+                        DataType.IMAGE -> FingerprintTemplate(FingerprintImage().decode(it.fingerprints[query.params.position]))
                         DataType.TEMPLATE -> {
                             // let's ensure we got sent in a version that works for us and that out backend isn't doing
                             // something stupid. We won't refuse to process, but just scream in the line below :)
@@ -63,7 +63,7 @@ class SourceAFISFingerprintSDKAdapter(
                                 if (check != version)
                                     throw FingerPrintTemplateException(ApiExceptionCode.INVALID_TEMPLATE_VERSION.msg)
                             }
-                            FingerprintTemplate().deserialize(String(it.fingerprints[query.position]!!, Charsets.UTF_8))
+                            FingerprintTemplate().deserialize(String(it.fingerprints[query.params.position]!!, Charsets.UTF_8))
                         }
                     }
                     it.matchingScore = matcher.match(template)

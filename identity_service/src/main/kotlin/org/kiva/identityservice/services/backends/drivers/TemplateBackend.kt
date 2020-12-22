@@ -73,7 +73,7 @@ class TemplateBackend(private val env: EnvConfig) :
             field("position"),
             field("missing_code")
         )
-        q.addConditions(condition("position = ?", query.position.code))
+        q.addConditions(condition("position = ?", query.params.position.code))
         q.addConditions(condition("type_id = ?", 1))
 
         if (DataType.TEMPLATE in types) {
@@ -115,7 +115,7 @@ class TemplateBackend(private val env: EnvConfig) :
             DataType.TEMPLATE -> rawImage.toByteArray(Charsets.UTF_8)
             else -> throw ValidationError(ApiExceptionCode.INVALID_DATA_TYPE, "Image data type is not supported for template backend.")
         }
-        return Identity(did, nationalId!!, mapOf(query.position to imageBytes), type, templateVersion)
+        return Identity(did, nationalId!!, mapOf(query.params.position to imageBytes), type, templateVersion)
     }
 
     override fun templateGenerate(records: Flux<Fingerprint>, throwException: Boolean, sdk: IBiometricSDKAdapter, bioAnalyzer: IBioAnalyzer): Flux<Int> {

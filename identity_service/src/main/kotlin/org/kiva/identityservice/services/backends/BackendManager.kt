@@ -6,6 +6,7 @@ import org.kiva.identityservice.domain.Query
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendDefinitionException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendFieldsDefinitionException
+import org.kiva.identityservice.errorhandling.exceptions.InvalidQueryParamsException
 import org.kiva.identityservice.errorhandling.exceptions.api.InvalidQueryFilterException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -162,6 +163,13 @@ class BackendManager(
         // let's ensure backend exists
         val backend: IBackend = getbyName(backendName)
 
+        // let's ensure that if image is provided at the top-level, it's non-empty
+        if (query.image != null && query.image.length == 0) {
+            val msg = "Image must be a non-empty string"
+            logger.warn(msg)
+            throw InvalidQueryParamsException(msg)
+        }
+
         // let's ensure that required filters are provided
         val missingFilters = backend.requiredFilters.filter { !filters.containsKey(it) }
         if (missingFilters.isNotEmpty()) {
@@ -187,7 +195,7 @@ class BackendManager(
         }
 
         // let's ensure we have print position we need
-        if (!backend.validFingerPositions.contains(query.position)) {
+        if (!backend.validFingerPositions.contains(query.params.position)) {
             val msg = "Invalid finger position detected; the list of valid position are ${backend.validFingerPositions}"
             throw InvalidQueryFilterException(msg)
         }

@@ -13,7 +13,7 @@ class ApiExceptionCodeTest {
      */
     @Test
     fun testApiExceptionCodeEnum() {
-        assertEquals(15, ApiExceptionCode.values().size, "ApiExceptionCode enum has 11 values")
+        assertEquals(16, ApiExceptionCode.values().size, "ApiExceptionCode enum has ${ApiExceptionCode.values().size} values")
 
         assertEquals("No citizen found for specified filters", ApiExceptionCode.NO_CITIZEN_FOUND.msg, "Mismatch in message")
         assertEquals("Fingerprint did not match stored records for citizen supplied through filters", ApiExceptionCode.FINGERPRINT_NO_MATCH.msg, "Mismatch in message")
@@ -22,6 +22,7 @@ class ApiExceptionCodeTest {
         assertEquals("There is no fingerprint stored in the database, due to amputation", ApiExceptionCode.FINGERPRINT_MISSING_AMPUTATION.msg, "Mismatch in message")
         assertEquals("There is no fingerprint stored in the database, unable to record fingerprint", ApiExceptionCode.FINGERPRINT_MISSING_UNABLE_TO_PRINT.msg, "Mismatch in message")
         assertEquals("One of your filters is invalid or missing", ApiExceptionCode.INVALID_FILTERS.msg, "Mismatch in message")
+        assertEquals("One of your params is invalid or missing", ApiExceptionCode.INVALID_PARAMS.msg, "Mismatch in message")
         assertEquals("Invalid image encoding, must be base64 encoded", ApiExceptionCode.INVALID_IMAGE_ENCODING.msg, "Mismatch in message")
         assertEquals("Invalid image format, must be one of ...", ApiExceptionCode.INVALID_IMAGE_FORMAT.msg, "Mismatch in message")
         assertEquals("Invalid position, must be one of ...", ApiExceptionCode.INVALID_POSITION.msg, "Mismatch in message")

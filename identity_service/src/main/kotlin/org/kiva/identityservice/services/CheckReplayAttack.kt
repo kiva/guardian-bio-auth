@@ -32,7 +32,7 @@ class CheckReplayAttack(private val env: EnvConfig) : ICheckReplayAttack {
     }
 
     private fun computeHash(query: Query): String {
-        val bytes = query.image.toByteArray()
+        val bytes = query.imageByte
         val md = MessageDigest.getInstance("SHA-512")
         val digest = md.digest(bytes)
         return digest.fold("", { str, it -> str + "%02x".format(it) })

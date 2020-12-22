@@ -81,7 +81,12 @@ class VerificationEngine(
                 }
                 // Since no match found, let's run bio-analyzer service, just in case it might be because of fingerprint's low quality.
                 // exception will be thrown back to consumer if quality is too low
-                .switchIfEmpty(bioAnalyzer.analyze(query.image, true).timeout(BIOANALYZER_TIMEOUT).flatMap { Mono.empty<Identity>() })
+                .switchIfEmpty(
+                    bioAnalyzer
+                        .analyze(query.params.image, true)
+                        .timeout(BIOANALYZER_TIMEOUT)
+                        .flatMap { Mono.empty<Identity>() }
+                )
                 // If the bioanalyzer did not give us the low quality error, let's return FingerprintNoMatchException.
                 .switchIfEmpty(Mono.error(FingerprintNoMatchException()))
                 .last() // Return the highest matching score candidate
@@ -116,7 +121,7 @@ class VerificationEngine(
             // let's return no citizens found exception if results come up empty
             .switchIfEmpty(Flux.error(NoCitizenFoundException()))
             // consider only people with the position we want
-            .filter { it.fingerprints.keys.contains(query.position) }
+            .filter { it.fingerprints.keys.contains(query.params.position) }
             // we don't have prints for that position so let's throw the pertinent error message.
             .switchIfEmpty(Flux.error(FingerprintMissingNotCapturedException()))
             // let's force backend to be clever by limiting returned

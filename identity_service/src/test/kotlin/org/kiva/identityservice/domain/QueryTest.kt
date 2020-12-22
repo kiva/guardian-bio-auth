@@ -9,24 +9,42 @@ import org.junit.jupiter.api.Test
  */
 class QueryTest {
 
-    /**
-     * Tests Query data instances.
-     */
     @Test
-    fun testQueryData() {
-        val query1 = Query("template", "Image1", FingerPosition.LEFT_THUMB, mapOf())
-        assertNotNull(query1, "Query should not be null")
-        assertEquals(DataType.IMAGE, query1.imageType, "Mismatch is query image type")
-        assertNotNull(query1.imageByte, "Query imagebytes should not be null")
+    fun testQueryWithDefaults() {
+        val query = Query("template", "Image1", FingerPosition.LEFT_THUMB, emptyMap())
+        assertNotNull(query, "Query should not be null")
+        assertEquals(DataType.IMAGE, query.imageType, "Mismatch is query image type")
+        assertNotNull(query.imageByte, "Query imagebytes should not be null")
+        assertEquals("Image1", query.params.image, "Image should be auto-populated into params")
+        assertEquals(FingerPosition.LEFT_THUMB, query.params.position, "Position should be auto-populated into params")
+    }
 
-        val query2 = Query("template", "Image2", FingerPosition.LEFT_THUMB, mapOf(), DataType.IMAGE)
-        assertNotNull(query2, "Query should not be null")
-        assertEquals(DataType.IMAGE, query2.imageType, "Mismatch is query image type")
-        assertNotNull(query2.imageByte, "Query imagebytes should not be null")
+    @Test
+    fun testImageQueryWithDefaultParams() {
+        val query = Query("template", "Image2", FingerPosition.LEFT_THUMB, emptyMap(), DataType.IMAGE)
+        assertNotNull(query, "Query should not be null")
+        assertEquals(DataType.IMAGE, query.imageType, "Mismatch is query image type")
+        assertNotNull(query.imageByte, "Query imagebytes should not be null")
+        assertEquals("Image2", query.params.image, "Image should be auto-populated into params")
+        assertEquals(FingerPosition.LEFT_THUMB, query.params.position, "Position should be auto-populated into params")
+    }
 
-        val query3 = Query("template", "Image1", FingerPosition.LEFT_THUMB, mapOf(), DataType.TEMPLATE)
-        assertNotNull(query3, "Query should not be null")
-        assertEquals(DataType.TEMPLATE, query3.imageType, "Mismatch is query image type")
-        assertNotNull(query3.imageByte, "Query imagebytes should not be null")
+    @Test
+    fun testTemplateQueryWithDefaultParams() {
+        val query = Query("template", "Image3", FingerPosition.LEFT_THUMB, emptyMap(), DataType.TEMPLATE)
+        assertNotNull(query, "Query should not be null")
+        assertEquals(DataType.TEMPLATE, query.imageType, "Mismatch is query image type")
+        assertNotNull(query.imageByte, "Query imagebytes should not be null")
+        assertEquals("Image3", query.params.image, "Image should be auto-populated into params")
+        assertEquals(FingerPosition.LEFT_THUMB, query.params.position, "Position should be auto-populated into params")
+    }
+
+    @Test
+    fun testQueryWithParams() {
+        val params = QueryParams("ImageX", FingerPosition.LEFT_INDEX)
+        val query = Query("template", "", FingerPosition.LEFT_THUMB, emptyMap(), DataType.IMAGE, params)
+        assertNotNull(query, "Query should not be null")
+        assertEquals("ImageX", query.params.image, "Image should not be auto-populated into params")
+        assertEquals(FingerPosition.LEFT_INDEX, query.params.position, "Position should not be auto-populated into params")
     }
 }

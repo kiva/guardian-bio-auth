@@ -44,7 +44,8 @@ class VerificationEngineTest {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = Mockito.mock(SourceAFISFingerprintSDKAdapter::class.java)
 
-        val query1 = query.copy(image = loadBase64FromResource(TEXT1_FILE))
+        val image = loadBase64FromResource(TEXT1_FILE)
+        val query1 = query.copy(image = image, params = query.params.copy(image = image))
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query1))
             .expectSubscription()
