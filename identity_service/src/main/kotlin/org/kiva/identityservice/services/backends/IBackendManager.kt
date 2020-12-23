@@ -1,9 +1,9 @@
 package org.kiva.identityservice.services.backends
 
 import org.kiva.identityservice.domain.FingerPosition
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
-import org.kiva.identityservice.errorhandling.exceptions.api.InvalidQueryFilterException
+import org.kiva.identityservice.errorhandling.exceptions.api.InvalidFilterException
 import org.springframework.beans.factory.InitializingBean
 
 /**
@@ -42,8 +42,8 @@ interface IBackendManager : InitializingBean {
     @Throws(InvalidBackendException::class)
     fun validFingerPositions(backend: String): Set<FingerPosition>
 
-    @Throws(InvalidQueryFilterException::class, InvalidBackendException::class)
-    fun validateQuery(query: Query)
+    @Throws(InvalidFilterException::class, InvalidBackendException::class)
+    fun validateVerifyRequest(verifyRequest: VerifyRequest)
 
     fun all(): List<IBackend>
 }

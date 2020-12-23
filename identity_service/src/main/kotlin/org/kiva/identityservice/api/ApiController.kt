@@ -2,15 +2,16 @@ package org.kiva.identityservice.api
 
 import datadog.trace.api.Trace
 import org.jnbis.api.Jnbis
+import org.kiva.identityservice.domain.BulkSaveRequest
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Fingerprint
-import org.kiva.identityservice.domain.Query
-import org.kiva.identityservice.domain.StoreRequest
+import org.kiva.identityservice.domain.SaveRequest
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.errorhandling.exceptions.FingerprintTemplateGenerationException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendOperationException
-import org.kiva.identityservice.errorhandling.exceptions.api.InvalidQueryFilterException
+import org.kiva.identityservice.errorhandling.exceptions.api.InvalidFilterException
 import org.kiva.identityservice.services.ITemplatizer
 import org.kiva.identityservice.services.IVerificationEngine
 import org.kiva.identityservice.services.backends.IBackend
@@ -51,30 +52,12 @@ class ApiController constructor(
 
     @Trace
     @PostMapping("/verify", produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun verify(@Valid @RequestBody query: Query): Mono<ResponseEntity<Response>> {
+    fun verify(@Valid @RequestBody verifyRequest: VerifyRequest): Mono<ResponseEntity<Response>> {
         try {
-            return verificationEngine.match(query)
+            return verificationEngine.match(verifyRequest)
                 .map { res -> Response(ResponseStatus.MATCHED, res.did, res.did, res.national_id, res.matchingScore) }
                 .doOnNext { logger.info("Sending Response: $it") }
                 .map { res -> ResponseEntity.ok(res) }
-        } catch (e: Exception) {
-            return Mono.error(e)
-        }
-    }
-
-    /**
-     * Directly store a fingerprint template with a provided quality score instead of deriving the template and quality
-     * score from a fingerprint image.
-     */
-    @PostMapping("/store", produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun store(@Valid @RequestBody storeRequest: StoreRequest): Mono<ResponseEntity<out Any>> {
-        try {
-            val backend: IBackend = backendManager.getbyName("template")
-            if (backend !is IHasTemplateSupport)
-                return Mono.just(
-                    ResponseEntity.status(HttpStatus.BAD_REQUEST).body("'template' backend does not support templates")
-                )
-            return templatizer.store(backend, storeRequest).map { ResponseEntity.ok(it.serialize()) }
         } catch (e: Exception) {
             return Mono.error(e)
         }
@@ -92,12 +75,12 @@ class ApiController constructor(
         try {
             val filters = filter.split("=")
             if (filters.size != 2)
-                return Flux.error(InvalidQueryFilterException("One of your filters is invalid or missing. Filter has to be in the format 'national_id=123'"))
+                return Flux.error(InvalidFilterException("One of your filters is invalid or missing. Filter has to be in the format 'national_id=123'"))
 
             val backendObj: IBackend = backendManager.getbyName(backend)
 
             if (filters[0] !in backendObj.uniqueFilters)
-                return Flux.error(InvalidQueryFilterException("Filter '{$filters[0]}' has to be a unique type e.g. national_id"))
+                return Flux.error(InvalidFilterException("Filter '{$filters[0]}' has to be a unique type e.g. national_id"))
 
             val filtersMap: Map<String, String> = mapOf(filters[0] to filters[1])
             return backendObj.positions(filtersMap)
@@ -140,6 +123,60 @@ class ApiController constructor(
     }
 
     /**
+     * The endpoint that accepts a wrapped array of fingerprint data (either templates or images, can be mixed) and
+     * saves each one to the backend. If an image is provided, it will compute the relevant template and quality score
+     * so that no images are ever saved. Typically, 10 entries will be provided for each of the citizen's fingerprints,
+     * but the endpoint can handle as many as 1000 entries.
+     *
+     * At some future point, we may remove support for templating images so that our servers never even handle images.
+     *
+     * @param bulkSaveRequest A wrapper around the array of fingerprints to save.
+     */
+    @PostMapping("/save", produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun save(@Valid @RequestBody bulkSaveRequest: BulkSaveRequest): Mono<ResponseEntity<out Any>> {
+        try {
+            // Get a backend to save fingerprints in
+            val backend = backendManager.getbyName("template")
+            if (backend !is IHasTemplateSupport)
+                return Mono.just(
+                    ResponseEntity.status(HttpStatus.BAD_REQUEST).body("'template' does not support templates")
+                )
+
+            // Save templates
+            val templatesToSave: List<SaveRequest> = bulkSaveRequest.fingerprints.filter { it.params.type == DataType.TEMPLATE }
+            val bulkStoreResult = templatizer.bulkSave(backend, templatesToSave)
+
+            // Save images
+            val records: List<Fingerprint> = bulkSaveRequest.fingerprints
+                .filter { it.params.type == DataType.IMAGE }
+                .map {
+                    Fingerprint(
+                        it.filters.voter_id,
+                        it.id,
+                        it.filters.national_id,
+                        it.params.type_id,
+                        it.params.position,
+                        it.params.missing_code,
+                        it.params.capture_date,
+                        it.params.image
+                    )
+                }
+            // will not throw exception if quality is too low.  this allows images to be saved regardless of quality
+            val bulkGenerateResult = templatizer.bulkGenerate(false, backend, records)
+
+            // Combine and return results
+            return bulkGenerateResult
+                .mergeWith(bulkStoreResult)
+                .reduce { left, right -> left + right }
+                .map { ResponseEntity.ok(it) }
+        } catch (e: InvalidBackendOperationException) {
+            return Mono.error(e)
+        } catch (e: FingerprintTemplateGenerationException) {
+            return Mono.error(e)
+        }
+    }
+
+    /**
      * Returns a print for a citizen for an index
      */
     @GetMapping("/fingerprint_image/{backend}/{filter}/{position}", produces = [MediaType.IMAGE_JPEG_VALUE])
@@ -151,17 +188,17 @@ class ApiController constructor(
         try {
             val filters = filter.split("=")
             if (filters.size != 2)
-                return Mono.error(InvalidQueryFilterException("One of your filters is invalid or missing. Filter has to be in the format 'national_id=123'"))
+                return Mono.error(InvalidFilterException("One of your filters is invalid or missing. Filter has to be in the format 'national_id=123'"))
 
             val backendObj: IBackend = backendManager.getbyName(backend)
 
             if (filters[0] !in backendObj.uniqueFilters)
-                return Mono.error(InvalidQueryFilterException("Filter '{$filters[0]}' has to be a unique type e.g. national_id"))
+                return Mono.error(InvalidFilterException("Filter '{$filters[0]}' has to be a unique type e.g. national_id"))
 
             val fingerPosition: FingerPosition = FingerPosition.fromCode(position)
 
             return backendObj.search(
-                Query(backend, "", fingerPosition, mapOf(filters[0] to filters[1])),
+                VerifyRequest(backend, "", fingerPosition, mapOf(filters[0] to filters[1])),
                 arrayOf(DataType.IMAGE)
             )
                 .map { Jnbis.wsq().decode(it.fingerprints[fingerPosition]).toJpg().asByteArray() }
@@ -170,8 +207,8 @@ class ApiController constructor(
                 .defaultIfEmpty(ResponseEntity.noContent().build())
         } catch (e: InvalidBackendException) {
             return Mono.just(ResponseEntity.notFound().build())
-        } catch (e: InvalidQueryFilterException) {
-            return Mono.error(InvalidQueryFilterException("Fingerprint position has to be between 1 and 10"))
+        } catch (e: InvalidFilterException) {
+            return Mono.error(InvalidFilterException("Fingerprint position has to be between 1 and 10"))
         }
     }
 

@@ -2,12 +2,12 @@ package org.kiva.identityservice.services.backends
 
 import org.kiva.identityservice.config.EnvConfig
 import org.kiva.identityservice.domain.FingerPosition
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendDefinitionException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendFieldsDefinitionException
-import org.kiva.identityservice.errorhandling.exceptions.InvalidQueryParamsException
-import org.kiva.identityservice.errorhandling.exceptions.api.InvalidQueryFilterException
+import org.kiva.identityservice.errorhandling.exceptions.InvalidParamsException
+import org.kiva.identityservice.errorhandling.exceptions.api.InvalidFilterException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.util.ClassUtils
@@ -155,19 +155,19 @@ class BackendManager(
         return backends[name] ?: throw InvalidBackendException()
     }
 
-    @Throws(InvalidQueryFilterException::class, InvalidBackendException::class)
-    override fun validateQuery(query: Query) {
-        val backendName: String = query.backend
-        val filters: Map<String, String> = query.filters
+    @Throws(InvalidFilterException::class, InvalidBackendException::class)
+    override fun validateVerifyRequest(verifyRequest: VerifyRequest) {
+        val backendName: String = verifyRequest.backend
+        val filters: Map<String, String> = verifyRequest.filters
 
         // let's ensure backend exists
         val backend: IBackend = getbyName(backendName)
 
         // let's ensure that if image is provided at the top-level, it's non-empty
-        if (query.image != null && query.image.length == 0) {
+        if (verifyRequest.image != null && verifyRequest.image.length == 0) {
             val msg = "Image must be a non-empty string"
             logger.warn(msg)
-            throw InvalidQueryParamsException(msg)
+            throw InvalidParamsException(msg)
         }
 
         // let's ensure that required filters are provided
@@ -175,14 +175,14 @@ class BackendManager(
         if (missingFilters.isNotEmpty()) {
             val msg = "Query is missing the required filters: $missingFilters"
             logger.warn(msg)
-            throw InvalidQueryFilterException(msg)
+            throw InvalidFilterException(msg)
         }
 
         // let's ensure that if unique field is provided, we do not provide any others
         backend.uniqueFilters.forEach { field ->
             if (filters.containsKey(field) && filters.size > 1) {
                 val msg = "$field is defined as a unique and can not be specified in query with other params"
-                throw InvalidQueryFilterException(msg)
+                throw InvalidFilterException(msg)
             }
         }
 
@@ -191,20 +191,20 @@ class BackendManager(
         val invalidFilters = filters.keys.minus(validFilters)
         if (invalidFilters.isNotEmpty()) {
             val msg = "$invalidFilters are invalid filters; the list of valid filters are $validFilters"
-            throw InvalidQueryFilterException(msg)
+            throw InvalidFilterException(msg)
         }
 
         // let's ensure we have print position we need
-        if (!backend.validFingerPositions.contains(query.params.position)) {
+        if (!backend.validFingerPositions.contains(verifyRequest.params.position)) {
             val msg = "Invalid finger position detected; the list of valid position are ${backend.validFingerPositions}"
-            throw InvalidQueryFilterException(msg)
+            throw InvalidFilterException(msg)
         }
 
         // let's ensure we aren't provided too many DIDs to attempt to match
         val dids = filters["dids"]?.split(",") ?: emptyList()
         if (dids.size > env.maxDids) {
             val msg = "Too many DIDs to match against; the maximum number of DIDs is ${env.maxDids}"
-            throw InvalidQueryFilterException(msg)
+            throw InvalidFilterException(msg)
         }
     }
 

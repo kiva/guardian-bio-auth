@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Fingerprint
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.utils.loadBytesFromResource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -66,7 +66,7 @@ class ApiControllerTest {
         val filters1 = HashMap<String, String>()
         filters1["voterId"] = voterId
         val imageBase64 = String(loadBytesFromResource("images/fingerprint_NIN55555_base64.txt"))
-        val query1 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters1)
+        val query1 = VerifyRequest(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters1)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
             .bodyValue(query1)
@@ -78,7 +78,7 @@ class ApiControllerTest {
         // STEP3: Verify the fingerprint image for the the list of national ids and it should return match.
         val filters2 = HashMap<String, String>()
         filters2["voterId"] = "VOTER1,$voterId,VOTER2"
-        val query2 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters2)
+        val query2 = VerifyRequest(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters2)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
             .bodyValue(query2)
@@ -90,7 +90,7 @@ class ApiControllerTest {
         // STEP4: Verify the fingerprint image for the an invalid voter id and no citizen found is expected.
         val filters3 = HashMap<String, String>()
         filters3["voterId"] = INVALID_VOTER_ID
-        val query3 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters3)
+        val query3 = VerifyRequest(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters3)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
             .bodyValue(query3)

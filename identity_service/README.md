@@ -37,26 +37,27 @@ container.
 
 The following environment variables are set (as of 2020-09-24):
 ```
-BIOANALYZER_ENABLED
-BIOANALYZER_QUALITY_THRESHOLD
-BIOANALYZER_SERVICE_URL
 HASH_PEPPER
-IDENTITYDB_TEMPLATE_CITIZEN_TABLE
-IDENTITYDB_TEMPLATE_POSTGRES_DB
 IDENTITYDB_TEMPLATE_POSTGRES_HOST
-IDENTITYDB_TEMPLATE_POSTGRES_PASSWORD
 IDENTITYDB_TEMPLATE_POSTGRES_PORT
+IDENTITYDB_TEMPLATE_POSTGRES_DB
+IDENTITYDB_TEMPLATE_CITIZEN_TABLE
 IDENTITYDB_TEMPLATE_POSTGRES_USER
-IDENTITYINTELLIGENCEDB_POSTGRES_DRIVER
+IDENTITYDB_TEMPLATE_POSTGRES_PASSWORD
+IDENTITYINTELLIGENCEDB_POSTGRES_USER
 IDENTITYINTELLIGENCEDB_POSTGRES_PASSWORD
 IDENTITYINTELLIGENCEDB_POSTGRES_URL
-IDENTITYINTELLIGENCEDB_POSTGRES_USER
+IDENTITYINTELLIGENCEDB_POSTGRES_DRIVER
+BIOANALYZER_ENABLED
+BIOANALYZER_SERVICE_URL
+BIOANALYZER_QUALITY_THRESHOLD
 REPLAY_ATTACK_ENABLED
+MAX_DIDS
 ```
 
 ## Ownership
 
-Maintainer: Jeff Kennedy (backup from Salton Massally)
+Maintainer: Jeff Kennedy
 Operations: @voutasaurus
 
 ## Features / Aspects
@@ -69,6 +70,9 @@ Primary API endpoints:
 - `/verify`: checks a caller provided fingerprint against the fingerprint template owned by the ID provided
 
 Secondary API endpoints:
+- `/save`: create & store fingerprint templates in bulk
+
+DEPRECATED:
 - `/templatizer/bulk/{backend}`: create & store fingerprint templates in bulk
 
 Informational / vestigial / unknown:
@@ -86,12 +90,13 @@ Note here the following meanings:
 
 These are the input fields for a call to `/verify`.
 
-| Attribute | Description                                                                                                                                                    | Required |
-|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
-| name      | Name of the backend we want to compare fingerprint against. Should be the same as that in backend definition                                                   | True     |
-| image     | Base64 rep of the fingerprint capture                                                                                                                          | True     |
-| position  | Finger position, for valid values see Finger Positions                                                                                                         | True     |
-| filter    | Key:Value pairs of filters used to select candidates we are matching print against. Only filters declared in backend definition are allowed here               | True     |
+| Attribute | Description                                                                                                                                                    | Required         |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------|
+| name      | Name of the backend we want to compare fingerprint against. Should be the same as that in backend definition                                                   | True             |
+| image     | Base64 rep of the fingerprint capture                                                                                                                          | True (or params) |
+| position  | Finger position, for valid values see Finger Positions                                                                                                         | True (or params) |
+| params    | An object including "image" or "template" (base 64 representations of the fingerprint captured) and the "position" (for valid values: see Finger Positions)    | False            |
+| filter    | Key:Value pairs of filters used to select candidates we are matching print against. Only filters declared in backend definition are allowed here               | True             |
 
 ## Known Bugs
 

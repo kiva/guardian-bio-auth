@@ -6,9 +6,9 @@ import org.kiva.identityservice.validators.ContainsKeys
 import javax.validation.constraints.NotEmpty
 
 /**
- * Query used to check search backend and compare result against a fingerprint
+ * VerifyRequest used to check search backend and compare result against a fingerprint
  */
-data class Query(
+data class VerifyRequest(
 
     /**
      * Name of backend we wish to search e.g. Template. backends must be declared in the configuration file
@@ -35,11 +35,11 @@ data class Query(
      *
      * Examples include:
      *
-     * filter by nationalID
-     * filters.put("nationalID", "123456")
+     * filter by nationalId
+     * filters.put("nationalId", "123456")
      *
-     * filter by voterID
-     * filters.put("voterID", "123456")
+     * filter by voterId
+     * filters.put("voterId", "123456")
      *
      * filter by first and last name
      * filters.put("firstName", "John")
@@ -64,7 +64,7 @@ data class Query(
      *
      * While still supporting specifying these as separate top-level fields, this is optional.
      */
-    val params: QueryParams = QueryParams(image ?: "", position ?: FingerPosition.RIGHT_INDEX)
+    val params: VerifyRequestParams = VerifyRequestParams(image ?: "", position ?: FingerPosition.RIGHT_INDEX)
 ) {
     var imageByte: ByteArray = base64ToByte(params.image)
 }

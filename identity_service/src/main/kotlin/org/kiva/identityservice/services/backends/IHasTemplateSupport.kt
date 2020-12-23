@@ -1,8 +1,7 @@
 package org.kiva.identityservice.services.backends
 
-import com.machinezoo.sourceafis.FingerprintTemplate
 import org.kiva.identityservice.domain.Fingerprint
-import org.kiva.identityservice.domain.StoreRequest
+import org.kiva.identityservice.domain.SaveRequest
 import org.kiva.identityservice.errorhandling.exceptions.FingerprintTemplateGenerationException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendOperationException
 import org.kiva.identityservice.services.IBioAnalyzer
@@ -27,10 +26,9 @@ interface IHasTemplateSupport {
     fun templateGenerate(records: Flux<Fingerprint>, throwException: Boolean, sdk: IBiometricSDKAdapter, bioAnalyzer: IBioAnalyzer): Flux<Int>
 
     /**
-     * Provided a fingerprint template, store it in the appropriate backend.
-     *
+     * Provided fingerprint templates, store them in the appropriate backend.
      * @param sdk the backend biometric matching service defines the template version and type.
-     * @param storeRequest the details of the fingerprint template to be stored
+     * @param saveRequests the details of the fingerprints to be stored
      */
-    fun storeTemplate(sdk: IBiometricSDKAdapter, storeRequest: StoreRequest): Mono<FingerprintTemplate>
+    fun saveTemplates(sdk: IBiometricSDKAdapter, saveRequests: Flux<SaveRequest>): Mono<Long>
 }

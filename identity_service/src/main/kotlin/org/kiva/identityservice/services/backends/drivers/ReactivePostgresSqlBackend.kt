@@ -15,7 +15,7 @@ import org.jooq.impl.DSL.field
 import org.kiva.identityservice.config.EnvConfig
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.Identity
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendDefinitionException
 import org.kiva.identityservice.services.backends.Definition
 import org.kiva.identityservice.services.backends.Operator
@@ -76,18 +76,18 @@ abstract class ReactivePostgresSqlBackend(
      * Searches backend fingerprint store, return prints that match a criteria for comparison.
      * @todo only supports equality matches for now.
      *
-     * @param query the search query.
+     * @param verifyRequest the search query.
      * @param types the data types.
      * @param sdk the backend biometric matching service.
      * @return
      */
-    override fun search(query: Query, types: Array<DataType>, sdk: IBiometricSDKAdapter?): Flux<Identity> {
+    override fun search(verifyRequest: VerifyRequest, types: Array<DataType>, sdk: IBiometricSDKAdapter?): Flux<Identity> {
         var builder = DSL.using(SQLDialect.POSTGRES)
             .select()
             .from((table).trim())
             .query
 
-        for (entry in query.filters) {
+        for (entry in verifyRequest.filters) {
             // @TODO we want to coerce into preferred datatype here
             // let's get operator and mapped field
             val column = table + "." + filterMappers[entry.key]!!.first
@@ -135,7 +135,7 @@ abstract class ReactivePostgresSqlBackend(
         }
 
         // let's give implementations a chance to edit this
-        builder = customize(builder, query, types, sdk)
+        builder = customize(builder, verifyRequest, types, sdk)
         fetchLimit?.let { builder.addLimit(it.toInt()) }
 
         logger.info("Running query: " + builder.getSQL(ParamType.INLINED))
@@ -143,7 +143,7 @@ abstract class ReactivePostgresSqlBackend(
         return client
             .withHandle { handle ->
                 handle.select(builder.getSQL(ParamType.INLINED))
-                    .mapRow { row -> handleResult(row, query) }
+                    .mapRow { row -> handleResult(row, verifyRequest) }
                     .doOnNext { logger.info("Fetched Identity $it") }
             }
     }
@@ -156,18 +156,18 @@ abstract class ReactivePostgresSqlBackend(
             .joinToString("")
     }
 
-    abstract fun handleResult(row: Row, query: Query): Identity
+    abstract fun handleResult(row: Row, verifyRequest: VerifyRequest): Identity
 
     /**
      * drivers wishing to provide more specific implementation can override this and add to query.
      */
-    open fun customize(sqlQuery: SelectQuery<Record>, query: Query, types: Array<DataType>, sdk: IBiometricSDKAdapter?) =
+    open fun customize(sqlQuery: SelectQuery<Record>, verifyRequest: VerifyRequest, types: Array<DataType>, sdk: IBiometricSDKAdapter?) =
         sqlQuery
 
     /**
      * Helper function that pings backend, testing for connectivity.
      */
-    override fun healthcheck(query: Query): Mono<Boolean> {
+    override fun healthcheck(verifyRequest: VerifyRequest): Mono<Boolean> {
         return client
             .withHandle {
                 it.select("SELECT version();")

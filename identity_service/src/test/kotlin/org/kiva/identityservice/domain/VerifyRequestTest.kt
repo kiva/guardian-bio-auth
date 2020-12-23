@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test
 /**
  * The unit tests for verifying Query data class.
  */
-class QueryTest {
+class VerifyRequestTest {
 
     @Test
     fun testQueryWithDefaults() {
-        val query = Query("template", "Image1", FingerPosition.LEFT_THUMB, emptyMap())
+        val query = VerifyRequest("template", "Image1", FingerPosition.LEFT_THUMB, emptyMap())
         assertNotNull(query, "Query should not be null")
         assertEquals(DataType.IMAGE, query.imageType, "Mismatch is query image type")
         assertNotNull(query.imageByte, "Query imagebytes should not be null")
@@ -21,7 +21,7 @@ class QueryTest {
 
     @Test
     fun testImageQueryWithDefaultParams() {
-        val query = Query("template", "Image2", FingerPosition.LEFT_THUMB, emptyMap(), DataType.IMAGE)
+        val query = VerifyRequest("template", "Image2", FingerPosition.LEFT_THUMB, emptyMap(), DataType.IMAGE)
         assertNotNull(query, "Query should not be null")
         assertEquals(DataType.IMAGE, query.imageType, "Mismatch is query image type")
         assertNotNull(query.imageByte, "Query imagebytes should not be null")
@@ -31,7 +31,7 @@ class QueryTest {
 
     @Test
     fun testTemplateQueryWithDefaultParams() {
-        val query = Query("template", "Image3", FingerPosition.LEFT_THUMB, emptyMap(), DataType.TEMPLATE)
+        val query = VerifyRequest("template", "Image3", FingerPosition.LEFT_THUMB, emptyMap(), DataType.TEMPLATE)
         assertNotNull(query, "Query should not be null")
         assertEquals(DataType.TEMPLATE, query.imageType, "Mismatch is query image type")
         assertNotNull(query.imageByte, "Query imagebytes should not be null")
@@ -41,8 +41,8 @@ class QueryTest {
 
     @Test
     fun testQueryWithParams() {
-        val params = QueryParams("ImageX", FingerPosition.LEFT_INDEX)
-        val query = Query("template", "", FingerPosition.LEFT_THUMB, emptyMap(), DataType.IMAGE, params)
+        val params = VerifyRequestParams("ImageX", FingerPosition.LEFT_INDEX)
+        val query = VerifyRequest("template", "", FingerPosition.LEFT_THUMB, emptyMap(), DataType.IMAGE, params)
         assertNotNull(query, "Query should not be null")
         assertEquals("ImageX", query.params.image, "Image should not be auto-populated into params")
         assertEquals(FingerPosition.LEFT_INDEX, query.params.position, "Position should not be auto-populated into params")

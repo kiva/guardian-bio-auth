@@ -1,6 +1,7 @@
 package org.kiva.identityservice.services.backends.drivers
 
 import com.machinezoo.sourceafis.FingerprintTemplate
+import io.r2dbc.client.Handle
 import io.r2dbc.spi.Row
 import org.jooq.Record
 import org.jooq.SQLDialect
@@ -14,8 +15,8 @@ import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Fingerprint
 import org.kiva.identityservice.domain.Identity
-import org.kiva.identityservice.domain.Query
-import org.kiva.identityservice.domain.StoreRequest
+import org.kiva.identityservice.domain.SaveRequest
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.errorhandling.exceptions.FingerprintTemplateGenerationException
 import org.kiva.identityservice.errorhandling.exceptions.ImageDecodeException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendOperationException
@@ -63,8 +64,8 @@ class TemplateBackend(private val env: EnvConfig) :
     /**
      * allows to add the joins needed.
      */
-    override fun customize(sqlQuery: SelectQuery<Record>, query: Query, types: Array<DataType>, sdk: IBiometricSDKAdapter?): SelectQuery<Record> {
-        val q = super.customize(sqlQuery, query, types, sdk)
+    override fun customize(sqlQuery: SelectQuery<Record>, verifyRequest: VerifyRequest, types: Array<DataType>, sdk: IBiometricSDKAdapter?): SelectQuery<Record> {
+        val q = super.customize(sqlQuery, verifyRequest, types, sdk)
 
         q.addSelect(
             field("voter_id"),
@@ -73,7 +74,7 @@ class TemplateBackend(private val env: EnvConfig) :
             field("position"),
             field("missing_code")
         )
-        q.addConditions(condition("position = ?", query.params.position.code))
+        q.addConditions(condition("position = ?", verifyRequest.params.position.code))
         q.addConditions(condition("type_id = ?", 1))
 
         if (DataType.TEMPLATE in types) {
@@ -92,7 +93,7 @@ class TemplateBackend(private val env: EnvConfig) :
         return q
     }
 
-    override fun handleResult(row: Row, query: Query): Identity {
+    override fun handleResult(row: Row, verifyRequest: VerifyRequest): Identity {
         val did = row["did", String::class.java]
         val nationalId = row["national_id", String::class.java]
 
@@ -115,7 +116,7 @@ class TemplateBackend(private val env: EnvConfig) :
             DataType.TEMPLATE -> rawImage.toByteArray(Charsets.UTF_8)
             else -> throw ValidationError(ApiExceptionCode.INVALID_DATA_TYPE, "Image data type is not supported for template backend.")
         }
-        return Identity(did, nationalId!!, mapOf(query.params.position to imageBytes), type, templateVersion)
+        return Identity(did, nationalId!!, mapOf(verifyRequest.params.position to imageBytes), type, templateVersion)
     }
 
     override fun templateGenerate(records: Flux<Fingerprint>, throwException: Boolean, sdk: IBiometricSDKAdapter, bioAnalyzer: IBioAnalyzer): Flux<Int> {
@@ -128,31 +129,34 @@ class TemplateBackend(private val env: EnvConfig) :
             }
     }
 
-    override fun storeTemplate(sdk: IBiometricSDKAdapter, storeRequest: StoreRequest): Mono<FingerprintTemplate> {
-        return sdk.buildTemplate(storeRequest.imageByte).flatMap { template ->
-            val sqlUpdate = "INSERT INTO kiva_biometric_template(did,position,template_type,type_id,national_id,voter_id,version,capture_date,template,quality_score) " +
-                "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) " +
-                "ON CONFLICT ON CONSTRAINT unique_did_postion_template_constraint DO " +
-                "UPDATE SET national_id=$5,voter_id=$6,version=$7,capture_date=$8,missing_code=NULL,template=$9,quality_score=NULL"
+    override fun saveTemplates(sdk: IBiometricSDKAdapter, saveRequests: Flux<SaveRequest>): Mono<Long> {
+        return client.inTransaction { handler ->
+            saveRequests.flatMap { templateInsertHelper(sdk, it, handler) }
+        }.count()
+    }
 
-            client.inTransaction {
-                it.execute(
-                    sqlUpdate,
-                    storeRequest.did,
-                    storeRequest.position.code,
-                    sdk.templateType,
-                    storeRequest.type_id,
-                    storeRequest.national_id,
-                    storeRequest.voter_id,
-                    sdk.version,
-                    storeRequest.capture_date,
-                    template,
-                    storeRequest.quality_score
-                )
-                    .doOnNext { count -> logger.debug("$count rows affected by $sqlUpdate") }
-                    .last()
-                    .map { template }
-            }.last()
+    private fun templateInsertHelper(sdk: IBiometricSDKAdapter, saveRequest: SaveRequest, handler: Handle): Mono<FingerprintTemplate> {
+        val sqlUpdate = "INSERT INTO kiva_biometric_template(did,position,template_type,type_id,national_id,voter_id,version,capture_date,template,quality_score) " +
+            "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) " +
+            "ON CONFLICT ON CONSTRAINT unique_did_postion_template_constraint DO " +
+            "UPDATE SET national_id=$5,voter_id=$6,version=$7,capture_date=$8,missing_code=NULL,template=$9,quality_score=NULL"
+        return sdk.buildTemplate(saveRequest.params.fingerprintBytes).flatMap { template ->
+            handler.execute(
+                sqlUpdate,
+                saveRequest.id,
+                saveRequest.params.position.code,
+                sdk.templateType,
+                saveRequest.params.type_id,
+                saveRequest.filters.national_id,
+                saveRequest.filters.voter_id,
+                sdk.version,
+                saveRequest.params.capture_date,
+                template.serialize(),
+                saveRequest.params.quality_score
+            )
+                .doOnNext { count -> logger.debug("$count rows affected by $sqlUpdate") }
+                .last()
+                .map { template }
         }
     }
 

@@ -11,8 +11,8 @@ import org.kiva.identityservice.errorhandling.exceptions.BioanalyzerServiceExcep
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
 import org.kiva.identityservice.errorhandling.exceptions.api.FingerprintLowQualityException
 import org.kiva.identityservice.errorhandling.exceptions.api.FingerprintNoMatchException
+import org.kiva.identityservice.errorhandling.exceptions.api.InvalidFilterException
 import org.kiva.identityservice.errorhandling.exceptions.api.InvalidImageFormatException
-import org.kiva.identityservice.errorhandling.exceptions.api.InvalidQueryFilterException
 import org.kiva.identityservice.generateIdentities
 import org.kiva.identityservice.generateIdentity
 import org.kiva.identityservice.generateQuery
@@ -75,7 +75,7 @@ class VerificationEngineTest {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = Mockito.mock(SourceAFISFingerprintSDKAdapter::class.java)
 
-        Mockito.doThrow(InvalidBackendException()).`when`(backendManager).validateQuery(query)
+        Mockito.doThrow(InvalidBackendException()).`when`(backendManager).validateVerifyRequest(query)
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
@@ -91,12 +91,12 @@ class VerificationEngineTest {
         Mockito.doReturn(backend).`when`(backendManager)!!.getbyName(Mockito.anyString())
         val sdk = Mockito.mock(SourceAFISFingerprintSDKAdapter::class.java)
 
-        Mockito.doThrow(InvalidQueryFilterException()).`when`(backendManager).validateQuery(query)
+        Mockito.doThrow(InvalidFilterException()).`when`(backendManager).validateVerifyRequest(query)
 
         val verificationEngine = VerificationEngine(backendManager, sdk, listOf("image/jpeg", "image/bmp", "image/png"), 20, checkReplayAttack, bioAnalyzer)
         StepVerifier.create(verificationEngine.match(query))
             .expectSubscription()
-            .verifyError(InvalidQueryFilterException::class.java)
+            .verifyError(InvalidFilterException::class.java)
     }
 
     /**
@@ -262,7 +262,7 @@ class VerificationEngineTest {
         identities.add(generateIdentity(DID, query.imageByte))
 
         Mockito.doReturn(Flux.fromIterable(identities)).`when`(backend)!!.search(any(), any(), any())
-        Mockito.doNothing().`when`(backendManager).validateQuery(any())
+        Mockito.doNothing().`when`(backendManager).validateVerifyRequest(any())
 
         val emptyMono: Mono<Any> = Mono.empty()
         Mockito.doReturn(emptyMono).`when`(bioAnalyzer).analyze(any(), any())
@@ -295,7 +295,7 @@ class VerificationEngineTest {
         val identity4 = generateIdentity(DID4, lowQualityImageBytes)
 
         Mockito.doReturn(Flux.just(identity1, identity2, identity3, identity4)).`when`(backend)!!.search(any(), any(), any())
-        Mockito.doNothing().`when`(backendManager).validateQuery(any())
+        Mockito.doNothing().`when`(backendManager).validateVerifyRequest(any())
 
         val emptyMono: Mono<Any> = Mono.empty()
         Mockito.doReturn(emptyMono).`when`(bioAnalyzer).analyze(any(), any())

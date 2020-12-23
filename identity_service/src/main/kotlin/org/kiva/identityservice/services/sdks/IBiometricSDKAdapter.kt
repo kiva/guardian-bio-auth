@@ -2,7 +2,7 @@ package org.kiva.identityservice.services.sdks
 
 import com.machinezoo.sourceafis.FingerprintTemplate
 import org.kiva.identityservice.domain.Identity
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -17,7 +17,7 @@ interface IBiometricSDKAdapter {
     /**
      * among a list of candidate records check if probe matches any
      */
-    fun match(query: Query, people: Flux<Identity>): Flux<Identity>
+    fun match(verifyRequest: VerifyRequest, people: Flux<Identity>): Flux<Identity>
 
     fun buildTemplate(template: ByteArray): Mono<FingerprintTemplate>
 

@@ -3,7 +3,7 @@ package org.kiva.identityservice.domain
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
 
-data class QueryParams(
+data class VerifyRequestParams(
 
     /**
      * Base64 representation of the fingerprint we should check
