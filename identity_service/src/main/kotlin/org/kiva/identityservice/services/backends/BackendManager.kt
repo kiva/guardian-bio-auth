@@ -2,11 +2,12 @@ package org.kiva.identityservice.services.backends
 
 import org.kiva.identityservice.config.EnvConfig
 import org.kiva.identityservice.domain.FingerPosition
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendDefinitionException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendFieldsDefinitionException
-import org.kiva.identityservice.errorhandling.exceptions.api.InvalidQueryFilterException
+import org.kiva.identityservice.errorhandling.exceptions.InvalidParamsException
+import org.kiva.identityservice.errorhandling.exceptions.api.InvalidFilterException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.util.ClassUtils
@@ -28,8 +29,6 @@ class BackendManager(
      * map of load backend drivers
      */
     private val backends: MutableMap<String, IBackend> = mutableMapOf()
-
-    private val BACKEND_INITILIZAE_ERROR_MESSAGE = "Error initializing the backend."
 
     @Throws(Exception::class)
     override fun afterPropertiesSet() {
@@ -118,7 +117,7 @@ class BackendManager(
                         val operator = try {
                             Operator.fromCode(operatorStr)
                         } catch (e: IllegalArgumentException) {
-                            val msg = "Operator declared for backend $name filter $key is invalud"
+                            val msg = "Operator declared for backend $name filter $key is invalid"
                             logger.error(msg, e)
                             throw InvalidBackendDefinitionException(msg)
                         }
@@ -127,13 +126,13 @@ class BackendManager(
             }
             logger.info("Loaded  $backends.size backends: ${backends.keys}")
         } catch (ex: Exception) {
-            throw InvalidBackendDefinitionException("$BACKEND_INITILIZAE_ERROR_MESSAGE: ${ex.message}")
+            throw InvalidBackendDefinitionException("Error initializing the backend: ${ex.message}")
         }
     }
 
     @Throws(InvalidBackendFieldsDefinitionException::class)
     private fun validateDefinition(backend: String, definition: Definition) {
-        // let;s ensure that we have all the root keys we require
+        // let's ensure that we have all the root keys we require
         val missingKeys = ArrayList<String>()
         val availableKeys = definition.config
             .children()
@@ -156,40 +155,56 @@ class BackendManager(
         return backends[name] ?: throw InvalidBackendException()
     }
 
-    @Throws(InvalidQueryFilterException::class, InvalidBackendException::class)
-    override fun validateQuery(query: Query) {
-        val backendName: String = query.backend
-        val filters: Map<String, String> = query.filters
+    @Throws(InvalidFilterException::class, InvalidBackendException::class)
+    override fun validateVerifyRequest(verifyRequest: VerifyRequest) {
+        val backendName: String = verifyRequest.backend
+        val filters: Map<String, String> = verifyRequest.filters
 
         // let's ensure backend exists
         val backend: IBackend = getbyName(backendName)
+
+        // let's ensure that if image is provided at the top-level, it's non-empty
+        if (verifyRequest.image != null && verifyRequest.image.length == 0) {
+            val msg = "Image must be a non-empty string"
+            logger.warn(msg)
+            throw InvalidParamsException(msg)
+        }
 
         // let's ensure that required filters are provided
         val missingFilters = backend.requiredFilters.filter { !filters.containsKey(it) }
         if (missingFilters.isNotEmpty()) {
             val msg = "Query is missing the required filters: $missingFilters"
             logger.warn(msg)
-            throw InvalidQueryFilterException(msg)
+            throw InvalidFilterException(msg)
         }
 
         // let's ensure that if unique field is provided, we do not provide any others
         backend.uniqueFilters.forEach { field ->
             if (filters.containsKey(field) && filters.size > 1) {
                 val msg = "$field is defined as a unique and can not be specified in query with other params"
-                throw InvalidQueryFilterException(msg)
+                throw InvalidFilterException(msg)
             }
         }
 
         // let's ensure we don't have params we don't want here
-        if (!backend.filters.containsAll(filters.keys)) {
-            val msg = "Invalid filters detected; the list of valid filters are ${backend.filters}"
-            throw InvalidQueryFilterException(msg)
+        val validFilters = backend.filters
+        val invalidFilters = filters.keys.minus(validFilters)
+        if (invalidFilters.isNotEmpty()) {
+            val msg = "$invalidFilters are invalid filters; the list of valid filters are $validFilters"
+            throw InvalidFilterException(msg)
         }
 
         // let's ensure we have print position we need
-        if (!backend.validFingerPositions.contains(query.position)) {
+        if (!backend.validFingerPositions.contains(verifyRequest.params.position)) {
             val msg = "Invalid finger position detected; the list of valid position are ${backend.validFingerPositions}"
-            throw InvalidQueryFilterException(msg)
+            throw InvalidFilterException(msg)
+        }
+
+        // let's ensure we aren't provided too many DIDs to attempt to match
+        val dids = filters["dids"]?.split(",") ?: emptyList()
+        if (dids.size > env.maxDids) {
+            val msg = "Too many DIDs to match against; the maximum number of DIDs is ${env.maxDids}"
+            throw InvalidFilterException(msg)
         }
     }
 

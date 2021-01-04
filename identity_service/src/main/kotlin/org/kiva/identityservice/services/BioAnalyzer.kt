@@ -88,24 +88,21 @@ class BioAnalyzer(
      */
     private fun handleAnalyzerData(requestID: String, throwException: Boolean, data: Map<String, Any>): Mono<Double> {
         try {
-            val result = data.get(requestID)
+            val result = data[requestID]
                 ?.let { it as Map<String, Any> }
                 ?: run { mapOf<String, Any>() }
-            logger.info("Successful call to bioanalyzer " + result)
+            logger.info("Successful call to bioanalyzer $result")
 
-            // logger.info("Successful call to bioanalyzer $result")
             // let's ensure image format is what we want
             val imageFormat = result["format"]
-
             if (!validImageTypes.contains(imageFormat)) {
-                val msg = "Invalid image format. Image format $imageFormat is not supported, must be one of " + validImageTypes.joinToString(", ")
+                val msg = "Invalid image format. Image format $imageFormat is not supported, must be one of ${validImageTypes.joinToString(", ")}"
                 logger.warn(msg)
                 return Mono.error(BioanalyzerServiceException(msg))
             }
 
             // let's ensure that quality is what we want however what is a good quality score for our case?
             // more reading + measuring necessary
-
             val fingerprintQuality = result["quality"]
                 ?.let { it as Double }
                 ?: run { -1.0 } // Quality is negative: autofail

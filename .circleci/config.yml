@@ -79,6 +79,7 @@ workflows:
             - run:
                 name: build identity service
                 command: |
+                  ./scripts/useDummyEnvFiles.sh --force
                   cd identity_service
                   ./gradlew clean
                   ./gradlew build

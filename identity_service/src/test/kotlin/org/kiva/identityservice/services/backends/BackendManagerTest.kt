@@ -8,7 +8,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
-import org.kiva.identityservice.errorhandling.exceptions.api.InvalidQueryFilterException
+import org.kiva.identityservice.errorhandling.exceptions.api.InvalidFilterException
 import org.kiva.identityservice.generateQuery
 import org.kiva.identityservice.services.backends.drivers.SqlBackend
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,7 +28,6 @@ class BackendManagerTest {
     private lateinit var backendManager: IBackendManager
 
     @Test
-    @Throws(Exception::class)
     fun initialize() {
         assertTrue(backendManager.filtersAllFields("template").containsAll(listOf("nationalId", "voterId", "firstName")))
 
@@ -66,60 +65,68 @@ class BackendManagerTest {
 
     @Disabled
     @Test
-    @Throws(Exception::class)
     fun validateFilterMissingKeys() {
         val filter = HashMap<String, String>()
         filter["firstName"] = FIRST_NAME
 
-        assertThrows<InvalidQueryFilterException> {
-            backendManager.validateQuery(query.copy(backend = "template", filters = filter))
+        assertThrows<InvalidFilterException> {
+            backendManager.validateVerifyRequest(query.copy(backend = "template", filters = filter))
         }
     }
 
     @Test
-    @Throws(Exception::class)
     fun invalidBackendName() {
         val filter = HashMap<String, String>()
 
         assertThrows<InvalidBackendException> {
-            backendManager.validateQuery(query.copy(backend = "dummy", filters = filter))
+            backendManager.validateVerifyRequest(query.copy(backend = "dummy", filters = filter))
         }
     }
 
     @Test
-    @Throws(Exception::class)
     fun validateFilterUniqueKeys() {
         val filter = HashMap<String, String>()
         filter["firstName"] = FIRST_NAME
         filter["nationalId"] = NATIONAL_ID
-        assertThrows<InvalidQueryFilterException> {
-            backendManager.validateQuery(query.copy(backend = "template", filters = filter))
+        assertThrows<InvalidFilterException> {
+            backendManager.validateVerifyRequest(query.copy(backend = "template", filters = filter))
         }
     }
 
     @Test
-    @Throws(Exception::class)
     fun validateFilterNonDeclaredFields() {
         val filter = HashMap<String, String>()
         filter["firstNameddsd"] = FIRST_NAME
-        assertThrows<InvalidQueryFilterException> {
-            backendManager.validateQuery(query.copy(backend = "template", filters = filter))
+        assertThrows<InvalidFilterException> {
+            backendManager.validateVerifyRequest(query.copy(backend = "template", filters = filter))
         }
     }
 
     @Test
-    @Throws(Exception::class)
     fun validateFilterOk() {
         val filter = HashMap<String, String>()
         filter["nationalId"] = FIRST_NAME
-        backendManager.validateQuery(query.copy(backend = "template", filters = filter))
+        backendManager.validateVerifyRequest(query.copy(backend = "template", filters = filter))
     }
 
     @Disabled
     @Test
     fun validateQueryFingerpositions() {
-        assertThrows<InvalidQueryFilterException> {
-            backendManager.validateQuery(query.copy(backend = "template", position = FingerPosition.LEFT_INDEX))
+        assertThrows<InvalidFilterException> {
+            backendManager.validateVerifyRequest(query.copy(backend = "template", position = FingerPosition.LEFT_INDEX))
+        }
+    }
+
+    @Test
+    fun validateDids() {
+        val dids = mutableListOf<String>()
+        for (i in 0 until 101) {
+            dids.add(DID)
+        }
+        val filter = HashMap<String, String>()
+        filter["dids"] = dids.joinToString(",")
+        assertThrows<InvalidFilterException> {
+            backendManager.validateVerifyRequest(query.copy(backend = "template", filters = filter))
         }
     }
 
@@ -128,6 +135,9 @@ class BackendManagerTest {
 
     /** The sample national id used in this test. */
     private val NATIONAL_ID = "112222"
+
+    /** The sample DID used in this test. */
+    private val DID = "14hnHFRjaiwVjZVtZPsPCv"
 
     /** The sample query used in this test. */
     private val query = generateQuery()

@@ -6,7 +6,7 @@ import com.machinezoo.sourceafis.FingerprintMatcher
 import com.machinezoo.sourceafis.FingerprintTemplate
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.Identity
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.errorhandling.exceptions.FingerPrintTemplateException
 import org.kiva.identityservice.errorhandling.exceptions.api.ApiExceptionCode
 import org.kiva.identityservice.services.sdks.IFingerprintSDKAdapter
@@ -34,13 +34,13 @@ class SourceAFISFingerprintSDKAdapter(
      *
      * @return list of matching candidates
      */
-    override fun match(query: Query, people: Flux<Identity>): Flux<Identity> {
+    override fun match(verifyRequest: VerifyRequest, people: Flux<Identity>): Flux<Identity> {
 
         try {
-            val queryTemplate = if (query.imageType == DataType.IMAGE) {
-                FingerprintTemplate(FingerprintImage().decode(query.imageByte))
+            val queryTemplate = if (verifyRequest.imageType == DataType.IMAGE) {
+                FingerprintTemplate(FingerprintImage().decode(verifyRequest.imageByte))
             } else {
-                FingerprintTemplate().deserialize(String(query.imageByte, Charsets.UTF_8))
+                FingerprintTemplate().deserialize(String(verifyRequest.imageByte, Charsets.UTF_8))
             }
             val matcher = FingerprintMatcher().index(queryTemplate)
 
@@ -50,12 +50,12 @@ class SourceAFISFingerprintSDKAdapter(
                 .runOn(Schedulers.parallel())
                 .filter {
                     val template = when (it.type) {
-                        DataType.IMAGE -> FingerprintTemplate(FingerprintImage().decode(it.fingerprints[query.position]))
+                        DataType.IMAGE -> FingerprintTemplate(FingerprintImage().decode(it.fingerprints[verifyRequest.params.position]))
                         DataType.TEMPLATE -> {
                             // let's ensure we got sent in a version that works for us and that out backend isn't doing
                             // something stupid. We won't refuse to process, but just scream in the line below :)
                             if (it.templateVersion == null) {
-                                logger.error("Template version not specified for '${it.national_id}' in ${query.backend}")
+                                logger.error("Template version not specified for '${it.national_id}' in ${verifyRequest.backend}")
                             }
 
                             // we check for exact equality here; other SDKs are free to check for version range
@@ -63,7 +63,7 @@ class SourceAFISFingerprintSDKAdapter(
                                 if (check != version)
                                     throw FingerPrintTemplateException(ApiExceptionCode.INVALID_TEMPLATE_VERSION.msg)
                             }
-                            FingerprintTemplate().deserialize(String(it.fingerprints[query.position]!!, Charsets.UTF_8))
+                            FingerprintTemplate().deserialize(String(it.fingerprints[verifyRequest.params.position]!!, Charsets.UTF_8))
                         }
                     }
                     it.matchingScore = matcher.match(template)

@@ -8,6 +8,7 @@ enum class ApiExceptionCode constructor(val msg: String) {
     FINGERPRINT_MISSING_AMPUTATION("There is no fingerprint stored in the database, due to amputation"), // @TODO
     FINGERPRINT_MISSING_UNABLE_TO_PRINT("There is no fingerprint stored in the database, unable to record fingerprint"), // @TODO
     INVALID_FILTERS("One of your filters is invalid or missing"),
+    INVALID_PARAMS("One of your params is invalid or missing"),
     INVALID_IMAGE_ENCODING("Invalid image encoding, must be base64 encoded"),
     INVALID_IMAGE_FORMAT("Invalid image format, must be one of ..."),
     INVALID_POSITION("Invalid position, must be one of ..."),

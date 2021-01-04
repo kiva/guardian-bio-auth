@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Fingerprint
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.utils.loadBytesFromResource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -29,8 +29,6 @@ class ApiControllerTest {
 
     /**
      * Tests the healthz endpoint.
-     *
-     * @throws Exception if there is any.
      */
     @Test
     fun verifyHealth() {
@@ -48,8 +46,6 @@ class ApiControllerTest {
      * STEP2: Verify the fingerprint image for the the voter id and it should return match.
      * STEP3: Verify the fingerprint image for the the list of voter ids and it should return match.
      * STEP4: Verify the fingerprint image for the an invalid voter id and no citizen found is expected.
-     *
-     * @throws Exception if there is any.
      */
     @Disabled
     @Test
@@ -70,7 +66,7 @@ class ApiControllerTest {
         val filters1 = HashMap<String, String>()
         filters1["voterId"] = voterId
         val imageBase64 = String(loadBytesFromResource("images/fingerprint_NIN55555_base64.txt"))
-        val query1 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters1)
+        val query1 = VerifyRequest(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters1)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
             .bodyValue(query1)
@@ -82,7 +78,7 @@ class ApiControllerTest {
         // STEP3: Verify the fingerprint image for the the list of national ids and it should return match.
         val filters2 = HashMap<String, String>()
         filters2["voterId"] = "VOTER1,$voterId,VOTER2"
-        val query2 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters2)
+        val query2 = VerifyRequest(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters2)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
             .bodyValue(query2)
@@ -94,7 +90,7 @@ class ApiControllerTest {
         // STEP4: Verify the fingerprint image for the an invalid voter id and no citizen found is expected.
         val filters3 = HashMap<String, String>()
         filters3["voterId"] = INVALID_VOTER_ID
-        val query3 = Query(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters3)
+        val query3 = VerifyRequest(TEMPLATE_BACKEND, imageBase64, FingerPosition.RIGHT_THUMB, filters3)
 
         webTestClient.post().uri("$BASE_END_POINT/verify")
             .bodyValue(query3)
@@ -106,8 +102,6 @@ class ApiControllerTest {
 
     /**
      * Tests the backend endpoint for template backend.
-     *
-     * @throws Exception if there is any.
      */
     @Test
     fun verifyBackendForTemplate() {
@@ -115,13 +109,11 @@ class ApiControllerTest {
             .exchange()
             .expectStatus().isOk
             .expectBody()
-            .json("{\"positions\":[\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\"],\"filters\":[\"firstName\",\"nationalId\",\"voterId\"]}")
+            .json("{\"positions\":[\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\"],\"filters\":[\"firstName\",\"nationalId\",\"voterId\",\"dids\"]}")
     }
 
     /**
      * Tests the backend endpoint for invalid backend name.
-     *
-     * @throws Exception if there is any.
      */
     @Test
     fun verifyBackendForInvalidName() {
@@ -136,8 +128,6 @@ class ApiControllerTest {
      * STEP2- Insert a sample record for right thumb finger in template db and this time the positions endpoint should return it
      * STEP3- Insert another sample record for left thumb finger in template db and this time the positions endpoint should return two items
      * STEP4- Insert another missing finger record for right index in template db and this time the positions endpoint should return two items again
-     *
-     * @throws Exception if there is any.
      */
     @Disabled
     @Test

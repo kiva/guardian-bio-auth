@@ -12,11 +12,8 @@ class SecurityUtilsTest {
 
     /**
      * Tests sha256 function.
-     *
-     * @throws Exception if there is error.
      */
     @Test
-    @Throws(Exception::class)
     fun testSha256() {
         val hash1 = sha256("input1")
         val hash2 = sha256("input1")
@@ -29,11 +26,8 @@ class SecurityUtilsTest {
 
     /**
      * Tests sha256Half function.
-     *
-     * @throws Exception if there is error.
      */
     @Test
-    @Throws(Exception::class)
     fun testSha256Half() {
         val hash1 = sha256("input1")
         val hash2 = sha256Half("input1")
@@ -52,11 +46,8 @@ class SecurityUtilsTest {
 
     /**
      * Tests generateHash function.
-     *
-     * @throws Exception if there is error.
      */
     @Test
-    @Throws(Exception::class)
     fun testGenerateHash() {
         val hash1 = generateHash("input1", "pepper1")
         val hash2 = generateHash("input1", "pepper1")
@@ -85,11 +76,8 @@ class SecurityUtilsTest {
 
     /**
      * Tests generateHashForList function.
-     *
-     * @throws Exception if there is error.
      */
     @Test
-    @Throws(Exception::class)
     fun testGenerateHashForList() {
         val hash1 = generateHashForList(listOf("input1", "input2"), "pepper1")
         val hash2 = generateHashForList(listOf("input1", "input3"), "pepper1")

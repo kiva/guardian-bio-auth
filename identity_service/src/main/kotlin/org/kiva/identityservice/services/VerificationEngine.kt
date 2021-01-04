@@ -3,7 +3,7 @@ package org.kiva.identityservice.services
 import org.jnbis.api.Jnbis
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.Identity
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.errorhandling.exceptions.BioanalyzerServiceException
 import org.kiva.identityservice.errorhandling.exceptions.FingerPrintTemplateException
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendException
@@ -11,8 +11,8 @@ import org.kiva.identityservice.errorhandling.exceptions.api.ApiExceptionCode
 import org.kiva.identityservice.errorhandling.exceptions.api.FingerprintLowQualityException
 import org.kiva.identityservice.errorhandling.exceptions.api.FingerprintMissingNotCapturedException
 import org.kiva.identityservice.errorhandling.exceptions.api.FingerprintNoMatchException
+import org.kiva.identityservice.errorhandling.exceptions.api.InvalidFilterException
 import org.kiva.identityservice.errorhandling.exceptions.api.InvalidImageFormatException
-import org.kiva.identityservice.errorhandling.exceptions.api.InvalidQueryFilterException
 import org.kiva.identityservice.errorhandling.exceptions.api.NoCitizenFoundException
 import org.kiva.identityservice.services.backends.IBackend
 import org.kiva.identityservice.services.backends.IBackendManager
@@ -39,15 +39,15 @@ class VerificationEngine(
     private val bioAnalyzer: IBioAnalyzer
 ) : IVerificationEngine {
 
-    override fun match(query: Query): Mono<Identity> {
+    override fun match(verifyRequest: VerifyRequest): Mono<Identity> {
         try {
             // let's check that image is of a supported type
-            var contentType = detectContentType(query.imageByte)
-            if (query.imageType == DataType.IMAGE) {
+            var contentType = detectContentType(verifyRequest.imageByte)
+            if (verifyRequest.imageType == DataType.IMAGE) {
 
                 // Tika parser detects wsq as octet-stream, so, it is converted to png and match is called using its png version.
                 if (contentType == OCTET_STREAM_CONTENT_TYPE) {
-                    contentType = detectContentType(Jnbis.wsq().decode(query.imageByte).toPng().asByteArray())
+                    contentType = detectContentType(Jnbis.wsq().decode(verifyRequest.imageByte).toPng().asByteArray())
                 }
 
                 if (!validImageTypes.contains(contentType)) {
@@ -55,7 +55,7 @@ class VerificationEngine(
                     logErrorMessage(e)
                     return Mono.error(e)
                 }
-            } else if (query.imageType == DataType.TEMPLATE) {
+            } else if (verifyRequest.imageType == DataType.TEMPLATE) {
                 // For template image queries, the image field should be plain text of json template.
                 if (contentType != PLAIN_TEXT_CONTENT_TYPE) {
                     val e = InvalidImageFormatException(ApiExceptionCode.INVALID_IMAGE_FORMAT.msg)
@@ -64,24 +64,29 @@ class VerificationEngine(
                 }
             }
 
-            // let's validate query filter
-            backendManager.validateQuery(query)
+            // let's validate verify request
+            backendManager.validateVerifyRequest(verifyRequest)
 
             // compute hash & check against database
-            checkReplayAttack.isReplayAttack(query)
+            checkReplayAttack.isReplayAttack(verifyRequest)
 
             // let's get backend
-            val backend: IBackend = backendManager.getbyName(query.backend)
+            val backend: IBackend = backendManager.getbyName(verifyRequest.backend)
 
-            return sdk.match(query, fetchCandidates(backend, query, DataType.values()))
+            return sdk.match(verifyRequest, fetchCandidates(backend, verifyRequest, DataType.values()))
                 .onErrorResume(FingerPrintTemplateException::class.java) {
                     // we need to redo with only image if template fails for some reason
-                    val newCandidates = fetchCandidates(backend, query, arrayOf(DataType.IMAGE))
-                    sdk.match(query, newCandidates)
+                    val newCandidates = fetchCandidates(backend, verifyRequest, arrayOf(DataType.IMAGE))
+                    sdk.match(verifyRequest, newCandidates)
                 }
                 // Since no match found, let's run bio-analyzer service, just in case it might be because of fingerprint's low quality.
                 // exception will be thrown back to consumer if quality is too low
-                .switchIfEmpty(bioAnalyzer.analyze(query.image, true).timeout(BIOANALYZER_TIMEOUT).flatMap { Mono.empty<Identity>() })
+                .switchIfEmpty(
+                    bioAnalyzer
+                        .analyze(verifyRequest.params.image, true)
+                        .timeout(BIOANALYZER_TIMEOUT)
+                        .flatMap { Mono.empty<Identity>() }
+                )
                 // If the bioanalyzer did not give us the low quality error, let's return FingerprintNoMatchException.
                 .switchIfEmpty(Mono.error(FingerprintNoMatchException()))
                 .last() // Return the highest matching score candidate
@@ -94,7 +99,7 @@ class VerificationEngine(
                 .onErrorResume(TimeoutException::class.java) {
                     Mono.error(FingerprintNoMatchException())
                 }
-        } catch (e: InvalidQueryFilterException) {
+        } catch (e: InvalidFilterException) {
             logErrorMessage(e)
             return Mono.error(e)
         } catch (e: InvalidBackendException) {
@@ -109,14 +114,14 @@ class VerificationEngine(
         }
     }
 
-    private fun fetchCandidates(backend: IBackend, query: Query, types: Array<DataType>): Flux<Identity> {
+    private fun fetchCandidates(backend: IBackend, verifyRequest: VerifyRequest, types: Array<DataType>): Flux<Identity> {
 
         // we want to search with template and if not available image.
-        return backend.search(query, types, sdk)
+        return backend.search(verifyRequest, types, sdk)
             // let's return no citizens found exception if results come up empty
             .switchIfEmpty(Flux.error(NoCitizenFoundException()))
             // consider only people with the position we want
-            .filter { it.fingerprints.keys.contains(query.position) }
+            .filter { it.fingerprints.keys.contains(verifyRequest.params.position) }
             // we don't have prints for that position so let's throw the pertinent error message.
             .switchIfEmpty(Flux.error(FingerprintMissingNotCapturedException()))
             // let's force backend to be clever by limiting returned
@@ -140,7 +145,7 @@ class VerificationEngine(
             logger.error(ApiExceptionCode.INVALID_BACKEND_NAME.msg, error)
         } else if (error is FingerprintLowQualityException) {
             logger.warn(ApiExceptionCode.FINGERPRINT_LOW_QUALITY.msg, error)
-        } else if (error is InvalidQueryFilterException) {
+        } else if (error is InvalidFilterException) {
             logger.warn(ApiExceptionCode.INVALID_FILTERS.msg, error)
         } else if (error is FingerPrintTemplateException) {
             logger.error(ApiExceptionCode.INVALID_TEMPLATE_VERSION.msg, error)

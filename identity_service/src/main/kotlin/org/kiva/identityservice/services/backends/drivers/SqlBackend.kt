@@ -3,7 +3,7 @@ package org.kiva.identityservice.services.backends.drivers
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Identity
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.errorhandling.exceptions.InvalidBackendDefinitionException
 import org.kiva.identityservice.services.backends.Definition
 import org.kiva.identityservice.services.backends.IBackend
@@ -18,7 +18,6 @@ import reactor.kotlin.core.publisher.toMono
  */
 abstract class SqlBackend : IBackend {
 
-    var config: MutableMap<String, Any> = mutableMapOf()
     override var requiredFilters: MutableSet<String> = mutableSetOf()
     override var uniqueFilters: MutableSet<String> = mutableSetOf()
     override var listFilters: MutableSet<String> = mutableSetOf()
@@ -32,11 +31,11 @@ abstract class SqlBackend : IBackend {
     /**
      * Should search backend fingerprint store and return prints that match the provided criteria
      *
-     * @param query the search query.
+     * @param verifyRequest the search query.
      * @param types the data types.
      * @param sdk the backend biometric matching service.
      */
-    override fun search(query: Query, types: Array<DataType>, sdk: IBiometricSDKAdapter?): Flux<Identity> {
+    override fun search(verifyRequest: VerifyRequest, types: Array<DataType>, sdk: IBiometricSDKAdapter?): Flux<Identity> {
         return Flux.empty()
     }
 
@@ -53,7 +52,7 @@ abstract class SqlBackend : IBackend {
     /**
      * Helper function that should ping backend, testing for connectivity
      */
-    override fun healthcheck(query: Query): Mono<Boolean> {
+    override fun healthcheck(verifyRequest: VerifyRequest): Mono<Boolean> {
         return true.toMono()
     }
 

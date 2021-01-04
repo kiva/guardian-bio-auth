@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.kiva.identityservice.config.EnvConfig
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.security.MessageDigest
@@ -24,15 +24,15 @@ class CheckReplayAttack(private val env: EnvConfig) : ICheckReplayAttack {
         val count = integer("count_seen")
     }
 
-    override fun isReplayAttack(query: Query) {
+    override fun isReplayAttack(verifyRequest: VerifyRequest) {
         if (env.replayAttackEnabled) {
-            val hashValue = computeHash(query)
+            val hashValue = computeHash(verifyRequest)
             checkDB(hashValue)
         }
     }
 
-    private fun computeHash(query: Query): String {
-        val bytes = query.image.toByteArray()
+    private fun computeHash(verifyRequest: VerifyRequest): String {
+        val bytes = verifyRequest.imageByte
         val md = MessageDigest.getInstance("SHA-512")
         val digest = md.digest(bytes)
         return digest.fold("", { str, it -> str + "%02x".format(it) })

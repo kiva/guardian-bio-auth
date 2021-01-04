@@ -3,7 +3,7 @@ package org.kiva.identityservice
 import org.kiva.identityservice.domain.DataType
 import org.kiva.identityservice.domain.FingerPosition
 import org.kiva.identityservice.domain.Identity
-import org.kiva.identityservice.domain.Query
+import org.kiva.identityservice.domain.VerifyRequest
 import org.kiva.identityservice.utils.base64ToByte
 import org.kiva.identityservice.utils.loadBase64FromResource
 import org.kiva.identityservice.utils.loadBytesFromResource
@@ -17,13 +17,12 @@ import kotlin.collections.HashMap
 /**
  * Helper function that returns a query.
  */
-@Throws(Exception::class)
-fun generateQuery(imageType: DataType = DataType.IMAGE): Query {
+fun generateQuery(imageType: DataType = DataType.IMAGE): VerifyRequest {
     val imageBase64 = loadBase64FromResource(IMAGE1)
     val filters = HashMap<String, String>()
     filters["nationalId"] = NATIONAL_ID
 
-    val q = Query("template", imageBase64, FINGER_POSITION, filters, imageType)
+    val q = VerifyRequest("template", imageBase64, FINGER_POSITION, filters, imageType)
     q.imageByte = base64ToByte(imageBase64)
     return q
 }
@@ -31,13 +30,12 @@ fun generateQuery(imageType: DataType = DataType.IMAGE): Query {
 /**
  * Helper function that returns a query with template input.
  */
-@Throws(Exception::class)
-fun generateTemplateQuery(template: String): Query {
+fun generateTemplateQuery(template: String): VerifyRequest {
     val templateBase64 = Base64.getEncoder().encodeToString(template.toByteArray())
     val filters = HashMap<String, String>()
     filters["nationalId"] = NATIONAL_ID
 
-    val q = Query("template", templateBase64, FINGER_POSITION, filters, DataType.TEMPLATE)
+    val q = VerifyRequest("template", templateBase64, FINGER_POSITION, filters, DataType.TEMPLATE)
     q.imageByte = base64ToByte(templateBase64)
     return q
 }
@@ -59,7 +57,6 @@ fun generateIdentity(did: String, fingerImage: ByteArray, fingerPosition: Finger
  *
  * @param count the number of asked identities.
  */
-@Throws(Exception::class)
 fun generateIdentities(count: Int): MutableList<Identity> {
     val identities: MutableList<Identity> = mutableListOf()
     for (i in 0 until count) {

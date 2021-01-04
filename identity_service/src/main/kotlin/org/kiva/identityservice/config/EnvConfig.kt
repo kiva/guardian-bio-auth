@@ -32,9 +32,11 @@ class EnvConfig {
     final val identityDbTemplatePostgresPassword: String?
     final val identityDbTemplateCitizenTable: String
 
+    final val maxDids: Int
+
     final val hashPepper: String
 
-    constructor() {
+    init {
         bioanalyzerEnabled = "BIOANALYZER_ENABLED"
             .optionalEnvVar()
             .withDefault({ it.toBoolean() }, false)
@@ -44,7 +46,6 @@ class EnvConfig {
         bioanalyzerQualityThreshold = "BIOANALYZER_QUALITY_THRESHOLD"
             .optionalEnvVar()
             .withDefault({ it.toDouble() }, 0.0)
-
         replayAttackEnabled = "REPLAY_ATTACK_ENABLED"
             .optionalEnvVar()
             .withDefault({ it.toBoolean() }, false)
@@ -60,7 +61,6 @@ class EnvConfig {
         identityIntelligenceDbPostgresPassword = "IDENTITYINTELLIGENCEDB_POSTGRES_PASSWORD"
             .optionalEnvVar()
             .withDefault({ it }, "")
-
         identityDbTemplatePostgresHost = "IDENTITYDB_TEMPLATE_POSTGRES_HOST"
             .optionalEnvVar()
             .withDefault({ it }, "127.0.0.1")
@@ -71,6 +71,7 @@ class EnvConfig {
         identityDbTemplatePostgresUser = "IDENTITYDB_TEMPLATE_POSTGRES_USER".optionalEnvVar()
         identityDbTemplatePostgresPassword = "IDENTITYDB_TEMPLATE_POSTGRES_PASSWORD".optionalEnvVar()
         identityDbTemplateCitizenTable = "IDENTITYDB_TEMPLATE_CITIZEN_TABLE".requireEnvVar()
+        maxDids = "MAX_DIDS".requireEnvVar().toInt()
         hashPepper = "HASH_PEPPER".requireEnvVar()
     }
 
