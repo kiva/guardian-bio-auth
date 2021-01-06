@@ -14,6 +14,7 @@ class GlobalErrorAttributes : DefaultErrorAttributes() {
         val error = getError(request)
         if (error is ApiException) {
             map["code"] = error.code.name
+            map["message"] = error.reason
         }
         return map
     }
