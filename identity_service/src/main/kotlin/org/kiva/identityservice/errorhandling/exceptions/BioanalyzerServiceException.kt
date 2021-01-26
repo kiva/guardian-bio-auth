@@ -7,4 +7,4 @@ import org.springframework.http.HttpStatus
 /**
  * The exception class thrown when there is an error in the bioanalyzer service call.
  */
-class BioanalyzerServiceException(reason: String? = null) : ApiException(HttpStatus.BAD_REQUEST, ApiExceptionCode.BIOANALYZER_SERVER_ERROR, reason)
+class BioanalyzerServiceException(reason: String? = null) : ApiException(HttpStatus.BAD_REQUEST, ApiExceptionCode.BioanalyzerServerError, reason)

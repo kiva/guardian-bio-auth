@@ -61,7 +61,7 @@ class SourceAFISFingerprintSDKAdapter(
                             // we check for exact equality here; other SDKs are free to check for version range
                             it.templateVersion?.let { check ->
                                 if (check != version)
-                                    throw FingerPrintTemplateException(ApiExceptionCode.INVALID_TEMPLATE_VERSION.msg)
+                                    throw FingerPrintTemplateException(ApiExceptionCode.InvalidTemplateVersion.msg)
                             }
                             FingerprintTemplate().deserialize(String(it.fingerprints[verifyRequest.params.position]!!, Charsets.UTF_8))
                         }

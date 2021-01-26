@@ -88,7 +88,7 @@ class TemplateBackend(private val env: EnvConfig) :
             q.addConditions(condition("template_type = ?", sdk.templateType))
             q.addConditions(condition("type_id = ?", 1))
         } else {
-            throw ValidationError(ApiExceptionCode.INVALID_DATA_TYPE, "Image data type is not supported for template backend.")
+            throw ValidationError(ApiExceptionCode.InvalidDataType, "Image data type is not supported for template backend.")
         }
         return q
     }
@@ -114,7 +114,7 @@ class TemplateBackend(private val env: EnvConfig) :
         val type = DataType.valueOf(row["image_type", String::class.java]!!)
         val imageBytes = when (type) {
             DataType.TEMPLATE -> rawImage.toByteArray(Charsets.UTF_8)
-            else -> throw ValidationError(ApiExceptionCode.INVALID_DATA_TYPE, "Image data type is not supported for template backend.")
+            else -> throw ValidationError(ApiExceptionCode.InvalidDataType, "Image data type is not supported for template backend.")
         }
         return Identity(did, nationalId!!, mapOf(verifyRequest.params.position to imageBytes), type, templateVersion)
     }

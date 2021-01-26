@@ -51,14 +51,14 @@ class VerificationEngine(
                 }
 
                 if (!validImageTypes.contains(contentType)) {
-                    val e = InvalidImageFormatException(ApiExceptionCode.INVALID_IMAGE_FORMAT.msg)
+                    val e = InvalidImageFormatException(ApiExceptionCode.InvalidImageFormat.msg)
                     logErrorMessage(e)
                     return Mono.error(e)
                 }
             } else if (verifyRequest.imageType == DataType.TEMPLATE) {
                 // For template image queries, the image field should be plain text of json template.
                 if (contentType != PLAIN_TEXT_CONTENT_TYPE) {
-                    val e = InvalidImageFormatException(ApiExceptionCode.INVALID_IMAGE_FORMAT.msg)
+                    val e = InvalidImageFormatException(ApiExceptionCode.InvalidImageFormat.msg)
                     logErrorMessage(e)
                     return Mono.error(e)
                 }
@@ -136,21 +136,21 @@ class VerificationEngine(
      */
     private fun logErrorMessage(error: Throwable?) {
         if (error is NoCitizenFoundException) {
-            logger.warn(ApiExceptionCode.NO_CITIZEN_FOUND.msg, error)
+            logger.warn(ApiExceptionCode.NoCitizenFound.msg, error)
         } else if (error is FingerprintMissingNotCapturedException) {
-            logger.warn(ApiExceptionCode.FINGERPRINT_MISSING_NOT_CAPTURED.msg, error)
+            logger.warn(ApiExceptionCode.FingerprintMissingNotCaptured.msg, error)
         } else if (error is FingerprintNoMatchException) {
-            logger.warn(ApiExceptionCode.FINGERPRINT_NO_MATCH.msg, error)
+            logger.warn(ApiExceptionCode.FingerprintNoMatch.msg, error)
         } else if (error is InvalidBackendException) {
-            logger.error(ApiExceptionCode.INVALID_BACKEND_NAME.msg, error)
+            logger.error(ApiExceptionCode.InvalidBackendName.msg, error)
         } else if (error is FingerprintLowQualityException) {
-            logger.warn(ApiExceptionCode.FINGERPRINT_LOW_QUALITY.msg, error)
+            logger.warn(ApiExceptionCode.FingerprintLowQuality.msg, error)
         } else if (error is InvalidFilterException) {
-            logger.warn(ApiExceptionCode.INVALID_FILTERS.msg, error)
+            logger.warn(ApiExceptionCode.InvalidFilters.msg, error)
         } else if (error is FingerPrintTemplateException) {
-            logger.error(ApiExceptionCode.INVALID_TEMPLATE_VERSION.msg, error)
+            logger.error(ApiExceptionCode.InvalidTemplateVersion.msg, error)
         } else if (error is InvalidImageFormatException) {
-            logger.error(ApiExceptionCode.INVALID_IMAGE_FORMAT.msg, error)
+            logger.error(ApiExceptionCode.InvalidImageFormat.msg, error)
         } else if (error is TimeoutException) {
             logger.error(BIOANALYZER_TIMEOUT_MESSAGE, error)
         } else {
