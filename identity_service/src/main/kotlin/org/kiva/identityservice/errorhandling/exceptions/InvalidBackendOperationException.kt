@@ -10,6 +10,6 @@ import org.springframework.http.HttpStatus
 class InvalidBackendOperationException(
     private val backend: String,
     private val operation: String
-) : ApiException(HttpStatus.BAD_REQUEST, ApiExceptionCode.INVALID_BACKEND_OPERATION) {
+) : ApiException(HttpStatus.BAD_REQUEST, ApiExceptionCode.InvalidBackendOperation) {
     override fun toString(): String = "Backend [$backend] does not support operation: $operation"
 }
