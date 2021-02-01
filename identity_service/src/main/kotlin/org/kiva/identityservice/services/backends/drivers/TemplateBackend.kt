@@ -141,14 +141,18 @@ class TemplateBackend(private val env: EnvConfig) :
             "ON CONFLICT ON CONSTRAINT unique_did_postion_template_constraint DO " +
             "UPDATE SET national_id=$5,voter_id=$6,version=$7,capture_date=$8,missing_code=NULL,template=$9,quality_score=NULL"
         return sdk.buildTemplate(saveRequest.params.fingerprintBytes).flatMap { template ->
+
+            val nationalId = generateHash(saveRequest.filters.national_id!!, env.hashPepper)
+            val voterId = generateHash(saveRequest.filters.voter_id!!, env.hashPepper)
+
             handler.execute(
                 sqlUpdate,
                 saveRequest.id,
                 saveRequest.params.position.code,
                 sdk.templateType,
                 saveRequest.params.type_id,
-                saveRequest.filters.national_id,
-                saveRequest.filters.voter_id,
+                nationalId,
+                voterId,
                 sdk.version,
                 saveRequest.params.capture_date,
                 template.serialize(),
