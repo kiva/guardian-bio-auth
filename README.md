@@ -40,7 +40,11 @@ installation instructions for all environments, see [Docker's documentation](htt
 values we provide, or manually create `.env` files with custom values. If you choose to take the manual approach, check
 out the `dummy.env` files in each sub-project for the list of required environment variables.
 
-4. Run the docker-compose. This will spin up a local network that the services and databases can communicate with each
+4. Build Identity Service. From the identity_service directory, execute: `./gradlew build`
+
+5. Build Bioanalyzer Service. From the bioanalyzer_service directory, execute: `./gradlew build`
+
+6. Run the docker-compose. This will spin up a local network that the services and databases can communicate with each
 other on. From the top-level guardian-bio-auth directory, execute: `docker-compose up`.
 
 ## Running Guardian Bio Auth Elsewhere
