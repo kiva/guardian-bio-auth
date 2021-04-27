@@ -1,0 +1,20 @@
+# Docker compose file to spin up the dependencies needed to support the bio-auth service
+#
+version: '3.5'
+
+services:
+  identity-template-db:
+    image: postgres:11
+    container_name: identity-template-db
+    command: postgres
+    environment:
+      - POSTGRES_DB=identitytemplatedb
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=dbpass
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=identity-template-db
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    tty: true

@@ -1,0 +1,43 @@
+# Docker compose file to spin up the services and dependencies that comprise the bio-auth service system
+#
+version: '3.5'
+
+networks:
+  agency-network:
+    name: agency-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.0.0/24
+
+services:
+  identity-template-db:
+    image: postgres:11
+    container_name: identity-template-db
+    command: postgres
+    environment:
+      - POSTGRES_DB=identitytemplatedb
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=dbpass
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=identity-template-db
+    networks:
+      - agency-network
+    tty: true
+
+  bio-auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bio-auth-service
+    container_name: bio-auth-service
+    ports:
+      - "8080:8080"
+    expose:
+      - 8080
+    networks:
+      - agency-network
+    depends_on:
+      - identity-template-db
+    tty: true

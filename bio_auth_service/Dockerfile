@@ -1,0 +1,8 @@
+FROM adoptopenjdk:11-openj9
+
+RUN mkdir /app
+WORKDIR /app
+COPY build/libs/bio_auth_service-1.0-SNAPSHOT-all.jar ./app.jar
+RUN adduser --system app
+USER app
+ENTRYPOINT ["java", "-jar", "./app.jar"]
