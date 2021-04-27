@@ -12,3 +12,8 @@ fun ApplicationConfig.getString(path: String): String {
 fun ApplicationConfig.getLong(path: String): Long {
     return this.getString(path).toLong(10)
 }
+
+@KtorExperimentalAPI
+fun ApplicationConfig.getBoolean(path: String): Boolean {
+    return this.getString(path).toBoolean()
+}

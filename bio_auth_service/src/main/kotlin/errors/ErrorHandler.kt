@@ -19,7 +19,7 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.handleError(
     call.respond(err.status, errorBody)
 }
 
-fun Application.registerErrorHandler(logger: Logger) {
+fun Application.installErrorHandler(logger: Logger) {
     install(StatusPages) {
         exception<BioAuthException> { cause ->
             handleError(logger, cause)

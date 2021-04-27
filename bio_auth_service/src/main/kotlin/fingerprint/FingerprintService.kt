@@ -1,16 +1,12 @@
 package org.kiva.bioauthservice.fingerprint
 
-import org.kiva.bioauthservice.db.DbPort
+import io.ktor.util.KtorExperimentalAPI
 import org.kiva.bioauthservice.fingerprint.dtos.VerifyDto
-import org.slf4j.Logger
+import org.kiva.bioauthservice.replay.ReplayService
 
-class FingerprintService(private val logger: Logger, private val dbPort: DbPort) {
+@KtorExperimentalAPI
+class FingerprintService(private val replayService: ReplayService) {
     fun verify(dto: VerifyDto) {
-        val replay = dbPort.addReplay(dto.imageByte)
-        if (replay.countSeen > 1) {
-            logger.warn("Possible replay attack seen at ${replay.timeSeen}. Image has been used ${replay.countSeen} times.")
-        } else {
-            logger.info("Not a replay attack")
-        }
+        replayService.checkIfReplay(dto.imageByte)
     }
 }

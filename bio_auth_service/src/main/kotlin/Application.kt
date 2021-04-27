@@ -7,25 +7,28 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.serialization.json
 import io.ktor.server.netty.EngineMain
 import io.ktor.util.KtorExperimentalAPI
-import org.kiva.bioauthservice.db.bootstrapDB
-import org.kiva.bioauthservice.errors.registerErrorHandler
-import org.kiva.bioauthservice.fingerprint.registerFingerprintRoutes
-import org.kiva.bioauthservice.routes.registerAppRoutes
+import org.kiva.bioauthservice.app.registerApp
+import org.kiva.bioauthservice.db.registerDB
+import org.kiva.bioauthservice.errors.installErrorHandler
+import org.kiva.bioauthservice.fingerprint.registerFingerprint
+import org.kiva.bioauthservice.replay.registerReplay
 
-// Uses bootstrapDB, which itself uses an experimental API
 @KtorExperimentalAPI
 fun Application.module() {
 
+    // Database setup
+    val dbBootstrap = registerDB(log)
+
+    // Http API middleware
     install(ContentNegotiation) {
         json()
     }
+    installErrorHandler(log)
 
-    val dbPort = bootstrapDB(log)
-
-    registerErrorHandler(log)
-
-    registerAppRoutes()
-    registerFingerprintRoutes(log, dbPort)
+    // Register domain areas
+    registerApp()
+    val replayRegistry = registerReplay(log, dbBootstrap)
+    registerFingerprint(replayRegistry)
 }
 
 // Main application function, which starts up Netty using the values in application.conf

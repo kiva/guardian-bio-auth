@@ -27,7 +27,7 @@ private fun ApplicationConfig.toHikariConfig(): HikariConfig {
 
 // Uses toHikariAPI, which itself uses an experimental API. Plus getting a child config is an experimental API, subject to future renaming.
 @KtorExperimentalAPI
-fun Application.bootstrapDB(logger: Logger): DbPort {
+fun Application.registerDB(logger: Logger): DbRegistry {
 
     // Set up Hikari connection pool
     val baseConfig = environment.config.config("db")
@@ -46,5 +46,9 @@ fun Application.bootstrapDB(logger: Logger): DbPort {
     // Set up JDBI
     val jdbi = Jdbi.create(ds)
     jdbi.installPlugin(KotlinPlugin())
-    return DbPort(jdbi)
+    val dbPort = DbPort(jdbi)
+
+    return DbRegistry(dbPort)
 }
+
+data class DbRegistry(val dbPort: DbPort)
