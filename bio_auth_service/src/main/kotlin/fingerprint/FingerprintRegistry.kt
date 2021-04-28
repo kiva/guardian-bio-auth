@@ -6,7 +6,9 @@ import org.kiva.bioauthservice.replay.ReplayRegistry
 
 @KtorExperimentalAPI
 fun Application.registerFingerprint(replayRegistry: ReplayRegistry): FingerprintRegistry {
-    val fingerprintService = FingerprintService(replayRegistry.replayService)
+    val baseConfig = environment.config.config("fingerprint")
+    val fingerprintConfig = FingerprintConfig(baseConfig)
+    val fingerprintService = FingerprintService(replayRegistry.replayService, fingerprintConfig)
     return FingerprintRegistry(fingerprintService)
 }
 

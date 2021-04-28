@@ -36,4 +36,5 @@ fun Application.registerDB(logger: Logger): DbRegistry {
     return DbRegistry(dbPort)
 }
 
+@KtorExperimentalAPI
 data class DbRegistry(val dbAccessor: DbAccessor)

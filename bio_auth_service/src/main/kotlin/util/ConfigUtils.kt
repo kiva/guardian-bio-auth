@@ -9,6 +9,11 @@ fun ApplicationConfig.getString(path: String): String {
 }
 
 @KtorExperimentalAPI
+fun ApplicationConfig.getInt(path: String): Int {
+    return this.getString(path).toInt(10)
+}
+
+@KtorExperimentalAPI
 fun ApplicationConfig.getLong(path: String): Long {
     return this.getString(path).toLong(10)
 }
