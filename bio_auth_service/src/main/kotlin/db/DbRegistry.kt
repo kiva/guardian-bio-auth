@@ -31,9 +31,9 @@ fun Application.registerDB(logger: Logger): DbRegistry {
     // Set up JDBI
     val jdbi = Jdbi.create(ds)
     jdbi.installPlugin(KotlinPlugin())
-    val dbPort = DbPort(jdbi, dbConfig)
+    val dbPort = DbAccessor(jdbi, dbConfig)
 
     return DbRegistry(dbPort)
 }
 
-data class DbRegistry(val dbPort: DbPort)
+data class DbRegistry(val dbAccessor: DbAccessor)
