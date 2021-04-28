@@ -8,7 +8,6 @@ import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
 import org.slf4j.Logger
 
-// Uses toHikariAPI, which itself uses an experimental API. Plus getting a child config is an experimental API, subject to future renaming.
 @KtorExperimentalAPI
 fun Application.registerDB(logger: Logger): DbRegistry {
 

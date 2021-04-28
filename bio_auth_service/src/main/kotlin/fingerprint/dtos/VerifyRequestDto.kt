@@ -6,7 +6,7 @@ import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
 import org.kiva.bioauthservice.util.base64ToByte
 
 @Serializable
-data class VerifyDto(
+data class VerifyRequestDto(
     val backend: String,
 
     /**
@@ -56,12 +56,12 @@ data class VerifyDto(
      *
      * While still supporting specifying these as separate top-level fields, this is optional.
      */
-    var params: VerifyParamsDto = VerifyParamsDto("", FingerPosition.RIGHT_INDEX)
+    var params: VerifyRequestParamsDto = VerifyRequestParamsDto("", FingerPosition.RIGHT_INDEX)
 ) {
     var imageByte: ByteArray = params.image.base64ToByte()
     init {
         if (params.image.isEmpty()) {
-            params = VerifyParamsDto(image ?: "", position ?: FingerPosition.RIGHT_INDEX)
+            params = VerifyRequestParamsDto(image ?: "", position ?: FingerPosition.RIGHT_INDEX)
         }
     }
 }

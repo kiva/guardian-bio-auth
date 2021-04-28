@@ -7,13 +7,13 @@ import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
-import org.kiva.bioauthservice.fingerprint.dtos.VerifyDto
+import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
 
 @KtorExperimentalAPI
 fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
     route("/verify") {
         post {
-            val dto = call.receive<VerifyDto>()
+            val dto = call.receive<VerifyRequestDto>()
             fingerprintService.verify(dto)
             call.respondText("Verified")
         }

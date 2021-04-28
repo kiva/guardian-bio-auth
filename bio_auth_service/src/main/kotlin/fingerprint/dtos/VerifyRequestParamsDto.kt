@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
 
 @Serializable
-data class VerifyParamsDto(
+data class VerifyRequestParamsDto(
 
     /**
      * Base64 representation of the fingerprint we should check

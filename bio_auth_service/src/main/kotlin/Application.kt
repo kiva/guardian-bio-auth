@@ -28,10 +28,10 @@ fun Application.installRoutes(fingerprintRegistry: FingerprintRegistry) {
 fun Application.module() {
 
     // Database setup
-    val dbBootstrap = registerDB(log)
+    val dbRegistry = registerDB(log)
 
     // Register domain areas
-    val replayRegistry = registerReplay(log, dbBootstrap)
+    val replayRegistry = registerReplay(log, dbRegistry)
     val fingerprintRegistry = registerFingerprint(replayRegistry)
 
     // Http API middleware
