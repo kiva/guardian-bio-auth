@@ -1,4 +1,4 @@
-package org.kiva.bioauthservice.routes
+package org.kiva.bioauthservice.app
 
 import io.ktor.application.call
 import io.ktor.response.respondText
