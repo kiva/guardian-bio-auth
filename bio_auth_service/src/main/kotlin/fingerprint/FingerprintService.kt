@@ -29,7 +29,7 @@ class FingerprintService(
 
     private fun buildTemplate(template: ByteArray): FingerprintTemplateWrapper {
         if (isForeignTemplate(template)) {
-            return FingerprintTemplateWrapper(FingerprintCompatibility.convert(template))
+            return FingerprintTemplateWrapper(FingerprintCompatibility.importTemplate(template))
         } else {
             return FingerprintTemplateWrapper(FingerprintTemplate(template))
         }
