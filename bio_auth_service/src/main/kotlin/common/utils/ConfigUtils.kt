@@ -1,4 +1,4 @@
-package org.kiva.bioauthservice.util
+package org.kiva.bioauthservice.common.utils
 
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
@@ -20,5 +20,12 @@ fun ApplicationConfig.getLong(path: String): Long {
 
 @KtorExperimentalAPI
 fun ApplicationConfig.getBoolean(path: String): Boolean {
-    return this.getString(path).toBoolean()
+    val result = this.getString(path)
+    if (result.toLowerCase() == "true") {
+        return true
+    } else if (result.toLowerCase() == "false") {
+        return false
+    } else {
+        throw IllegalArgumentException("$result is not a true/false boolean value")
+    }
 }

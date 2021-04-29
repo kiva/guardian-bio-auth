@@ -20,7 +20,7 @@ CREATE TABLE kiva_biometric_template (
     position INTEGER NOT NULL,
     template_type VARCHAR(200) NOT NULL,
     template TEXT,
-    missing_code character varying(2),
+    missing_code VARCHAR(2),
     quality_score INTEGER,
     capture_date timestamp with time zone,
     create_time TIMESTAMP NOT NULL DEFAULT now(),

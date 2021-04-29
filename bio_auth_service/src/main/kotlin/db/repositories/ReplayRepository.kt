@@ -2,23 +2,24 @@ package org.kiva.bioauthservice.db.repositories
 
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
+import org.kiva.bioauthservice.common.utils.toSha512
 import org.kiva.bioauthservice.db.daos.ReplayDao
-import org.kiva.bioauthservice.util.toSha512
+import org.slf4j.Logger
 import java.lang.Exception
 
-internal interface ReplayRepository {
-
-    val jdbi: Jdbi
+class ReplayRepository(private val jdbi: Jdbi, private val logger: Logger) {
 
     fun addReplay(bytes: ByteArray): ReplayDao {
         val hashValue = bytes.toSha512()
-        return jdbi.withHandle<ReplayDao, Exception> {
+        val replay = jdbi.withHandle<ReplayDao, Exception> {
             it.createQuery(addReplayQuery)
                 .bind("hashCode", hashValue)
                 .mapTo<ReplayDao>()
                 .findOne()
                 .get()
         }
+        logger.debug("$replay returned by $addReplayQuery")
+        return replay
     }
 
     companion object {

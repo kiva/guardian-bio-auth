@@ -2,7 +2,7 @@ package org.kiva.bioauthservice.replay
 
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
-import org.kiva.bioauthservice.util.getBoolean
+import org.kiva.bioauthservice.common.utils.getBoolean
 
 @KtorExperimentalAPI
 class ReplayConfig(baseConfig: ApplicationConfig) {

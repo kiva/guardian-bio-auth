@@ -1,4 +1,4 @@
-package org.kiva.bioauthservice.errors
+package org.kiva.bioauthservice.common.errors
 
 enum class BioAuthExceptionCode constructor(val msg: String) {
     BioanalyzerServerError("Bioanalyzer server error"),

@@ -1,9 +1,9 @@
 package org.kiva.bioauthservice.fingerprint.dtos
 
 import kotlinx.serialization.Serializable
+import org.kiva.bioauthservice.common.utils.base64ToByte
 import org.kiva.bioauthservice.fingerprint.enums.DataType
 import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
-import org.kiva.bioauthservice.util.base64ToByte
 
 @Serializable
 data class VerifyRequestDto(

@@ -6,6 +6,8 @@ import io.ktor.util.KtorExperimentalAPI
 import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
+import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
+import org.kiva.bioauthservice.db.repositories.ReplayRepository
 import org.slf4j.Logger
 
 @KtorExperimentalAPI
@@ -31,10 +33,16 @@ fun Application.registerDB(logger: Logger): DbRegistry {
     // Set up JDBI
     val jdbi = Jdbi.create(ds)
     jdbi.installPlugin(KotlinPlugin())
-    val dbPort = DbAccessor(jdbi, dbConfig)
 
-    return DbRegistry(dbPort)
+    // Set up Repositories
+    val replayRepository = ReplayRepository(jdbi, logger)
+    val fingerprintTemplateRepository = FingerprintTemplateRepository(jdbi, dbConfig, logger)
+
+    return DbRegistry(replayRepository, fingerprintTemplateRepository)
 }
 
 @KtorExperimentalAPI
-data class DbRegistry(val dbAccessor: DbAccessor)
+data class DbRegistry(
+    val replayRepository: ReplayRepository,
+    val fingerprintTemplateRepository: FingerprintTemplateRepository
+)

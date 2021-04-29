@@ -2,7 +2,7 @@ package org.kiva.bioauthservice.fingerprint.enums
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.kiva.bioauthservice.errors.impl.InvalidFingerPositionException
+import org.kiva.bioauthservice.common.errors.impl.InvalidFingerPositionException
 
 @Serializable
 enum class FingerPosition constructor(val code: Int) {

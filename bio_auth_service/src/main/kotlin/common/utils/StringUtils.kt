@@ -1,4 +1,4 @@
-package org.kiva.bioauthservice.util
+package org.kiva.bioauthservice.common.utils
 
 import java.util.Base64
 

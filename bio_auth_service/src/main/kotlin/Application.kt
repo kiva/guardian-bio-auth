@@ -4,26 +4,17 @@ import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.application.log
 import io.ktor.features.ContentNegotiation
-import io.ktor.routing.routing
 import io.ktor.serialization.json
 import io.ktor.server.netty.EngineMain
 import io.ktor.util.KtorExperimentalAPI
-import org.kiva.bioauthservice.app.appRoutes
+import kotlinx.serialization.ExperimentalSerializationApi
+import org.kiva.bioauthservice.app.registerApp
+import org.kiva.bioauthservice.common.errors.installErrorHandler
 import org.kiva.bioauthservice.db.registerDB
-import org.kiva.bioauthservice.errors.installErrorHandler
-import org.kiva.bioauthservice.fingerprint.FingerprintRegistry
-import org.kiva.bioauthservice.fingerprint.fingerprintRoutes
 import org.kiva.bioauthservice.fingerprint.registerFingerprint
 import org.kiva.bioauthservice.replay.registerReplay
 
-@KtorExperimentalAPI
-fun Application.installRoutes(fingerprintRegistry: FingerprintRegistry) {
-    routing {
-        appRoutes()
-        fingerprintRoutes(fingerprintRegistry.fingerprintService)
-    }
-}
-
+@ExperimentalSerializationApi
 @KtorExperimentalAPI
 fun Application.module() {
 
@@ -31,15 +22,19 @@ fun Application.module() {
     val dbRegistry = registerDB(log)
 
     // Register domain areas
+    val appRegistry = registerApp()
     val replayRegistry = registerReplay(log, dbRegistry)
-    val fingerprintRegistry = registerFingerprint(replayRegistry)
+    val fingerprintRegistry = registerFingerprint(dbRegistry, replayRegistry)
 
     // Http API middleware
     install(ContentNegotiation) {
         json()
     }
     installErrorHandler(log)
-    installRoutes(fingerprintRegistry)
+
+    // Http Routes
+    appRegistry.installRoutes()
+    fingerprintRegistry.installRoutes()
 }
 
 // Main application function, which starts up Netty using the values in application.conf

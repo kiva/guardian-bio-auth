@@ -10,7 +10,7 @@ import org.slf4j.Logger
 fun Application.registerReplay(logger: Logger, dbRegistry: DbRegistry): ReplayRegistry {
     val baseConfig = environment.config.config("replay")
     val replayConfig = ReplayConfig(baseConfig)
-    val replayService = ReplayService(logger, dbRegistry.dbAccessor, replayConfig)
+    val replayService = ReplayService(logger, dbRegistry.replayRepository, replayConfig)
     return ReplayRegistry(replayService)
 }
 

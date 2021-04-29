@@ -3,8 +3,8 @@ package org.kiva.bioauthservice.db
 import com.zaxxer.hikari.HikariConfig
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
-import org.kiva.bioauthservice.util.getLong
-import org.kiva.bioauthservice.util.getString
+import org.kiva.bioauthservice.common.utils.getLong
+import org.kiva.bioauthservice.common.utils.getString
 
 @KtorExperimentalAPI
 class DbConfig(baseConfig: ApplicationConfig) {
