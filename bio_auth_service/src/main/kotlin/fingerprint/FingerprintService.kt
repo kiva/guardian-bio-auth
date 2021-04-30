@@ -58,6 +58,7 @@ class FingerprintService(
     @ExperimentalSerializationApi
     fun save(bulkDto: BulkSaveRequestDto): Int {
 
+        // Verify a missing code is not provided at the same time that an image or template is provided. These are mutually exclusive.
         bulkDto.fingerprints.forEach { dto: SaveRequestDto ->
             if ((dto.params.image.isNotBlank() || dto.params.template.isNotBlank()) && !dto.params.missing_code.isNullOrBlank()) {
                 throw FingerprintTemplateGenerationException(
@@ -68,33 +69,21 @@ class FingerprintService(
             }
         }
 
-        // TODO: Handle intersection between missing, templates, saved (so nothing gets saved twice)
-        val numMissingSaved = bulkDto.fingerprints
-            .filter { dto: SaveRequestDto -> !dto.params.missing_code.isNullOrBlank() }
-            .count { dto: SaveRequestDto ->
+        // 3 cases: fingerprint image/template is missing, fingerprint template is provided, fingerprint image is provided
+        return bulkDto.fingerprints.count { dto: SaveRequestDto ->
+            if (!dto.params.missing_code.isNullOrBlank()) {
                 val template = FingerprintTemplateWrapper(null)
                 templateRepository.insertTemplate(template, dto)
-            }
-
-        // Handle templates
-        val numSavedTemplates = bulkDto.fingerprints
-            .filter { it.params.type == DataType.TEMPLATE }
-            .count { dto: SaveRequestDto ->
+            } else if (dto.params.type == DataType.TEMPLATE) {
                 val template = buildTemplate(dto.params.fingerprintBytes)
                 templateRepository.insertTemplate(template, dto)
-            }
-
-        // Handle images
-        val numSavedImages = bulkDto.fingerprints
-            .filter { it.params.type == DataType.IMAGE }
-            .count { dto: SaveRequestDto ->
+            } else {
                 // TODO Calculate score
                 val score = 0.0
                 val template = buildTemplateFromImage(dto.params.fingerprintBytes)
                 templateRepository.insertTemplate(template, dto, score)
             }
-
-        return numMissingSaved + numSavedTemplates + numSavedImages
+        }
     }
 
     fun verify(dto: VerifyRequestDto): VerifyResponseDto {
