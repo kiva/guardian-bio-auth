@@ -45,20 +45,22 @@ class FingerprintService(
         // TODO: Top-level check that each fingerprint provided has either a fingerprint/template or a missingCode provided
 
         // Handle templates
-        val templatesToSave: List<SaveRequestDto> = bulkDto.fingerprints.filter { it.params.type == DataType.TEMPLATE }
-        val numSavedTemplates = templatesToSave.count { dto: SaveRequestDto ->
-            val template = buildTemplate(dto.params.fingerprintBytes)
-            templateRepository.insertTemplate(template, dto)
-        }
+        val numSavedTemplates = bulkDto.fingerprints
+            .filter { it.params.type == DataType.TEMPLATE }
+            .count { dto: SaveRequestDto ->
+                val template = buildTemplate(dto.params.fingerprintBytes)
+                templateRepository.insertTemplate(template, dto)
+            }
 
         // Handle images
-        val imagesToSave: List<SaveRequestDto> = bulkDto.fingerprints.filter { it.params.type == DataType.IMAGE }
-        val numSavedImages = imagesToSave.count { dto: SaveRequestDto ->
-            // TODO Calculate score
-            val score = 0.0
-            val template = buildTemplateFromImage(dto.params.fingerprintBytes)
-            templateRepository.insertTemplate(template, dto, score)
-        }
+        val numSavedImages = bulkDto.fingerprints
+            .filter { it.params.type == DataType.IMAGE }
+            .count { dto: SaveRequestDto ->
+                // TODO Calculate score
+                val score = 0.0
+                val template = buildTemplateFromImage(dto.params.fingerprintBytes)
+                templateRepository.insertTemplate(template, dto, score)
+            }
 
         // TODO: Combine and return results
     }
