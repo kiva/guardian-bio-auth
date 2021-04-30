@@ -13,7 +13,7 @@ import org.slf4j.Logger
 class FingerprintTemplateRepository(private val jdbi: Jdbi, private val dbConfig: DbConfig, private val logger: Logger) {
 
     @ExperimentalSerializationApi
-    fun insertTemplate(templateWrapper: FingerprintTemplateWrapper, dto: SaveRequestDto): Boolean {
+    fun insertTemplate(templateWrapper: FingerprintTemplateWrapper, dto: SaveRequestDto, score: Double? = null): Boolean {
         val hashedNationalId = dto.filters.national_id.generateHash(dbConfig.hashPepper)
         val hashedVoterId = dto.filters.voter_id.generateHash(dbConfig.hashPepper)
         val count = jdbi.withHandle<Int, Exception> {
@@ -26,8 +26,9 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val dbConfig
                 .bind("voterId", hashedVoterId)
                 .bind("version", templateWrapper.templateVersion)
                 .bind("captureDate", dto.params.capture_date)
+                .bind("missingCode", dto.params.missing_code)
                 .bind("template", templateWrapper.fingerprintTemplate.serialize())
-                .bind("qualityScore", dto.params.quality_score)
+                .bind("qualityScore", score ?: dto.params.quality_score)
                 .execute()
         }
         logger.debug("$count rows affected by $insertTemplateQuery")
@@ -37,10 +38,10 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val dbConfig
     companion object {
         private val insertTemplateQuery =
             """
-                INSERT INTO kiva_biometric_template (did,position,template_type,type_id,national_id,voter_id,version,capture_date,template,quality_score)
-                VALUES (:did, :position,:templateType,:typeId,:nationalId,:voterId,:version,:captureDate,:template,:qualityScore)
+                INSERT INTO kiva_biometric_template (did,position,template_type,type_id,national_id,voter_id,version,capture_date,missing_code,template,quality_score)
+                VALUES (:did, :position,:templateType,:typeId,:nationalId,:voterId,:version,:captureDate,:missingCode,:template,:qualityScore)
                 ON CONFLICT ON CONSTRAINT unique_did_postion_template_constraint DO UPDATE
-                SET national_id=:nationalId,voter_id=:voterId,version=:version,capture_date=:captureDate,missing_code=NULL,template=:template,quality_score=NULL
+                SET national_id=:nationalId,voter_id=:voterId,version=:version,capture_date=:captureDate,missing_code=:missingCode,template=:template,quality_score=:qualityScore
             """.trimIndent()
     }
 }

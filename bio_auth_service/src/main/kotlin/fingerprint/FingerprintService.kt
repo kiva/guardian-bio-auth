@@ -1,6 +1,7 @@
 package org.kiva.bioauthservice.fingerprint
 
 import com.machinezoo.sourceafis.FingerprintCompatibility
+import com.machinezoo.sourceafis.FingerprintImage
 import com.machinezoo.sourceafis.FingerprintTemplate
 import fingerprint.dtos.VerifyResponseDto
 import io.ktor.util.KtorExperimentalAPI
@@ -35,8 +36,14 @@ class FingerprintService(
         }
     }
 
+    private fun buildTemplateFromImage(image: ByteArray): FingerprintTemplateWrapper {
+        return FingerprintTemplateWrapper(FingerprintTemplate(FingerprintImage(image)))
+    }
+
     @ExperimentalSerializationApi
     fun save(bulkDto: BulkSaveRequestDto) {
+        // TODO: Top-level check that each fingerprint provided has either a fingerprint/template or a missingCode provided
+
         // Handle templates
         val templatesToSave: List<SaveRequestDto> = bulkDto.fingerprints.filter { it.params.type == DataType.TEMPLATE }
         val numSavedTemplates = templatesToSave.count { dto: SaveRequestDto ->
@@ -45,7 +52,15 @@ class FingerprintService(
         }
 
         // Handle images
-//        val imagesToSave: List<SaveRequestDto> = bulkDto.fingerprints.filter { it.params.type == DataType.IMAGE }
+        val imagesToSave: List<SaveRequestDto> = bulkDto.fingerprints.filter { it.params.type == DataType.IMAGE }
+        val numSavedImages = imagesToSave.count { dto: SaveRequestDto ->
+            // TODO Calculate score
+            val score = 0.0
+            val template = buildTemplateFromImage(dto.params.fingerprintBytes)
+            templateRepository.insertTemplate(template, dto, score)
+        }
+
+        // TODO: Combine and return results
     }
 
     fun verify(dto: VerifyRequestDto): VerifyResponseDto {
