@@ -6,6 +6,9 @@ import com.machinezoo.sourceafis.FingerprintTemplate
 import fingerprint.dtos.VerifyResponseDto
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.ExperimentalSerializationApi
+import org.jnbis.api.Jnbis
+import org.kiva.bioauthservice.common.errors.impl.InvalidImageFormatException
+import org.kiva.bioauthservice.common.utils.detectContentType
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
 import org.kiva.bioauthservice.fingerprint.dtos.BulkSaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto
@@ -37,11 +40,22 @@ class FingerprintService(
     }
 
     private fun buildTemplateFromImage(image: ByteArray): FingerprintTemplateWrapper {
-        return FingerprintTemplateWrapper(FingerprintTemplate(FingerprintImage(image)))
+        val contentType = image.detectContentType()
+        val fpImg = if (contentType === "application/octet-stream") {
+            try {
+                val asWsg = Jnbis.wsq().decode(image)
+                FingerprintImage(asWsg.asBitmap().pixels)
+            } catch (ex: Exception) {
+                throw InvalidImageFormatException("Unsupported image format for provided fingerprint image: application/octet-stream")
+            }
+        } else {
+            FingerprintImage(image)
+        }
+        return FingerprintTemplateWrapper(FingerprintTemplate(fpImg))
     }
 
     @ExperimentalSerializationApi
-    fun save(bulkDto: BulkSaveRequestDto) {
+    fun save(bulkDto: BulkSaveRequestDto): Int {
         // TODO: Top-level check that each fingerprint provided has either a fingerprint/template or a missingCode provided
         // TODO: Also, if missingCode is provided, don't try to build/generate a template
 
@@ -63,7 +77,7 @@ class FingerprintService(
                 templateRepository.insertTemplate(template, dto, score)
             }
 
-        // TODO: Combine and return results
+        return numSavedTemplates + numSavedImages
     }
 
     fun verify(dto: VerifyRequestDto): VerifyResponseDto {
