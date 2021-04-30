@@ -7,6 +7,7 @@ import fingerprint.dtos.VerifyResponseDto
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.jnbis.api.Jnbis
+import org.kiva.bioauthservice.common.errors.impl.FingerprintTemplateGenerationException
 import org.kiva.bioauthservice.common.errors.impl.InvalidImageFormatException
 import org.kiva.bioauthservice.common.utils.detectContentType
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
@@ -56,8 +57,24 @@ class FingerprintService(
 
     @ExperimentalSerializationApi
     fun save(bulkDto: BulkSaveRequestDto): Int {
-        // TODO: Top-level check that each fingerprint provided has either a fingerprint/template or a missingCode provided
-        // TODO: Also, if missingCode is provided, don't try to build/generate a template
+
+        bulkDto.fingerprints.forEach { dto: SaveRequestDto ->
+            if ((dto.params.image.isNotBlank() || dto.params.template.isNotBlank()) && !dto.params.missing_code.isNullOrBlank()) {
+                throw FingerprintTemplateGenerationException(
+                    dto.id,
+                    dto.params.position,
+                    "Either fingerprint image or missing code should be present for each fingerprint."
+                )
+            }
+        }
+
+        // TODO: Handle intersection between missing, templates, saved (so nothing gets saved twice)
+        val numMissingSaved = bulkDto.fingerprints
+            .filter { dto: SaveRequestDto -> !dto.params.missing_code.isNullOrBlank() }
+            .count { dto: SaveRequestDto ->
+                val template = FingerprintTemplateWrapper(null)
+                templateRepository.insertTemplate(template, dto)
+            }
 
         // Handle templates
         val numSavedTemplates = bulkDto.fingerprints
@@ -77,7 +94,7 @@ class FingerprintService(
                 templateRepository.insertTemplate(template, dto, score)
             }
 
-        return numSavedTemplates + numSavedImages
+        return numMissingSaved + numSavedTemplates + numSavedImages
     }
 
     fun verify(dto: VerifyRequestDto): VerifyResponseDto {

@@ -27,7 +27,7 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val dbConfig
                 .bind("version", templateWrapper.templateVersion)
                 .bind("captureDate", dto.params.capture_date)
                 .bind("missingCode", dto.params.missing_code)
-                .bind("template", templateWrapper.fingerprintTemplate.serialize())
+                .bind("template", templateWrapper.fingerprintTemplate?.serialize())
                 .bind("qualityScore", score ?: dto.params.quality_score)
                 .execute()
         }
