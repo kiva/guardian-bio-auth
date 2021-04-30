@@ -43,6 +43,7 @@ class FingerprintService(
     @ExperimentalSerializationApi
     fun save(bulkDto: BulkSaveRequestDto) {
         // TODO: Top-level check that each fingerprint provided has either a fingerprint/template or a missingCode provided
+        // TODO: Also, if missingCode is provided, don't try to build/generate a template
 
         // Handle templates
         val numSavedTemplates = bulkDto.fingerprints
