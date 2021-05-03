@@ -13,6 +13,7 @@ import org.kiva.bioauthservice.common.utils.generateHashForList
 import org.kiva.bioauthservice.db.DbConfig
 import org.kiva.bioauthservice.db.daos.FingerprintTemplateDao
 import org.kiva.bioauthservice.fingerprint.FingerprintTemplateWrapper
+import org.kiva.bioauthservice.fingerprint.dtos.PositionsDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestFiltersDto
 import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
@@ -52,6 +53,7 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val dbConfig
         val hashedVoterIds = filters.voterId?.split(',')?.generateHashForList(dbConfig.hashPepper) ?: emptyList()
         val result = jdbi
             .registerColumnMapper(FingerprintTemplateColumnMapper())
+            .registerColumnMapper(FingerPositionColumnMapper())
             .withHandle<List<FingerprintTemplateDao>, Exception> {
                 it.createQuery(getTemplatesQuery)
                     .bind("position", position.code)
@@ -65,11 +67,35 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val dbConfig
         return result
     }
 
+    fun getPositions(dto: PositionsDto): List<FingerPosition> {
+        val dids = dto.dids?.split(',') ?: emptyList()
+        val hashedNationalIds = dto.nationalId?.split(',')?.generateHashForList(dbConfig.hashPepper) ?: emptyList()
+        val hashedVoterIds = dto.voterId?.split(',')?.generateHashForList(dbConfig.hashPepper) ?: emptyList()
+        val result = jdbi
+            .registerColumnMapper(FingerPositionColumnMapper())
+            .withHandle<List<FingerPosition>, Exception> {
+                it.createQuery(getPositionsQuery)
+                    .bindList(EmptyHandling.NULL_KEYWORD, "dids", dids)
+                    .bindList(EmptyHandling.NULL_KEYWORD, "nationalIds", hashedNationalIds)
+                    .bindList(EmptyHandling.NULL_KEYWORD, "voterIds", hashedVoterIds)
+                    .mapTo<FingerPosition>()
+                    .list()
+            }
+        logger.debug("${result.size} rows returned by $getPositionsQuery")
+        return result
+    }
+
     companion object {
 
         private class FingerprintTemplateColumnMapper : ColumnMapper<FingerprintTemplate> {
             override fun map(r: ResultSet?, columnNumber: Int, ctx: StatementContext?): FingerprintTemplate {
                 return FingerprintTemplate().deserialize(r?.getString(columnNumber))
+            }
+        }
+
+        private class FingerPositionColumnMapper : ColumnMapper<FingerPosition> {
+            override fun map(r: ResultSet?, columnNumber: Int, ctx: StatementContext?): FingerPosition {
+                return FingerPosition.fromCode(r?.getInt(columnNumber))
             }
         }
 
@@ -85,6 +111,18 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val dbConfig
             """
             SELECT * FROM kiva_biometric_template AS kbt
             WHERE kbt.position=:position
+            AND ((<dids>) IS NOT NULL OR (<nationalIds>) IS NOT NULL OR (<voterIds>) IS NOT NULL)
+            AND ((<dids>) IS NULL OR kbt.did IN (<dids>))
+            AND ((<nationalIds>) IS NULL OR kbt.national_id IN (<nationalIds>))
+            AND ((<voterIds>) IS NULL OR kbt.voter_id IN (<voterIds>))
+            LIMIT 1000
+            """.trimIndent()
+
+        private val getPositionsQuery =
+            """
+            SELECT position FROM kiva_biometric_template AS kbt
+            WHERE missing_code IS NULL
+            AND ((<dids>) IS NOT NULL OR (<nationalIds>) IS NOT NULL OR (<voterIds>) IS NOT NULL)
             AND ((<dids>) IS NULL OR kbt.did IN (<dids>))
             AND ((<nationalIds>) IS NULL OR kbt.national_id IN (<nationalIds>))
             AND ((<voterIds>) IS NULL OR kbt.voter_id IN (<voterIds>))

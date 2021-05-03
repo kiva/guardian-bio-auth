@@ -16,9 +16,11 @@ import org.kiva.bioauthservice.common.errors.impl.InvalidImageFormatException
 import org.kiva.bioauthservice.common.utils.detectContentType
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
 import org.kiva.bioauthservice.fingerprint.dtos.BulkSaveRequestDto
+import org.kiva.bioauthservice.fingerprint.dtos.PositionsDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
 import org.kiva.bioauthservice.fingerprint.enums.DataType
+import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
 import org.kiva.bioauthservice.fingerprint.enums.ResponseStatus
 import org.kiva.bioauthservice.replay.ReplayService
 import java.io.ByteArrayInputStream
@@ -128,5 +130,9 @@ class FingerprintService(
         } else {
             matches.last()
         }
+    }
+
+    fun positions(positionsDto: PositionsDto): List<FingerPosition> {
+        return templateRepository.getPositions(positionsDto)
     }
 }
