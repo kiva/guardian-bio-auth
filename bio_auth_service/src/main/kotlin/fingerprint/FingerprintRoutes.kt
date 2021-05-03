@@ -20,6 +20,8 @@ import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
 fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
 
     route("/api/v1") {
+
+        // TODO: Remove this deprecated route
         route("/templatizer/bulk/template") {
             post {
                 val dtos = call.receive<List<TemplatizerDto>>()
@@ -45,6 +47,7 @@ fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
             }
         }
 
+        // TODO: Remove this deprecated route
         route("/positions/template/{filter}") {
             get {
                 val filters = call.parameters["filter"]?.split("=") ?: emptyList()
@@ -57,6 +60,14 @@ fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
                     "dids" -> PositionsDto(null, null, filters[1])
                     else -> throw InvalidFilterException("${filters[0]} is an invalid filter type")
                 }
+                val result = fingerprintService.positions(dto)
+                call.respond(result)
+            }
+        }
+
+        route("/positions") {
+            post {
+                val dto = call.receive<PositionsDto>()
                 val result = fingerprintService.positions(dto)
                 call.respond(result)
             }
