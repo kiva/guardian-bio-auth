@@ -16,28 +16,30 @@ import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
 @KtorExperimentalAPI
 fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
 
-    route("/templatizer/bulk/template") {
-        post {
-            val dtos = call.receive<List<TemplatizerDto>>()
-            val bulkSaveDto = BulkSaveRequestDto(dtos.map { it.toSaveRequestDto() })
-            val numSaved = fingerprintService.save(bulkSaveDto)
-            call.respond(numSaved)
+    route("/api/v1") {
+        route("/templatizer/bulk/template") {
+            post {
+                val dtos = call.receive<List<TemplatizerDto>>()
+                val bulkSaveDto = BulkSaveRequestDto(dtos.map { it.toSaveRequestDto() })
+                val numSaved = fingerprintService.save(bulkSaveDto)
+                call.respond(numSaved)
+            }
         }
-    }
 
-    route("/save") {
-        post {
-            val dto = call.receive<BulkSaveRequestDto>()
-            val numSaved = fingerprintService.save(dto)
-            call.respond(numSaved)
+        route("/save") {
+            post {
+                val dto = call.receive<BulkSaveRequestDto>()
+                val numSaved = fingerprintService.save(dto)
+                call.respond(numSaved)
+            }
         }
-    }
 
-    route("/verify") {
-        post {
-            val dto = call.receive<VerifyRequestDto>()
-            val result = fingerprintService.verify(dto)
-            call.respond(result)
+        route("/verify") {
+            post {
+                val dto = call.receive<VerifyRequestDto>()
+                val result = fingerprintService.verify(dto)
+                call.respond(result)
+            }
         }
     }
 }
