@@ -1,5 +1,6 @@
 package org.kiva.bioauthservice.fingerprint
 
+import fingerprint.dtos.TemplatizerDto
 import io.ktor.application.call
 import io.ktor.request.receive
 import io.ktor.response.respond
@@ -14,6 +15,15 @@ import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
 @ExperimentalSerializationApi
 @KtorExperimentalAPI
 fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
+
+    route("/templatizer/bulk/template") {
+        post {
+            val dtos = call.receive<List<TemplatizerDto>>()
+            val bulkSaveDto = BulkSaveRequestDto(dtos.map { it.toSaveRequestDto() })
+            val numSaved = fingerprintService.save(bulkSaveDto)
+            call.respond(numSaved)
+        }
+    }
 
     route("/save") {
         post {
