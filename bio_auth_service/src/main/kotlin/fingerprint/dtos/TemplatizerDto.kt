@@ -21,34 +21,6 @@ data class TemplatizerDto(
     @Serializable(with = ZonedDateTimeSerializer::class) val capture_date: ZonedDateTime,
     val image: String? = null
 ) {
-    override fun toString(): String {
-        return "TemplatizerDto(voter_id='$voter_id', did='$did', national_id='$national_id', type_id=$type_id, position=$position, " +
-            "missing_code=$missing_code, capture_date=$capture_date, image=$image)"
-    }
-
-    override fun hashCode(): Int {
-        var result = voter_id?.hashCode() ?: 0
-        result = 31 * result + did.hashCode()
-        result = 31 * result + (national_id?.hashCode() ?: 0)
-        result = 31 * result + type_id
-        result = 31 * result + position.hashCode()
-        result = 31 * result + (missing_code?.hashCode() ?: 0)
-        result = 31 * result + capture_date.hashCode()
-        result = 31 * result + (image?.hashCode() ?: 0)
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as TemplatizerDto
-
-        if (did != other.did) return false
-        if (position != other.position) return false
-
-        return true
-    }
 
     @ExperimentalSerializationApi
     fun toSaveRequestDto(): SaveRequestDto {
