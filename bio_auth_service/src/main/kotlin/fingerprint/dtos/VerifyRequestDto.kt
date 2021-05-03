@@ -1,7 +1,6 @@
 package org.kiva.bioauthservice.fingerprint.dtos
 
 import kotlinx.serialization.Serializable
-import org.kiva.bioauthservice.common.utils.base64ToByte
 import org.kiva.bioauthservice.fingerprint.enums.DataType
 import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
 
@@ -22,8 +21,7 @@ data class VerifyRequestDto(
     val position: FingerPosition? = null,
 
     /**
-     * Filter passed to backend store to reduce the amount of prints we need to perform fingerprint matching against.
-     * Only filters declared in the backend definition are legal here and validators declared against them are run here.
+     * Filter to reduce the amount of prints we need to perform fingerprint matching against.
      *
      * Examples include:
      *
@@ -33,16 +31,10 @@ data class VerifyRequestDto(
      * filter by voterId
      * filters.put("voterId", "123456")
      *
-     * filter by first and last name
-     * filters.put("firstName", "John")
-     * filters.put("lastname", "Smith")
-     *
      * filter by comma-separated list of DIDs
      * filters.put("dids", "abcd1234,efgh5678")
      */
-//    @NotEmpty
-//    @ContainsKeys(oneOf = ["nationalId", "voterId", "firstName", "lastName", "dids"])
-    val filters: Map<String, String>,
+    val filters: VerifyRequestFiltersDto,
 
     /**
      * Defines the type of submitted fingerprint which is either image or template
@@ -58,7 +50,6 @@ data class VerifyRequestDto(
      */
     var params: VerifyRequestParamsDto = VerifyRequestParamsDto("", FingerPosition.RIGHT_INDEX)
 ) {
-    var imageByte: ByteArray = params.image.base64ToByte()
     init {
         if (params.image.isEmpty()) {
             params = VerifyRequestParamsDto(image ?: "", position ?: FingerPosition.RIGHT_INDEX)

@@ -40,3 +40,12 @@ fun String.generateHash(pepper: String): String {
         (this + pepper).sha256Half()
     }
 }
+
+/**
+ * Generates hash for a given list of inputs using given pepper data.
+ *
+ * @param pepper the pepper key used for increasing the security of hashing.
+ */
+fun List<String>.generateHashForList(pepper: String): List<String> {
+    return this.map { it.generateHash(pepper) }
+}

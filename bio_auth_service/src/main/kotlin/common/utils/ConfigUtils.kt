@@ -19,6 +19,11 @@ fun ApplicationConfig.getLong(path: String): Long {
 }
 
 @KtorExperimentalAPI
+fun ApplicationConfig.getDouble(path: String): Double {
+    return this.getString(path).toDouble()
+}
+
+@KtorExperimentalAPI
 fun ApplicationConfig.getBoolean(path: String): Boolean {
     val result = this.getString(path)
     if (result.toLowerCase() == "true") {
