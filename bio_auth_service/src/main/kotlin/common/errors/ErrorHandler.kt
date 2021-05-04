@@ -8,6 +8,8 @@ import io.ktor.features.StatusPages
 import io.ktor.response.respond
 import io.ktor.util.pipeline.PipelineContext
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationException
+import org.kiva.bioauthservice.common.errors.impl.BadRequestException
 import org.kiva.bioauthservice.common.errors.impl.InternalServerException
 import org.slf4j.Logger
 
@@ -26,6 +28,9 @@ fun Application.installErrorHandler(logger: Logger) {
     install(StatusPages) {
         exception<BioAuthException> { cause ->
             handleError(logger, cause)
+        }
+        exception<SerializationException> { cause ->
+            handleError(logger, BadRequestException(cause.message?.split("\n")?.first()))
         }
         exception<Throwable> { cause ->
             handleError(logger, InternalServerException(cause))

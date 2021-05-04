@@ -1,6 +1,7 @@
 package org.kiva.bioauthservice.common.errors
 
 enum class BioAuthExceptionCode constructor(val msg: String) {
+    BadRequestError("Bad request"),
     BioanalyzerServerError("Bioanalyzer server error"),
     FingerprintNoMatch("Fingerprint did not match stored records for citizen supplied through filters"),
     FingerprintLowQuality("Given fingerprint is of too low quality to be used for matching. Please recapture"),
