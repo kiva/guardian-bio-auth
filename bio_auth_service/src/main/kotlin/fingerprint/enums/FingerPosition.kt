@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.kiva.bioauthservice.common.errors.impl.InvalidFingerPositionException
 
+// TODO: When deserializing kotlinx, use the fromCode error message
 @Serializable
 enum class FingerPosition constructor(val code: Int) {
 
