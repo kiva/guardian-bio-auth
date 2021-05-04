@@ -1,4 +1,4 @@
-package org.kiva.bioauthservice.db
+package org.kiva.bioauthservice.app.config
 
 import com.zaxxer.hikari.HikariConfig
 import io.ktor.config.ApplicationConfig

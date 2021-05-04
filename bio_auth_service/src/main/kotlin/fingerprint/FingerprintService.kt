@@ -8,6 +8,7 @@ import fingerprint.dtos.VerifyResponseDto
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.jnbis.api.Jnbis
+import org.kiva.bioauthservice.app.config.FingerprintConfig
 import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingAmputationException
 import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingNotCapturedException
 import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingUnableToPrintException

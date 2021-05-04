@@ -6,16 +6,16 @@ import io.ktor.util.KtorExperimentalAPI
 import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
+import org.kiva.bioauthservice.app.AppRegistry
+import org.kiva.bioauthservice.app.config.DbConfig
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
 import org.kiva.bioauthservice.db.repositories.ReplayRepository
 import org.slf4j.Logger
 
 @KtorExperimentalAPI
-fun Application.registerDB(logger: Logger): DbRegistry {
-
-    // Set up Config
-    val baseConfig = environment.config.config("db")
-    val dbConfig = DbConfig(baseConfig)
+fun Application.registerDB(appRegistry: AppRegistry): DbRegistry {
+    val logger = appRegistry.logger
+    val dbConfig = appRegistry.appConfig.dbConfig
 
     // Set up Hikari connection pool
     val ds = HikariDataSource(dbConfig.hikariConfig())

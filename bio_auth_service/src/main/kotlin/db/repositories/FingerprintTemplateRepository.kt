@@ -10,7 +10,7 @@ import org.jdbi.v3.core.statement.EmptyHandling
 import org.jdbi.v3.core.statement.StatementContext
 import org.kiva.bioauthservice.common.utils.generateHash
 import org.kiva.bioauthservice.common.utils.generateHashForList
-import org.kiva.bioauthservice.db.DbConfig
+import org.kiva.bioauthservice.app.config.DbConfig
 import org.kiva.bioauthservice.db.daos.FingerprintTemplateDao
 import org.kiva.bioauthservice.fingerprint.dtos.PositionsDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto

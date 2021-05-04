@@ -1,4 +1,4 @@
-package org.kiva.bioauthservice.fingerprint
+package org.kiva.bioauthservice.app.config
 
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI

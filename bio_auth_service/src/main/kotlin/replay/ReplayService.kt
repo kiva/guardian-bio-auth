@@ -1,6 +1,7 @@
 package org.kiva.bioauthservice.replay
 
 import io.ktor.util.KtorExperimentalAPI
+import org.kiva.bioauthservice.app.config.ReplayConfig
 import org.kiva.bioauthservice.db.repositories.ReplayRepository
 import org.slf4j.Logger
 

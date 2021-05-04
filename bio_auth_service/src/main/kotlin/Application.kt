@@ -2,7 +2,6 @@ package org.kiva.bioauthservice
 
 import io.ktor.application.Application
 import io.ktor.application.install
-import io.ktor.application.log
 import io.ktor.features.ContentNegotiation
 import io.ktor.serialization.json
 import io.ktor.server.netty.EngineMain
@@ -18,19 +17,17 @@ import org.kiva.bioauthservice.replay.registerReplay
 @KtorExperimentalAPI
 fun Application.module() {
 
-    // Database setup
-    val dbRegistry = registerDB(log)
-
-    // Register domain areas
+    // Application setup
     val appRegistry = registerApp()
-    val replayRegistry = registerReplay(log, dbRegistry)
-    val fingerprintRegistry = registerFingerprint(dbRegistry, replayRegistry)
+    val dbRegistry = registerDB(appRegistry)
+    val replayRegistry = registerReplay(appRegistry, dbRegistry)
+    val fingerprintRegistry = registerFingerprint(appRegistry, dbRegistry, replayRegistry)
 
     // Http API middleware
     install(ContentNegotiation) {
         json()
     }
-    installErrorHandler(log)
+    installErrorHandler(appRegistry)
 
     // Http Routes
     appRegistry.installRoutes()
