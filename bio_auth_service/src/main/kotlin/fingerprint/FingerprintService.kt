@@ -38,15 +38,15 @@ class FingerprintService(
         return input.readByte() == 'F'.toByte() && input.readByte() == 'M'.toByte() && input.readByte() == 'R'.toByte()
     }
 
-    private fun buildTemplate(template: ByteArray): FingerprintTemplateWrapper {
+    private fun buildTemplate(template: ByteArray): FingerprintTemplate {
         if (isForeignTemplate(template)) {
-            return FingerprintTemplateWrapper(FingerprintCompatibility.importTemplate(template))
+            return FingerprintCompatibility.importTemplate(template)
         } else {
-            return FingerprintTemplateWrapper(FingerprintTemplate(template))
+            return FingerprintTemplate(template)
         }
     }
 
-    private fun buildTemplateFromImage(image: ByteArray): FingerprintTemplateWrapper {
+    private fun buildTemplateFromImage(image: ByteArray): FingerprintTemplate {
         val contentType = image.detectContentType()
         val fpImg = if (contentType === "application/octet-stream") {
             try {
@@ -58,7 +58,7 @@ class FingerprintService(
         } else {
             FingerprintImage(image)
         }
-        return FingerprintTemplateWrapper(FingerprintTemplate(fpImg))
+        return FingerprintTemplate(fpImg)
     }
 
     @ExperimentalSerializationApi
@@ -78,16 +78,15 @@ class FingerprintService(
         // 3 cases: fingerprint image/template is missing, fingerprint template is provided, fingerprint image is provided
         return bulkDto.fingerprints.count { dto: SaveRequestDto ->
             if (!dto.params.missing_code.isNullOrBlank()) {
-                val template = FingerprintTemplateWrapper(null)
-                templateRepository.insertTemplate(template, dto)
+                templateRepository.insertTemplate(dto)
             } else if (dto.params.type == DataType.TEMPLATE) {
                 val template = buildTemplate(dto.params.fingerprintBytes)
-                templateRepository.insertTemplate(template, dto)
+                templateRepository.insertTemplate(dto, template)
             } else {
                 // TODO Calculate score
                 val score = 0.0
                 val template = buildTemplateFromImage(dto.params.fingerprintBytes)
-                templateRepository.insertTemplate(template, dto, score)
+                templateRepository.insertTemplate(dto, template, score)
             }
         }
     }
@@ -105,7 +104,7 @@ class FingerprintService(
         }
 
         // Find all candidates that do not have a missing code and have a match score >= matchThreshold
-        val matcher = FingerprintMatcher(targetTemplate.fingerprintTemplate)
+        val matcher = FingerprintMatcher(targetTemplate)
         val matches = templateRepository
             .getTemplates(dto.filters, dto.params.position)
             .map {

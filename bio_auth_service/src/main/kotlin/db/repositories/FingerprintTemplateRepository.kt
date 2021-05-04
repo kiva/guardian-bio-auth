@@ -12,7 +12,6 @@ import org.kiva.bioauthservice.common.utils.generateHash
 import org.kiva.bioauthservice.common.utils.generateHashForList
 import org.kiva.bioauthservice.db.DbConfig
 import org.kiva.bioauthservice.db.daos.FingerprintTemplateDao
-import org.kiva.bioauthservice.fingerprint.FingerprintTemplateWrapper
 import org.kiva.bioauthservice.fingerprint.dtos.PositionsDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestFiltersDto
@@ -25,21 +24,27 @@ import java.sql.ResultSet
 class FingerprintTemplateRepository(private val jdbi: Jdbi, private val dbConfig: DbConfig, private val logger: Logger) {
 
     @ExperimentalSerializationApi
-    fun insertTemplate(templateWrapper: FingerprintTemplateWrapper, dto: SaveRequestDto, score: Double? = null): Boolean {
+    fun insertTemplate(
+        dto: SaveRequestDto,
+        template: FingerprintTemplate? = null,
+        score: Double? = null,
+        templateType: String = "sourceafis",
+        templateVersion: Int = 3
+    ): Boolean {
         val hashedNationalId = dto.filters.national_id.generateHash(dbConfig.hashPepper)
         val hashedVoterId = dto.filters.voter_id.generateHash(dbConfig.hashPepper)
         val count = jdbi.withHandle<Int, Exception> {
             it.createUpdate(insertTemplateQuery)
                 .bind("did", dto.id)
                 .bind("position", dto.params.position.code)
-                .bind("templateType", templateWrapper.templateType)
+                .bind("templateType", templateType)
                 .bind("typeId", dto.params.type_id)
                 .bind("nationalId", hashedNationalId)
                 .bind("voterId", hashedVoterId)
-                .bind("version", templateWrapper.templateVersion)
+                .bind("version", templateVersion)
                 .bind("captureDate", dto.params.capture_date)
                 .bind("missingCode", dto.params.missing_code)
-                .bind("template", templateWrapper.fingerprintTemplate?.serialize())
+                .bind("template", template?.serialize())
                 .bind("qualityScore", score ?: dto.params.quality_score)
                 .execute()
         }
