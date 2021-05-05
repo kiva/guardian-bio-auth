@@ -1,4 +1,4 @@
-package org.kiva.bioauthservice.org.kiva.bioauthservice.org.kiva.bioauthservice.app.config
+package org.kiva.bioauthservice.app.config
 
 import io.ktor.client.features.logging.LogLevel
 import io.ktor.config.ApplicationConfig

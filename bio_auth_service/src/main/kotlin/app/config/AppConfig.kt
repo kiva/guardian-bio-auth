@@ -2,7 +2,6 @@ package org.kiva.bioauthservice.app.config
 
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
-import org.kiva.bioauthservice.org.kiva.bioauthservice.app.config.HttpConfig
 
 @KtorExperimentalAPI
 class AppConfig(baseConfig: ApplicationConfig) {
