@@ -24,6 +24,12 @@ jobs:
             ./gradlew clean
             ./gradlew build
       - run:
+          name: build and test bio auth service
+          command: |
+            cd bio_auth_service
+            ./gradle clean
+            ./gradle build
+      - run:
           name: Spin up bio-auth services to confirm they can actually execute
           command: |
             docker network prune -f
