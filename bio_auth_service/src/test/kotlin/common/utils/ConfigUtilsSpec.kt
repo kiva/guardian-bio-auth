@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldBe
 import io.ktor.config.HoconApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import org.kiva.bioauthservice.common.utils.getBoolean
+import org.kiva.bioauthservice.common.utils.getDouble
 import org.kiva.bioauthservice.common.utils.getInt
 import org.kiva.bioauthservice.common.utils.getLong
 import org.kiva.bioauthservice.common.utils.getString
@@ -136,6 +137,60 @@ class ConfigUtilsSpec : WordSpec({
             )
             shouldThrow<NumberFormatException> {
                 config.getLong("foo")
+            }
+        }
+    }
+
+    "getDouble" should {
+
+        "be able to retrieve an integer value as a Double" {
+            val value = 123
+            val config = HoconApplicationConfig(
+                ConfigFactory.parseString(
+                    """
+                    foo = $value
+                    """
+                )
+            )
+            config.getDouble("foo") shouldBe value.toDouble()
+        }
+
+        "be able to retrieve a decimal value as a Double" {
+            val value = 123.1
+            val config = HoconApplicationConfig(
+                ConfigFactory.parseString(
+                    """
+                    foo = $value
+                    """
+                )
+            )
+            config.getDouble("foo") shouldBe value
+        }
+
+        "be able to retrieve a number as Double from a nested path" {
+            val value = 123.1
+            val config = HoconApplicationConfig(
+                ConfigFactory.parseString(
+                    """
+                    foo {
+                      bar = "$value"
+                    }
+                    """
+                )
+            )
+            config.getDouble("foo.bar") shouldBe value
+        }
+
+        "fail to retrieve a string as a Double" {
+            val config = HoconApplicationConfig(
+                ConfigFactory.parseString(
+                    """
+                    foo = "bar"
+                    """
+                )
+            )
+            shouldThrow<NumberFormatException> {
+                config.getDouble("foo")
             }
         }
     }
