@@ -1,8 +1,10 @@
 package org.kiva.bioauthservice.fingerprint.dtos
 
 import kotlinx.serialization.Serializable
+import org.kiva.bioauthservice.common.errors.impl.ImageDecodeException
 import org.kiva.bioauthservice.common.utils.base64ToByte
 import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
+import java.lang.Exception
 
 @Serializable
 data class VerifyRequestParamsDto(
@@ -17,5 +19,9 @@ data class VerifyRequestParamsDto(
      */
     val position: FingerPosition
 ) {
-    val imageByte: ByteArray = image.base64ToByte()
+    val imageByte: ByteArray = try {
+        image.base64ToByte()
+    } catch (ex: Exception) {
+        throw ImageDecodeException(ex.message)
+    }
 }

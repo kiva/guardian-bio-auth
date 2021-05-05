@@ -4,6 +4,7 @@ import com.machinezoo.sourceafis.FingerprintCompatibility
 import com.machinezoo.sourceafis.FingerprintImage
 import com.machinezoo.sourceafis.FingerprintMatcher
 import com.machinezoo.sourceafis.FingerprintTemplate
+import common.errors.impl.InvalidFilterException
 import fingerprint.dtos.VerifyResponseDto
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -15,6 +16,8 @@ import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingNotCapturedE
 import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingUnableToPrintException
 import org.kiva.bioauthservice.common.errors.impl.FingerprintTemplateGenerationException
 import org.kiva.bioauthservice.common.errors.impl.InvalidImageFormatException
+import org.kiva.bioauthservice.common.errors.impl.InvalidParamsException
+import org.kiva.bioauthservice.common.errors.impl.InvalidTemplateVersionException
 import org.kiva.bioauthservice.common.utils.detectContentType
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
 import org.kiva.bioauthservice.fingerprint.dtos.BulkSaveRequestDto
@@ -96,6 +99,15 @@ class FingerprintService(
 
     suspend fun verify(dto: VerifyRequestDto, requestId: String): VerifyResponseDto {
 
+        // Verify request parameters
+        val dids = dto.filters.dids?.split(",") ?: emptyList()
+        if (dids.size > fingerprintConfig.maxDids) {
+            throw InvalidFilterException("Too many DIDs to match against; the maximum number of DIDs is ${fingerprintConfig.maxDids}")
+        }
+        if (dto.params.image.isBlank()) {
+            throw InvalidParamsException("Image must be a non-empty string")
+        }
+
         // Check for replay attacks
         replayService.checkIfReplay(dto.params.imageByte)
 
@@ -111,6 +123,7 @@ class FingerprintService(
         val matches = templateRepository
             .getTemplates(dto.filters, dto.params.position)
             .map {
+                // Throw if template is empty
                 if (!it.missingCode.isNullOrBlank() || it.template == null) {
                     when (it.missingCode) {
                         "NA" -> throw FingerprintMissingNotCapturedException()
@@ -118,6 +131,10 @@ class FingerprintService(
                         "UP" -> throw FingerprintMissingUnableToPrintException()
                         else -> throw FingerprintMissingNotCapturedException() // default to NA if not available.
                     }
+                }
+                // Throw if version doesn't match
+                if (it.version != 3) {
+                    throw InvalidTemplateVersionException("Template version does not match the version of the stored template")
                 }
                 val matchingScore = matcher.match(it.template)
                 VerifyResponseDto(ResponseStatus.MATCHED, it.did, it.did, it.nationalId, matchingScore)
