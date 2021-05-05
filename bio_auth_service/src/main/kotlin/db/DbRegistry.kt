@@ -7,10 +7,8 @@ import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
 import org.kiva.bioauthservice.app.AppRegistry
-import org.kiva.bioauthservice.app.config.DbConfig
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
 import org.kiva.bioauthservice.db.repositories.ReplayRepository
-import org.slf4j.Logger
 
 @KtorExperimentalAPI
 fun Application.registerDB(appRegistry: AppRegistry): DbRegistry {

@@ -3,9 +3,7 @@ package org.kiva.bioauthservice.replay
 import io.ktor.application.Application
 import io.ktor.util.KtorExperimentalAPI
 import org.kiva.bioauthservice.app.AppRegistry
-import org.kiva.bioauthservice.app.config.ReplayConfig
 import org.kiva.bioauthservice.db.DbRegistry
-import org.slf4j.Logger
 
 // Getting a child config is an experimental API, subject to future renaming.
 @KtorExperimentalAPI

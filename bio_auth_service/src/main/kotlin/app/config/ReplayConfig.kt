@@ -6,5 +6,5 @@ import org.kiva.bioauthservice.common.utils.getBoolean
 
 @KtorExperimentalAPI
 class ReplayConfig(baseConfig: ApplicationConfig) {
-    val replayEnabled: Boolean = baseConfig.getBoolean("enabled")
+    val enabled = baseConfig.getBoolean("enabled")
 }

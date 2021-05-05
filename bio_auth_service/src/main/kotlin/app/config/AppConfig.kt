@@ -2,10 +2,13 @@ package org.kiva.bioauthservice.app.config
 
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
+import org.kiva.bioauthservice.org.kiva.bioauthservice.app.config.HttpConfig
 
 @KtorExperimentalAPI
 class AppConfig(baseConfig: ApplicationConfig) {
-    val dbConfig: DbConfig = DbConfig(baseConfig.config("db"))
-    val fingerprintConfig: FingerprintConfig = FingerprintConfig(baseConfig.config("fingerprint"))
-    val replayConfig: ReplayConfig = ReplayConfig(baseConfig.config("replay"))
+    val bioanalyzerConfig = BioanalyzerConfig(baseConfig.config("bioanalyzer"))
+    val dbConfig = DbConfig(baseConfig.config("db"))
+    val httpConfig = HttpConfig(baseConfig.config("http"))
+    val fingerprintConfig = FingerprintConfig(baseConfig.config("fingerprint"))
+    val replayConfig = ReplayConfig(baseConfig.config("replay"))
 }

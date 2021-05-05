@@ -7,6 +7,6 @@ import org.kiva.bioauthservice.common.utils.getInt
 
 @KtorExperimentalAPI
 class FingerprintConfig(baseConfig: ApplicationConfig) {
-    val maxDids: Int = baseConfig.getInt("maxDids")
-    val matchThreshold: Double = baseConfig.getDouble("matchThreshold")
+    val maxDids = baseConfig.getInt("maxDids") // TODO: Use this to limit number of Dids queried
+    val matchThreshold = baseConfig.getDouble("matchThreshold")
 }

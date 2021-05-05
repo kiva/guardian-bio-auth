@@ -8,13 +8,13 @@ import org.kiva.bioauthservice.common.utils.getString
 
 @KtorExperimentalAPI
 class DbConfig(baseConfig: ApplicationConfig) {
-    val hashPepper: String = baseConfig.getString("hashPepper")
-    val jdbcUrl: String = baseConfig.getString("url")
-    val username: String = baseConfig.getString("username")
-    val password: String = baseConfig.getString("password")
-    val connectionTimeout: Long = baseConfig.getLong("connectionTimeout")
-    val idleTimeout: Long = baseConfig.getLong("idleTimeout")
-    val maxLifetime: Long = baseConfig.getLong("maxLifetime")
+    val hashPepper = baseConfig.getString("hashPepper")
+    val jdbcUrl = baseConfig.getString("url")
+    val username = baseConfig.getString("username")
+    val password = baseConfig.getString("password")
+    val connectionTimeout = baseConfig.getLong("connectionTimeout")
+    val idleTimeout = baseConfig.getLong("idleTimeout")
+    val maxLifetime = baseConfig.getLong("maxLifetime")
 
     fun hikariConfig(): HikariConfig {
         val config = HikariConfig()

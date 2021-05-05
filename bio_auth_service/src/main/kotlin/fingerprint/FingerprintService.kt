@@ -9,6 +9,7 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.jnbis.api.Jnbis
 import org.kiva.bioauthservice.app.config.FingerprintConfig
+import org.kiva.bioauthservice.bioanalyzer.BioanalyzerService
 import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingAmputationException
 import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingNotCapturedException
 import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingUnableToPrintException
@@ -31,7 +32,8 @@ import java.io.DataInputStream
 class FingerprintService(
     private val templateRepository: FingerprintTemplateRepository,
     private val fingerprintConfig: FingerprintConfig,
-    private val replayService: ReplayService
+    private val replayService: ReplayService,
+    private val bioanalyzerService: BioanalyzerService
 ) {
 
     private fun isForeignTemplate(template: ByteArray): Boolean {
@@ -63,7 +65,7 @@ class FingerprintService(
     }
 
     @ExperimentalSerializationApi
-    fun save(bulkDto: BulkSaveRequestDto): Int {
+    suspend fun save(bulkDto: BulkSaveRequestDto, requestId: String): Int {
 
         // Verify a missing code is not provided at the same time that an image or template is provided. These are mutually exclusive.
         bulkDto.fingerprints.forEach { dto: SaveRequestDto ->
@@ -84,15 +86,15 @@ class FingerprintService(
                 val template = buildTemplate(dto.params.fingerprintBytes)
                 templateRepository.insertTemplate(dto, template)
             } else {
-                // TODO Calculate score
-                val score = 0.0
+                // Does not throw exception if score is low so we can still save images
+                val score = bioanalyzerService.analyze(dto.params.image, true, requestId)
                 val template = buildTemplateFromImage(dto.params.fingerprintBytes)
                 templateRepository.insertTemplate(dto, template, score)
             }
         }
     }
 
-    fun verify(dto: VerifyRequestDto): VerifyResponseDto {
+    suspend fun verify(dto: VerifyRequestDto, requestId: String): VerifyResponseDto {
 
         // Check for replay attacks
         replayService.checkIfReplay(dto.params.imageByte)
@@ -125,7 +127,7 @@ class FingerprintService(
 
         // Done, return the result
         return if (matches.isEmpty()) {
-            // TODO: If no matches, query bioanalyzer service to determine if the image provided is low quality
+            bioanalyzerService.analyze(dto.params.image, true, requestId)
             VerifyResponseDto(ResponseStatus.NOT_MATCHED)
         } else {
             matches.last()

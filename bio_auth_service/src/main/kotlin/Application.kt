@@ -8,6 +8,7 @@ import io.ktor.server.netty.EngineMain
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.kiva.bioauthservice.app.registerApp
+import org.kiva.bioauthservice.bioanalyzer.registerBioanalyzer
 import org.kiva.bioauthservice.common.errors.installErrorHandler
 import org.kiva.bioauthservice.db.registerDB
 import org.kiva.bioauthservice.fingerprint.registerFingerprint
@@ -21,7 +22,8 @@ fun Application.module() {
     val appRegistry = registerApp()
     val dbRegistry = registerDB(appRegistry)
     val replayRegistry = registerReplay(appRegistry, dbRegistry)
-    val fingerprintRegistry = registerFingerprint(appRegistry, dbRegistry, replayRegistry)
+    val bioanalyzerRegistry = registerBioanalyzer(appRegistry)
+    val fingerprintRegistry = registerFingerprint(appRegistry, dbRegistry, replayRegistry, bioanalyzerRegistry)
 
     // Http API middleware
     install(ContentNegotiation) {
