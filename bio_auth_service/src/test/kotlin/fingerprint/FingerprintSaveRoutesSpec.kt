@@ -44,7 +44,6 @@ import org.kiva.bioauthservice.bioanalyzer.dtos.BioanalyzerReponseDto
 import org.kiva.bioauthservice.bioanalyzer.registerBioanalyzer
 import org.kiva.bioauthservice.common.errors.ApiError
 import org.kiva.bioauthservice.common.errors.BioAuthExceptionCode
-import org.kiva.bioauthservice.common.errors.impl.BioanalyzerServiceException
 import org.kiva.bioauthservice.common.errors.installErrorHandler
 import org.kiva.bioauthservice.common.utils.base64ToString
 import org.kiva.bioauthservice.db.DbRegistry
@@ -99,10 +98,12 @@ data class BioAnalyzerRoute(
 fun mockHttpClient(route: BioAnalyzerRoute): HttpClient {
     return HttpClient(MockEngine) {
         install(JsonFeature) {
-            serializer = KotlinxSerializer(Json {
-                ignoreUnknownKeys = true
-                encodeDefaults = true
-            })
+            serializer = KotlinxSerializer(
+                Json {
+                    ignoreUnknownKeys = true
+                    encodeDefaults = true
+                }
+            )
         }
         engine {
             addHandler {
@@ -148,11 +149,15 @@ class FingerprintSaveRoutesSpec : WordSpec({
     "POST /save" should {
 
         "be able to save a template" {
-            val bulkDto = BulkSaveRequestDto(listOf(SaveRequestDto(
-                alphanumericStringGen.next(),
-                SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
-                SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template)
-            )))
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template)
+                    )
+                )
+            )
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
 
@@ -168,11 +173,15 @@ class FingerprintSaveRoutesSpec : WordSpec({
         }
 
         "be able to save a high quality image" {
-            val bulkDto = BulkSaveRequestDto(listOf(SaveRequestDto(
-                alphanumericStringGen.next(),
-                SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
-                SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
-            )))
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                    )
+                )
+            )
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(99.0)))
@@ -189,11 +198,15 @@ class FingerprintSaveRoutesSpec : WordSpec({
         }
 
         "be able to save a low quality image" {
-            val bulkDto = BulkSaveRequestDto(listOf(SaveRequestDto(
-                alphanumericStringGen.next(),
-                SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
-                SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
-            )))
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                    )
+                )
+            )
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(1.0)))
@@ -210,11 +223,15 @@ class FingerprintSaveRoutesSpec : WordSpec({
         }
 
         "be able to save a fingerprint with a missing code" {
-            val bulkDto = BulkSaveRequestDto(listOf(SaveRequestDto(
-                alphanumericStringGen.next(),
-                SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
-                SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", "", 0.0, "XX")
-            )))
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", "", 0.0, "XX")
+                    )
+                )
+            )
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
 
@@ -230,11 +247,15 @@ class FingerprintSaveRoutesSpec : WordSpec({
         }
 
         "return an error if both an image and a missing code is provided" {
-            val bulkDto = BulkSaveRequestDto(listOf(SaveRequestDto(
-                alphanumericStringGen.next(),
-                SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
-                SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image, "", 0.0, "XX")
-            )))
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image, "", 0.0, "XX")
+                    )
+                )
+            )
 
             withTestApplication({
                 testFingerprintRoutes(appConfig, mockk(), mockReplayRepository, mockFingerprintTemplateRepository)
@@ -249,11 +270,15 @@ class FingerprintSaveRoutesSpec : WordSpec({
         }
 
         "return an error if both a template and a missing code is provided" {
-            val bulkDto = BulkSaveRequestDto(listOf(SaveRequestDto(
-                alphanumericStringGen.next(),
-                SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
-                SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template, 0.0, "XX")
-            )))
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template, 0.0, "XX")
+                    )
+                )
+            )
 
             withTestApplication({
                 testFingerprintRoutes(appConfig, mockk(), mockReplayRepository, mockFingerprintTemplateRepository)
@@ -268,11 +293,15 @@ class FingerprintSaveRoutesSpec : WordSpec({
         }
 
         "return an error on saving an image if bioanalyzer returns an error" {
-            val bulkDto = BulkSaveRequestDto(listOf(SaveRequestDto(
-                alphanumericStringGen.next(),
-                SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
-                SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
-            )))
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                    )
+                )
+            )
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, null, HttpStatusCode.InternalServerError, "Error!"))
