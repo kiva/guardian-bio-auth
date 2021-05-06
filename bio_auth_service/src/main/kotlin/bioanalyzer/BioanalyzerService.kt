@@ -27,11 +27,6 @@ class BioanalyzerService(
 ) {
 
     /**
-     * The bioanalyzer analyze endpoint url.
-     */
-    private val ANALYZE_URL: String = "/api/v1/analyze"
-
-    /**
      * Calls Bioanalyzer Service to fetch the measured quality of submitted fingerprint, so, if the fingerprint quality is very low, the
      * corresponding error will be sent to client.
      */
@@ -47,7 +42,7 @@ class BioanalyzerService(
         try {
 
             // Send request to Bioanalyzer Service
-            val response: HttpResponse = httpClient.post(bioanalyzerConfig.url + ANALYZE_URL) {
+            val response: HttpResponse = httpClient.post(bioanalyzerConfig.baseUrl + bioanalyzerConfig.analyzePath) {
                 contentType(ContentType.Application.Json)
                 body = mapOf(requestId to BioanalyzerRequestDto("fingerprint", image))
                 headers {

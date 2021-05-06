@@ -7,6 +7,6 @@ class FingerprintTemplateGenerationException(
     private val did: String?,
     private val position: FingerPosition,
     reason: String
-) : ValidationException(BioAuthExceptionCode.InternalServerError, reason) {
+) : ValidationException(BioAuthExceptionCode.BadRequestError, reason) {
     override fun toString(): String = "Error happened generating template for did: $did position: $position Reason: $reason"
 }

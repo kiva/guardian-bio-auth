@@ -13,5 +13,6 @@ class BioanalyzerConfig(baseConfig: ApplicationConfig) {
     val enabled = baseConfig.getBoolean("enabled")
     val qualityThreshold = baseConfig.getDouble("qualityThreshold")
     val timeout = Duration.ofSeconds(baseConfig.getLong("timeout"))
-    val url = baseConfig.getString("url")
+    val baseUrl = baseConfig.getString("baseUrl")
+    val analyzePath = baseConfig.getString("analyzePath")
 }

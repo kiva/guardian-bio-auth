@@ -90,7 +90,7 @@ class FingerprintService(
                 templateRepository.insertTemplate(dto, template)
             } else {
                 // Does not throw exception if score is low so we can still save images
-                val score = bioanalyzerService.analyze(dto.params.image, true, requestId)
+                val score = bioanalyzerService.analyze(dto.params.image, false, requestId)
                 val template = buildTemplateFromImage(dto.params.fingerprintBytes)
                 templateRepository.insertTemplate(dto, template, score)
             }
