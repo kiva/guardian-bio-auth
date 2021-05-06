@@ -1,6 +1,7 @@
 package fingerprint
 
 import com.typesafe.config.ConfigFactory
+import fingerprint.dtos.TemplatizerDto
 import io.kotest.assertions.ktor.shouldHaveStatus
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.shouldBe
@@ -34,6 +35,7 @@ import io.ktor.util.KtorExperimentalAPI
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
@@ -77,6 +79,11 @@ fun Application.testFingerprintRoutes(
     }
     installErrorHandler(appRegistry)
     fingerprintRegistry.installRoutes()
+}
+
+@ExperimentalSerializationApi
+fun List<TemplatizerDto>.serialize(): String {
+    return encodeToString(ListSerializer(TemplatizerDto.serializer()), this)
 }
 
 @ExperimentalSerializationApi
@@ -310,6 +317,146 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 testFingerprintRoutes(appConfig, httpClient, mockReplayRepository, mockFingerprintTemplateRepository)
             }) {
                 post("/api/v1/save", bulkDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.BadRequest
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
+                    responseBody.error shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
+                }
+            }
+        }
+    }
+
+    "POST /templatizer/bulk/template" should {
+
+        "be able to save a high quality image" {
+            val templatizerDto = listOf(
+                TemplatizerDto(
+                    alphanumericStringGen.next(),
+                    alphanumericStringGen.next(),
+                    alphanumericStringGen.next(),
+                    1,
+                    FingerPosition.RIGHT_INDEX,
+                    null,
+                    ZonedDateTime.now(),
+                    image
+                )
+            )
+            every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+            val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(99.0)))
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, httpClient, mockReplayRepository, mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/templatizer/bulk/template", templatizerDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
+        "be able to save a low quality image" {
+            val templatizerDto = listOf(
+                TemplatizerDto(
+                    alphanumericStringGen.next(),
+                    alphanumericStringGen.next(),
+                    alphanumericStringGen.next(),
+                    1,
+                    FingerPosition.RIGHT_INDEX,
+                    null,
+                    ZonedDateTime.now(),
+                    image
+                )
+            )
+            every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+            val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(1.0)))
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, httpClient, mockReplayRepository, mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/templatizer/bulk/template", templatizerDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
+        "be able to save a fingerprint with a missing code" {
+            val templatizerDto = listOf(
+                TemplatizerDto(
+                    alphanumericStringGen.next(),
+                    alphanumericStringGen.next(),
+                    alphanumericStringGen.next(),
+                    1,
+                    FingerPosition.RIGHT_INDEX,
+                    "XX",
+                    ZonedDateTime.now()
+                )
+            )
+            every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockReplayRepository, mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/templatizer/bulk/template", templatizerDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
+        "return an error if both an image and a missing code is provided" {
+            val templatizerDto = listOf(
+                TemplatizerDto(
+                    alphanumericStringGen.next(),
+                    alphanumericStringGen.next(),
+                    alphanumericStringGen.next(),
+                    1,
+                    FingerPosition.RIGHT_INDEX,
+                    "XX",
+                    ZonedDateTime.now(),
+                    image
+                )
+            )
+            every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+            val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, null, HttpStatusCode.InternalServerError, "Error!"))
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockReplayRepository, mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/templatizer/bulk/template", templatizerDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.BadRequest
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
+                    responseBody.error shouldBe BioAuthExceptionCode.BadRequestError.name
+                }
+            }
+        }
+
+        "return an error on saving an image if bioanalyzer returns an error" {
+            val templatizerDto = listOf(
+                TemplatizerDto(
+                    alphanumericStringGen.next(),
+                    alphanumericStringGen.next(),
+                    alphanumericStringGen.next(),
+                    1,
+                    FingerPosition.RIGHT_INDEX,
+                    null,
+                    ZonedDateTime.now(),
+                    image
+                )
+            )
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockReplayRepository, mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/templatizer/bulk/template", templatizerDto.serialize()) {
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
