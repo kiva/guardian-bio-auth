@@ -28,7 +28,6 @@ data class VerifyRequestDto(
     /**
      * Defines the type of submitted fingerprint which is either image or template
      */
-//    @NotEmpty
     val imageType: DataType = DataType.IMAGE
 ) {
 

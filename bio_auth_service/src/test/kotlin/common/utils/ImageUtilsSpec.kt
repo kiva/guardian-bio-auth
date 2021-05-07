@@ -13,7 +13,7 @@ class ImageUtilsSpec : StringSpec({
     }
 
     "should be able to detect a .jpeg" {
-        val imgBytes = this.javaClass.getResource("/images/sample.jpeg")?.readBytes()
+        val imgBytes = this.javaClass.getResource("/images/sample.jpg")?.readBytes()
         imgBytes!!.detectContentType() shouldBe MediaType.image("jpeg").toString()
     }
 

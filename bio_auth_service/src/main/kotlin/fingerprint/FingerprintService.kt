@@ -4,6 +4,7 @@ import com.machinezoo.sourceafis.FingerprintCompatibility
 import com.machinezoo.sourceafis.FingerprintImage
 import com.machinezoo.sourceafis.FingerprintMatcher
 import com.machinezoo.sourceafis.FingerprintTemplate
+import common.errors.impl.FingerprintNoMatchException
 import common.errors.impl.InvalidFilterException
 import fingerprint.dtos.VerifyResponseDto
 import io.ktor.util.KtorExperimentalAPI
@@ -145,7 +146,7 @@ class FingerprintService(
         // Done, return the result
         return if (matches.isEmpty()) {
             bioanalyzerService.analyze(dto.params.image, true, requestId)
-            VerifyResponseDto(ResponseStatus.NOT_MATCHED)
+            throw FingerprintNoMatchException()
         } else {
             matches.last()
         }

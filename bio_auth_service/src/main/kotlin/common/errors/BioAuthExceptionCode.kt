@@ -7,6 +7,7 @@ enum class BioAuthExceptionCode constructor(val msg: String) {
     FingerprintMissingNotCaptured("There is no fingerprint for supplied position stored in the database for matching citizen, it was not captured"),
     FingerprintMissingAmputation("There is no fingerprint stored in the database, due to amputation"),
     FingerprintMissingUnableToPrint("There is no fingerprint stored in the database, unable to record fingerprint"),
+    FingerprintNoMatch("Fingerprint did not match stored records for citizen supplied through filters"),
     InternalServerError("Unexpected internal error"),
     InvalidFilters("One of your filters is invalid or missing"),
     InvalidParams("One of your params is invalid or missing"),
