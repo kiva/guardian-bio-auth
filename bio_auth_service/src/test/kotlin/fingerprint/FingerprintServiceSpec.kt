@@ -16,6 +16,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import org.kiva.bioauthservice.app.config.FingerprintConfig
 import org.kiva.bioauthservice.bioanalyzer.BioanalyzerService
 import org.kiva.bioauthservice.common.errors.impl.FingerprintTemplateGenerationException
+import org.kiva.bioauthservice.common.errors.impl.InvalidImageFormatException
+import org.kiva.bioauthservice.common.errors.impl.InvalidTemplateException
 import org.kiva.bioauthservice.common.utils.base64ToString
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
 import org.kiva.bioauthservice.fingerprint.FingerprintService
@@ -43,7 +45,7 @@ class FingerprintServiceSpec : WordSpec({
     val mockReplayService = mockk<ReplayService>()
     val mockBioanalyzerService = mockk<BioanalyzerService>()
 
-    fun buildFingerprintService() : FingerprintService {
+    fun buildFingerprintService(): FingerprintService {
         return FingerprintService(
             mockFingerprintTemplateRepository,
             mockFingerprintConfig,
@@ -62,11 +64,13 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintTemplateRepository.insertTemplate(any()) } returns true
             val fpService = buildFingerprintService()
             val dto = BulkSaveRequestDto(
-                listOf(SaveRequestDto(
-                    did,
-                    SaveRequestFiltersDto(voterId, nationalId),
-                    SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", "", 0.0, "XX")
-                ))
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", "", 0.0, "XX")
+                    )
+                )
             )
             val result = fpService.save(dto, requestId)
             result shouldBe 1
@@ -78,11 +82,13 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val fpService = buildFingerprintService()
             val dto = BulkSaveRequestDto(
-                listOf(SaveRequestDto(
-                    did,
-                    SaveRequestFiltersDto(voterId, nationalId),
-                    SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
-                ))
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                    )
+                )
             )
             val result = fpService.save(dto, requestId)
             result shouldBe 1
@@ -93,11 +99,13 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val fpService = buildFingerprintService()
             val dto = BulkSaveRequestDto(
-                listOf(SaveRequestDto(
-                    did,
-                    SaveRequestFiltersDto(voterId, nationalId),
-                    SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template)
-                ))
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template)
+                    )
+                )
             )
             val result = fpService.save(dto, requestId)
             result shouldBe 1
@@ -108,15 +116,18 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val fpService = buildFingerprintService()
             val dto = BulkSaveRequestDto(
-                listOf(SaveRequestDto(
-                    did,
-                    SaveRequestFiltersDto(voterId, nationalId),
-                    SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template)
-                ), SaveRequestDto(
-                    did,
-                    SaveRequestFiltersDto(voterId, nationalId),
-                    SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", template)
-                ))
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template)
+                    ),
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", template)
+                    )
+                )
             )
             val result = fpService.save(dto, requestId)
             result shouldBe 2
@@ -128,15 +139,18 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val fpService = buildFingerprintService()
             val dto = BulkSaveRequestDto(
-                listOf(SaveRequestDto(
-                    did,
-                    SaveRequestFiltersDto(voterId, nationalId),
-                    SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
-                ), SaveRequestDto(
-                    did,
-                    SaveRequestFiltersDto(voterId, nationalId),
-                    SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, image)
-                ))
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                    ),
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, image)
+                    )
+                )
             )
             val result = fpService.save(dto, requestId)
             result shouldBe 2
@@ -148,15 +162,18 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val fpService = buildFingerprintService()
             val dto = BulkSaveRequestDto(
-                listOf(SaveRequestDto(
-                    did,
-                    SaveRequestFiltersDto(voterId, nationalId),
-                    SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
-                ), SaveRequestDto(
-                    did,
-                    SaveRequestFiltersDto(voterId, nationalId),
-                    SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", template)
-                ))
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                    ),
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", template)
+                    )
+                )
             )
             val result = fpService.save(dto, requestId)
             result shouldBe 2
@@ -166,11 +183,13 @@ class FingerprintServiceSpec : WordSpec({
         "fail if provided a single entry with both an image and a missing_code" {
             val fpService = buildFingerprintService()
             val dto = BulkSaveRequestDto(
-                listOf(SaveRequestDto(
-                    did,
-                    SaveRequestFiltersDto(voterId, nationalId),
-                    SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image, "", 0.0, "XX")
-                ))
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image, "", 0.0, "XX")
+                    )
+                )
             )
             shouldThrow<FingerprintTemplateGenerationException> {
                 fpService.save(dto, requestId)
@@ -181,16 +200,54 @@ class FingerprintServiceSpec : WordSpec({
         "fail if provided a single entry with both a template and a missing_code" {
             val fpService = buildFingerprintService()
             val dto = BulkSaveRequestDto(
-                listOf(SaveRequestDto(
-                    did,
-                    SaveRequestFiltersDto(voterId, nationalId),
-                    SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template, 0.0, "XX")
-                ))
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template, 0.0, "XX")
+                    )
+                )
             )
             shouldThrow<FingerprintTemplateGenerationException> {
                 fpService.save(dto, requestId)
             }
             coVerify { mockBioanalyzerService wasNot Called }
         }
-    }"
+
+        "fail to save an base64-encoded image with an unsupported format" {
+            val badImage = "foobar".toByteArray().base64ToString()
+            val fpService = buildFingerprintService()
+            val dto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, badImage)
+                    )
+                )
+            )
+            shouldThrow<InvalidImageFormatException> {
+                fpService.save(dto, requestId)
+            }
+            coVerify { mockBioanalyzerService wasNot Called }
+        }
+
+        "fail to save a fingerprint template that is not actually a fingerprint template" {
+            val badTemplate = "foobar".toByteArray().base64ToString()
+            val fpService = buildFingerprintService()
+            val dto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", badTemplate)
+                    )
+                )
+            )
+            shouldThrow<InvalidTemplateException> {
+                fpService.save(dto, requestId)
+            }
+            coVerify { mockBioanalyzerService wasNot Called }
+        }
+    }
 })

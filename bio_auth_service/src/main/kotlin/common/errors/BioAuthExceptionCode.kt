@@ -14,5 +14,6 @@ enum class BioAuthExceptionCode constructor(val msg: String) {
     InvalidImageEncoding("Invalid image encoding, must be base64 encoded"),
     InvalidImageFormat("Invalid image format, must be one of ..."),
     InvalidPosition("Invalid position, must be one of ..."),
+    InvalidTemplate("Invalid template"),
     InvalidTemplateVersion("Invalid template version");
 }

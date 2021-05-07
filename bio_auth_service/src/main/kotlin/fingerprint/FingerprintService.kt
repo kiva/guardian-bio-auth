@@ -18,6 +18,7 @@ import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingUnableToPrin
 import org.kiva.bioauthservice.common.errors.impl.FingerprintTemplateGenerationException
 import org.kiva.bioauthservice.common.errors.impl.InvalidImageFormatException
 import org.kiva.bioauthservice.common.errors.impl.InvalidParamsException
+import org.kiva.bioauthservice.common.errors.impl.InvalidTemplateException
 import org.kiva.bioauthservice.common.errors.impl.InvalidTemplateVersionException
 import org.kiva.bioauthservice.common.utils.detectContentType
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
@@ -31,6 +32,7 @@ import org.kiva.bioauthservice.fingerprint.enums.ResponseStatus
 import org.kiva.bioauthservice.replay.ReplayService
 import java.io.ByteArrayInputStream
 import java.io.DataInputStream
+import java.lang.IllegalArgumentException
 
 @KtorExperimentalAPI
 class FingerprintService(
@@ -46,24 +48,28 @@ class FingerprintService(
     }
 
     private fun buildTemplate(template: ByteArray): FingerprintTemplate {
-        if (isForeignTemplate(template)) {
-            return FingerprintCompatibility.importTemplate(template)
-        } else {
-            return FingerprintTemplate(template)
+        try {
+            if (isForeignTemplate(template)) {
+                return FingerprintCompatibility.importTemplate(template)
+            } else {
+                return FingerprintTemplate(template)
+            }
+        } catch (ex: IllegalArgumentException) {
+            throw InvalidTemplateException("Unsupported fingerprint template format for provided fingerprint template")
         }
     }
 
     private fun buildTemplateFromImage(image: ByteArray): FingerprintTemplate {
         val contentType = image.detectContentType()
-        val fpImg = if (contentType === "application/octet-stream") {
-            try {
+        val fpImg = try {
+            if (contentType === "application/octet-stream") {
                 val asWsg = Jnbis.wsq().decode(image)
                 FingerprintImage(asWsg.asBitmap().pixels)
-            } catch (ex: Exception) {
-                throw InvalidImageFormatException("Unsupported image format for provided fingerprint image: application/octet-stream")
+            } else {
+                FingerprintImage(image)
             }
-        } else {
-            FingerprintImage(image)
+        } catch (ex: Exception) {
+            throw InvalidImageFormatException("Unsupported image format for provided fingerprint image: $contentType")
         }
         return FingerprintTemplate(fpImg)
     }
@@ -83,6 +89,7 @@ class FingerprintService(
         }
 
         // 3 cases: fingerprint image/template is missing, fingerprint template is provided, fingerprint image is provided
+        // Does not throw exception if score is low so we can still save images
         return bulkDto.fingerprints.count { dto: SaveRequestDto ->
             if (!dto.params.missing_code.isNullOrBlank()) {
                 templateRepository.insertTemplate(dto)
@@ -90,9 +97,9 @@ class FingerprintService(
                 val template = buildTemplate(dto.params.fingerprintBytes)
                 templateRepository.insertTemplate(dto, template)
             } else {
-                // Does not throw exception if score is low so we can still save images
-                val score = bioanalyzerService.analyze(dto.params.image, false, requestId)
+                // If exception thrown here while processing the image, we will not send the cross-service request to Bioanalyzer Service
                 val template = buildTemplateFromImage(dto.params.fingerprintBytes)
+                val score = bioanalyzerService.analyze(dto.params.image, false, requestId)
                 templateRepository.insertTemplate(dto, template, score)
             }
         }
