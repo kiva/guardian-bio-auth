@@ -421,6 +421,32 @@ class FingerprintServiceSpec : WordSpec({
             }
         }
 
+        "fail if provided an improperly formatted template" {
+            val badTemplate = "foobar".toByteArray().base64ToString()
+            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.matchThreshold } returns 40.0
+            every { mockReplayService.checkIfReplay(any()) } just Runs
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
+            val fpService = buildFingerprintService()
+            val dto = verifyRequestDto.copy(image = badTemplate)
+            shouldThrow<InvalidTemplateException> {
+                fpService.verify(dto, requestId)
+            }
+        }
+
+        "fail if provided an improperly formatted image" {
+            val badImage = "foobar".toByteArray().base64ToString()
+            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.matchThreshold } returns 40.0
+            every { mockReplayService.checkIfReplay(any()) } just Runs
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
+            val fpService = buildFingerprintService()
+            val dto = verifyRequestDto.copy(image = badImage, imageType = DataType.IMAGE)
+            shouldThrow<InvalidImageFormatException> {
+                fpService.verify(dto, requestId)
+            }
+        }
+
         "fail to match a high-quality image that doesn't correspond to the stored template" {
             every { mockFingerprintConfig.maxDids } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
