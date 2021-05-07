@@ -1,5 +1,6 @@
 package fingerprint.routes
 
+import BioAnalyzerRoute
 import alphanumericStringGen
 import com.machinezoo.sourceafis.FingerprintTemplate
 import com.typesafe.config.ConfigFactory
@@ -18,6 +19,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import mockHttpClient
 import org.kiva.bioauthservice.app.config.AppConfig
 import org.kiva.bioauthservice.bioanalyzer.dtos.BioanalyzerReponseDto
 import org.kiva.bioauthservice.common.errors.ApiError
@@ -140,7 +142,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
-                    responseBody.error shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
+                    responseBody.error shouldBe BioAuthExceptionCode.FingerprintLowQuality.name
                 }
             }
         }

@@ -1,5 +1,6 @@
 package fingerprint.routes
 
+import BioAnalyzerRoute
 import alphanumericStringGen
 import com.typesafe.config.ConfigFactory
 import fingerprint.dtos.TemplatizerDto
@@ -19,6 +20,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.Json.Default.encodeToString
+import mockHttpClient
 import org.kiva.bioauthservice.app.config.AppConfig
 import org.kiva.bioauthservice.bioanalyzer.dtos.BioanalyzerReponseDto
 import org.kiva.bioauthservice.common.errors.ApiError

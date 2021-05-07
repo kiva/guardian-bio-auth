@@ -12,7 +12,7 @@ import java.time.Duration
 class BioanalyzerConfig(baseConfig: ApplicationConfig) {
     val enabled = baseConfig.getBoolean("enabled")
     val qualityThreshold = baseConfig.getDouble("qualityThreshold")
-    val timeout = Duration.ofSeconds(baseConfig.getLong("timeout"))
+    val timeout = Duration.ofSeconds(baseConfig.getLong("timeout")) // TODO: Use or deprecate this
     val baseUrl = baseConfig.getString("baseUrl")
     val analyzePath = baseConfig.getString("analyzePath")
 }

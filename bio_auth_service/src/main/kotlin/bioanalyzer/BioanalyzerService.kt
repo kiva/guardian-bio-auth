@@ -39,47 +39,49 @@ class BioanalyzerService(
             return 0.0
         }
 
-        try {
-
-            // Send request to Bioanalyzer Service
-            val response: HttpResponse = httpClient.post(bioanalyzerConfig.baseUrl + bioanalyzerConfig.analyzePath) {
+        // Send request to Bioanalyzer Service
+        val response: HttpResponse = try {
+            httpClient.post(bioanalyzerConfig.baseUrl + bioanalyzerConfig.analyzePath) {
                 contentType(ContentType.Application.Json)
                 body = mapOf(requestId to BioanalyzerRequestDto("fingerprint", image))
                 headers {
                     append(HttpHeaders.XRequestId, requestId)
                 }
             }
-
-            // Handle response from Bioanalyzer Service
-            if (response.status.isSuccess()) {
-
-                // get response body
-                val responseText = response.readText()
-                logger.info("Successful call to bioanalyzer $responseText")
-                val responseBody = Json.decodeFromString<Map<String, BioanalyzerReponseDto>>(responseText)
-
-                // let's ensure that quality is what we want (if not provided, autofail by setting quality to a negative value)
-                val fingerprintQuality = responseBody[requestId]?.quality ?: -1.0
-                if (fingerprintQuality < bioanalyzerConfig.qualityThreshold && throwException) {
-                    val msg =
-                        "Low image quality! Min threshold is ${bioanalyzerConfig.qualityThreshold}, whereas computed quality is $fingerprintQuality"
-                    logger.warn(msg)
-                    throw FingerprintLowQualityException(msg)
-                }
-
-                // return quality
-                return fingerprintQuality
-            } else {
-                logger.warn("The bioanalyzer returned status code ${response.status.value}")
-                throw BioanalyzerServiceException()
-            }
         } catch (e: Exception) {
-            /**
-             * Since the bioanalyzer error gets called when there is no match, we send the same exception just in case the bioanalyzer is
-             * down, the score result is not parsable, etc.
-             */
+            // Since the bioanalyzer error gets called when there is no match, we send the same exception just in case the bioanalyzer is
+            // down, the score result is not parsable, etc.
             logger.debug(e.message)
             throw BioanalyzerServiceException(e.message)
+        }
+
+        // Handle response from Bioanalyzer Service
+        if (response.status.isSuccess()) {
+
+            // get response body
+            val responseBody = try {
+                val responseText = response.readText()
+                logger.debug("Successful call to bioanalyzer $responseText")
+                Json.decodeFromString<Map<String, BioanalyzerReponseDto>>(responseText)
+            } catch (e: Exception) {
+                logger.debug("Could not parse response from Bioanalyzer")
+                throw BioanalyzerServiceException("Could not parse response from Bioanalyzer")
+            }
+
+            // let's ensure that quality is what we want (if not provided, autofail by setting quality to a negative value)
+            val fingerprintQuality = responseBody[requestId]?.quality ?: -1.0
+            if (fingerprintQuality < bioanalyzerConfig.qualityThreshold && throwException) {
+                val msg =
+                    "Low image quality! Min threshold is ${bioanalyzerConfig.qualityThreshold}, whereas computed quality is $fingerprintQuality"
+                logger.warn(msg)
+                throw FingerprintLowQualityException(msg)
+            }
+
+            // return quality
+            return fingerprintQuality
+        } else {
+            logger.warn("The bioanalyzer returned status code ${response.status.value}")
+            throw BioanalyzerServiceException()
         }
     }
 }
