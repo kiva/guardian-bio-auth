@@ -2,6 +2,8 @@ package fingerprint
 
 import alphanumericStringGen
 import com.machinezoo.sourceafis.FingerprintTemplate
+import common.errors.impl.FingerprintNoMatchException
+import common.errors.impl.InvalidFilterException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.doubles.shouldBeGreaterThan
@@ -20,9 +22,14 @@ import io.mockk.mockk
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.kiva.bioauthservice.app.config.FingerprintConfig
 import org.kiva.bioauthservice.bioanalyzer.BioanalyzerService
+import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingAmputationException
+import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingNotCapturedException
+import org.kiva.bioauthservice.common.errors.impl.FingerprintMissingUnableToPrintException
 import org.kiva.bioauthservice.common.errors.impl.FingerprintTemplateGenerationException
 import org.kiva.bioauthservice.common.errors.impl.InvalidImageFormatException
+import org.kiva.bioauthservice.common.errors.impl.InvalidParamsException
 import org.kiva.bioauthservice.common.errors.impl.InvalidTemplateException
+import org.kiva.bioauthservice.common.errors.impl.InvalidTemplateVersionException
 import org.kiva.bioauthservice.common.utils.base64ToByte
 import org.kiva.bioauthservice.common.utils.base64ToString
 import org.kiva.bioauthservice.db.daos.FingerprintTemplateDao
@@ -55,6 +62,7 @@ class FingerprintServiceSpec : WordSpec({
     val ansi387v2004Template = this.javaClass.getResource("/images/sample_ansi_378_2004_template.txt")?.readText() ?: ""
     val ansi387v2009Template = this.javaClass.getResource("/images/sample_ansi_378_2009_template.txt")?.readText() ?: ""
     val image = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.base64ToString() ?: ""
+    val wrongImage = this.javaClass.getResource("/images/sample.png")?.readBytes()?.base64ToString() ?: ""
     val dao = FingerprintTemplateDao(
         1,
         nationalId,
@@ -392,6 +400,93 @@ class FingerprintServiceSpec : WordSpec({
             result.nationalId shouldBe nationalId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
+        }
+
+        "fail if not provided an image or template to match against" {
+            every { mockFingerprintConfig.maxDids } returns 2
+            val fpService = buildFingerprintService()
+            val dto = verifyRequestDto.copy(image = "")
+            shouldThrow<InvalidParamsException> {
+                fpService.verify(dto, requestId)
+            }
+        }
+
+        "fail if too many DIDs are provided to match against" {
+            every { mockFingerprintConfig.maxDids } returns 2
+            val fpService = buildFingerprintService()
+            val dids = "$did,${alphanumericStringGen.next()},${alphanumericStringGen.next()}"
+            val dto = verifyRequestDto.copy(filters = VerifyRequestFiltersDto(null, null, dids))
+            shouldThrow<InvalidFilterException> {
+                fpService.verify(dto, requestId)
+            }
+        }
+
+        "fail to match a high-quality image that doesn't correspond to the stored template" {
+            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.matchThreshold } returns 40.0
+            every { mockReplayService.checkIfReplay(any()) } just Runs
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
+            coEvery { mockBioanalyzerService.analyze(any(), any(), any()) } returns 99.9
+            val dto = verifyRequestDto.copy(image = wrongImage, imageType = DataType.IMAGE)
+            val fpService = buildFingerprintService()
+            shouldThrow<FingerprintNoMatchException> {
+                fpService.verify(dto, requestId)
+            }
+        }
+
+        "fail with an Amputation exception if the stored template has an XX missing code" {
+            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockReplayService.checkIfReplay(any()) } just Runs
+            val missingCodeDao = dao.copy(template = null, missingCode = "XX")
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(missingCodeDao)
+            val fpService = buildFingerprintService()
+            shouldThrow<FingerprintMissingAmputationException> {
+                fpService.verify(verifyRequestDto, requestId)
+            }
+        }
+
+        "fail with a NotCaptured exception if the stored template has an NA missing code" {
+            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockReplayService.checkIfReplay(any()) } just Runs
+            val missingCodeDao = dao.copy(template = null, missingCode = "NA")
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(missingCodeDao)
+            val fpService = buildFingerprintService()
+            shouldThrow<FingerprintMissingNotCapturedException> {
+                fpService.verify(verifyRequestDto, requestId)
+            }
+        }
+
+        "fail with an UnableToPrint exception if the stored template has a UP missing code" {
+            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockReplayService.checkIfReplay(any()) } just Runs
+            val missingCodeDao = dao.copy(template = null, missingCode = "UP")
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(missingCodeDao)
+            val fpService = buildFingerprintService()
+            shouldThrow<FingerprintMissingUnableToPrintException> {
+                fpService.verify(verifyRequestDto, requestId)
+            }
+        }
+
+        "fail with a NotCaptured exception if the stored template has an unexpected missing code" {
+            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockReplayService.checkIfReplay(any()) } just Runs
+            val missingCodeDao = dao.copy(template = null, missingCode = "AA")
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(missingCodeDao)
+            val fpService = buildFingerprintService()
+            shouldThrow<FingerprintMissingNotCapturedException> {
+                fpService.verify(verifyRequestDto, requestId)
+            }
+        }
+
+        "fail with an InvalidTemplateVersion exception if the stored template comes from a different SourceAFIS version" {
+            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockReplayService.checkIfReplay(any()) } just Runs
+            val missingCodeDao = dao.copy(version = 2)
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(missingCodeDao)
+            val fpService = buildFingerprintService()
+            shouldThrow<InvalidTemplateVersionException> {
+                fpService.verify(verifyRequestDto, requestId)
+            }
         }
     }
 })
