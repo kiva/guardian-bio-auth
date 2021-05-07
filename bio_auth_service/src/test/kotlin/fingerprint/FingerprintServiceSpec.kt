@@ -38,7 +38,9 @@ class FingerprintServiceSpec : WordSpec({
     val voterId = alphanumericStringGen.next()
     val nationalId = alphanumericStringGen.next()
     val requestId = alphanumericStringGen.next()
-    val template = this.javaClass.getResource("/images/sample_template.txt")?.readText() ?: ""
+    val sourceAfisTemplate = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
+    val ansi387v2004Template = this.javaClass.getResource("/images/sample_ansi_378_2004_template.txt")?.readText() ?: ""
+    val ansi387v2009Template = this.javaClass.getResource("/images/sample_ansi_378_2009_template.txt")?.readText() ?: ""
     val image = this.javaClass.getResource("/images/sample.png")?.readBytes()?.base64ToString() ?: ""
     val mockFingerprintTemplateRepository = mockk<FingerprintTemplateRepository>()
     val mockFingerprintConfig = mockk<FingerprintConfig>()
@@ -95,7 +97,7 @@ class FingerprintServiceSpec : WordSpec({
             coVerify(exactly = 1) { mockBioanalyzerService.analyze(any(), any(), any()) }
         }
 
-        "succeed if provided a template" {
+        "succeed if provided a SourceAFIS template" {
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val fpService = buildFingerprintService()
             val dto = BulkSaveRequestDto(
@@ -103,7 +105,41 @@ class FingerprintServiceSpec : WordSpec({
                     SaveRequestDto(
                         did,
                         SaveRequestFiltersDto(voterId, nationalId),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate)
+                    )
+                )
+            )
+            val result = fpService.save(dto, requestId)
+            result shouldBe 1
+            coVerify { mockBioanalyzerService wasNot Called }
+        }
+
+        "succeed if provided an ANSI 378-2004 template" {
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+            val fpService = buildFingerprintService()
+            val dto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi387v2004Template)
+                    )
+                )
+            )
+            val result = fpService.save(dto, requestId)
+            result shouldBe 1
+            coVerify { mockBioanalyzerService wasNot Called }
+        }
+
+        "succeed if provided an ANSI 378-2009 template" {
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+            val fpService = buildFingerprintService()
+            val dto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi387v2009Template)
                     )
                 )
             )
@@ -120,12 +156,12 @@ class FingerprintServiceSpec : WordSpec({
                     SaveRequestDto(
                         did,
                         SaveRequestFiltersDto(voterId, nationalId),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate)
                     ),
                     SaveRequestDto(
                         did,
                         SaveRequestFiltersDto(voterId, nationalId),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", template)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", sourceAfisTemplate)
                     )
                 )
             )
@@ -171,7 +207,7 @@ class FingerprintServiceSpec : WordSpec({
                     SaveRequestDto(
                         did,
                         SaveRequestFiltersDto(voterId, nationalId),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", template)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", sourceAfisTemplate)
                     )
                 )
             )
@@ -204,7 +240,7 @@ class FingerprintServiceSpec : WordSpec({
                     SaveRequestDto(
                         did,
                         SaveRequestFiltersDto(voterId, nationalId),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template, 0.0, "XX")
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate, 0.0, "XX")
                     )
                 )
             )

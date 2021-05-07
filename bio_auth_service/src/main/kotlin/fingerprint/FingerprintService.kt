@@ -32,7 +32,6 @@ import org.kiva.bioauthservice.fingerprint.enums.ResponseStatus
 import org.kiva.bioauthservice.replay.ReplayService
 import java.io.ByteArrayInputStream
 import java.io.DataInputStream
-import java.lang.IllegalArgumentException
 
 @KtorExperimentalAPI
 class FingerprintService(
@@ -54,7 +53,7 @@ class FingerprintService(
             } else {
                 return FingerprintTemplate(template)
             }
-        } catch (ex: IllegalArgumentException) {
+        } catch (ex: Exception) {
             throw InvalidTemplateException("Unsupported fingerprint template format for provided fingerprint template")
         }
     }

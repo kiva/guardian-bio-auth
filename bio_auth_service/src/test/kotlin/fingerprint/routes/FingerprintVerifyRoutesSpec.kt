@@ -49,7 +49,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
     val voterId = alphanumericStringGen.next()
     val backend = alphanumericStringGen.next()
     val position = FingerPosition.RIGHT_INDEX
-    val template = this.javaClass.getResource("/images/sample_template.txt")?.readText() ?: ""
+    val template = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
     val image = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.base64ToString() ?: ""
     val image2 = this.javaClass.getResource("/images/sample.png")?.readBytes()?.base64ToString() ?: "" // Not the same fingerprint
     val sourceAfisTemplate = FingerprintTemplate(template.base64ToByte())

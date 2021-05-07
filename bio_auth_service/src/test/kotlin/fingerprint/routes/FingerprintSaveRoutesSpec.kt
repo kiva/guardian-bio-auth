@@ -47,7 +47,7 @@ fun BulkSaveRequestDto.serialize(): String {
 class FingerprintSaveRoutesSpec : WordSpec({
 
     // Test fixtures
-    val template = this.javaClass.getResource("/images/sample_template.txt")?.readText() ?: ""
+    val template = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
     val image = this.javaClass.getResource("/images/sample.png")?.readBytes()?.base64ToString() ?: ""
     val appConfig = AppConfig(HoconApplicationConfig(ConfigFactory.load()))
     val bioanalyzerUrl = appConfig.bioanalyzerConfig.baseUrl + appConfig.bioanalyzerConfig.analyzePath
