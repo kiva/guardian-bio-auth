@@ -92,9 +92,9 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val dbConfig
 
     companion object {
 
-        private class FingerprintTemplateColumnMapper : ColumnMapper<FingerprintTemplate> {
-            override fun map(r: ResultSet?, columnNumber: Int, ctx: StatementContext?): FingerprintTemplate {
-                return FingerprintTemplate().deserialize(r?.getString(columnNumber))
+        private class FingerprintTemplateColumnMapper : ColumnMapper<FingerprintTemplate?> {
+            override fun map(r: ResultSet?, columnNumber: Int, ctx: StatementContext?): FingerprintTemplate? {
+                return r?.getString(columnNumber)?.let { FingerprintTemplate().deserialize(it) }
             }
         }
 
