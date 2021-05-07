@@ -1,19 +1,18 @@
-package fingerprint
+package fingerprint.routes
 
+import alphanumericStringGen
 import com.typesafe.config.ConfigFactory
 import fingerprint.dtos.TemplatizerDto
 import io.kotest.assertions.ktor.shouldHaveStatus
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.property.Arb
-import io.kotest.property.arbitrary.alphanumeric
 import io.kotest.property.arbitrary.next
-import io.kotest.property.arbitrary.string
 import io.ktor.config.HoconApplicationConfig
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorExperimentalAPI
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -48,12 +47,15 @@ fun BulkSaveRequestDto.serialize(): String {
 class FingerprintSaveRoutesSpec : WordSpec({
 
     // Test fixtures
-    val alphanumericStringGen = Arb.string(10, Arb.alphanumeric())
     val template = this.javaClass.getResource("/images/sample_template.txt")?.readText() ?: ""
     val image = this.javaClass.getResource("/images/sample.png")?.readBytes()?.base64ToString() ?: ""
     val appConfig = AppConfig(HoconApplicationConfig(ConfigFactory.load()))
     val bioanalyzerUrl = appConfig.bioanalyzerConfig.baseUrl + appConfig.bioanalyzerConfig.analyzePath
     val mockFingerprintTemplateRepository = mockk<FingerprintTemplateRepository>()
+
+    beforeEach {
+        clearAllMocks()
+    }
 
     "POST /save" should {
 

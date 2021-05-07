@@ -1,4 +1,4 @@
-package fingerprint
+package fingerprint.routes
 
 import io.ktor.application.Application
 import io.ktor.application.install
