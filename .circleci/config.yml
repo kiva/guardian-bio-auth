@@ -27,8 +27,8 @@ jobs:
           name: build and test bio auth service
           command: |
             cd bio_auth_service
-            ./gradle clean
-            ./gradle build
+            ./gradlew clean
+            ./gradlew build
       - run:
           name: Spin up bio-auth services to confirm they can actually execute
           command: |
