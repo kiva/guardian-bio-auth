@@ -93,6 +93,28 @@ workflows:
           dockerfile: ./Dockerfile.identityservice
           image: kivaprotocol/identity
           tag: << pipeline.git.tag >>
+      - docker/publish:
+          requires:
+            - build-and-test
+          filters: # only run for semver tagged versions
+            tags:
+              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)/
+            branches:
+              ignore: /.*/
+          after_checkout:
+            - openjdk-install/openjdk:
+                version: 11
+            - run:
+                name: build bio auth service
+                command: |
+                  ./scripts/useDummyEnvFiles.sh --force
+                  cd bio_auth_service
+                  ./gradlew clean
+                  ./gradlew build
+          update-description: true
+          dockerfile: ./Dockerfile.bioauthservice
+          image: kivaprotocol/bioauth
+          tag: << pipeline.git.tag >>
 
 orbs:
   docker: circleci/docker@1.3.0
