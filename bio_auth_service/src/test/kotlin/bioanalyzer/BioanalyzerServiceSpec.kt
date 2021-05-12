@@ -16,7 +16,7 @@ import org.kiva.bioauthservice.bioanalyzer.BioanalyzerService
 import org.kiva.bioauthservice.bioanalyzer.dtos.BioanalyzerReponseDto
 import org.kiva.bioauthservice.common.errors.impl.BioanalyzerServiceException
 import org.kiva.bioauthservice.common.errors.impl.FingerprintLowQualityException
-import org.kiva.bioauthservice.common.utils.base64ToString
+import org.kiva.bioauthservice.common.utils.toBase64String
 import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
@@ -27,7 +27,7 @@ class BioanalyzerServiceSpec : StringSpec({
     val baseUrl = "http://bioanalyzer-service:8080"
     val analyzePath = "/api/v1/analyze"
     val bioanalyzerUrl = baseUrl + analyzePath
-    val image = this.javaClass.getResource("/images/sample.png")?.readBytes()?.base64ToString() ?: ""
+    val image = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: ""
     val requestId = alphanumericStringGen.next()
 
     beforeEach {

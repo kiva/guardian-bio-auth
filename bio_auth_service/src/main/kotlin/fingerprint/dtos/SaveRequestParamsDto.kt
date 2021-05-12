@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import org.kiva.bioauthservice.common.errors.impl.ImageDecodeException
 import org.kiva.bioauthservice.common.serializers.ZonedDateTimeSerializer
 import org.kiva.bioauthservice.common.utils.base64ToByte
+import org.kiva.bioauthservice.common.utils.hexToByte
 import org.kiva.bioauthservice.fingerprint.enums.DataType
 import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
 import java.lang.Exception
@@ -28,12 +29,12 @@ data class SaveRequestParamsDto(
     val position: FingerPosition,
 
     /**
-     * Base64 representation of the fingerprint image to save a template of
+     * Base64 or Hex representation of the fingerprint image to save a template of
      */
     val image: String = "",
 
     /**
-     * Base 64 representation of the fingerprint template to save
+     * Base 64 or Hex representation of the fingerprint template to save
      */
     val template: String = "",
 
@@ -46,8 +47,16 @@ data class SaveRequestParamsDto(
 ) {
     val type: DataType = if (template.isNotBlank()) DataType.TEMPLATE else DataType.IMAGE
     val fingerprintBytes: ByteArray = try {
-        (if (type == DataType.TEMPLATE) template else image).base64ToByte()
-    } catch (ex: Exception) {
-        throw ImageDecodeException(ex.message)
+        val target = if (type == DataType.TEMPLATE) template else image
+        try {
+            // Try to do a hex decoding first
+            target.replace("0x", "").replace("\\x", "").hexToByte()
+        } catch (ex1: Exception) {
+            // If that fails, try to do a base64 decoding
+            target.base64ToByte()
+        }
+    } catch (ex2: Exception) {
+        // If both base64 and hex decoding fails, throw an exception
+        throw ImageDecodeException("Provided fingerprint ${type.name.toLowerCase()} is neither hexadecimal- nor base64-encoded.")
     }
 }

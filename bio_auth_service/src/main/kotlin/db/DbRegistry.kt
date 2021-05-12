@@ -18,8 +18,14 @@ fun Application.registerDB(appRegistry: AppRegistry): DbRegistry {
     // Set up Hikari connection pool
     val ds = HikariDataSource(dbConfig.hikariConfig())
 
-    // Set up Flyway
-    val flyway: Flyway = Flyway.configure().dataSource(ds).load()
+    // Set up Flyway (includes configuring it to set a baseline in case it migrates against an existing database - by default, V1)
+    val flyway = Flyway
+        .configure()
+        .baselineOnMigrate(true)
+        .dataSource(ds)
+        .load()
+
+    // If running on an empty db
     if (flyway.info().pending().isNotEmpty()) {
         logger.info("Starting to run migrations")
         flyway.migrate()

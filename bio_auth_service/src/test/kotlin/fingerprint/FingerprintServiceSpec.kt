@@ -31,7 +31,8 @@ import org.kiva.bioauthservice.common.errors.impl.InvalidParamsException
 import org.kiva.bioauthservice.common.errors.impl.InvalidTemplateException
 import org.kiva.bioauthservice.common.errors.impl.InvalidTemplateVersionException
 import org.kiva.bioauthservice.common.utils.base64ToByte
-import org.kiva.bioauthservice.common.utils.base64ToString
+import org.kiva.bioauthservice.common.utils.toBase64String
+import org.kiva.bioauthservice.common.utils.toHexString
 import org.kiva.bioauthservice.db.daos.FingerprintTemplateDao
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
 import org.kiva.bioauthservice.fingerprint.FingerprintService
@@ -61,8 +62,9 @@ class FingerprintServiceSpec : WordSpec({
     val sourceAfisTemplate = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
     val ansi387v2004Template = this.javaClass.getResource("/images/sample_ansi_378_2004_template.txt")?.readText() ?: ""
     val ansi387v2009Template = this.javaClass.getResource("/images/sample_ansi_378_2009_template.txt")?.readText() ?: ""
-    val image = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.base64ToString() ?: ""
-    val wrongImage = this.javaClass.getResource("/images/sample.png")?.readBytes()?.base64ToString() ?: ""
+    val base64Image = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.toBase64String() ?: ""
+    val hexImage = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.toHexString() ?: ""
+    val wrongImage = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: ""
     val dao = FingerprintTemplateDao(
         1,
         nationalId,
@@ -129,7 +131,7 @@ class FingerprintServiceSpec : WordSpec({
             coVerify { mockBioanalyzerService wasNot Called }
         }
 
-        "succeed if provided an image" {
+        "succeed if provided a base64 image" {
             coEvery { mockBioanalyzerService.analyze(any(), any(), any()) } returns 40.0
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val fpService = buildFingerprintService()
@@ -138,7 +140,25 @@ class FingerprintServiceSpec : WordSpec({
                     SaveRequestDto(
                         did,
                         SaveRequestFiltersDto(voterId, nationalId),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
+                    )
+                )
+            )
+            val result = fpService.save(dto, requestId)
+            result shouldBe 1
+            coVerify(exactly = 1) { mockBioanalyzerService.analyze(any(), any(), any()) }
+        }
+
+        "succeed if provided a hex image" {
+            coEvery { mockBioanalyzerService.analyze(any(), any(), any()) } returns 40.0
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+            val fpService = buildFingerprintService()
+            val dto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, hexImage)
                     )
                 )
             )
@@ -229,12 +249,12 @@ class FingerprintServiceSpec : WordSpec({
                     SaveRequestDto(
                         did,
                         SaveRequestFiltersDto(voterId, nationalId),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
                     ),
                     SaveRequestDto(
                         did,
                         SaveRequestFiltersDto(voterId, nationalId),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, image)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, base64Image)
                     )
                 )
             )
@@ -252,7 +272,7 @@ class FingerprintServiceSpec : WordSpec({
                     SaveRequestDto(
                         did,
                         SaveRequestFiltersDto(voterId, nationalId),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
                     ),
                     SaveRequestDto(
                         did,
@@ -273,7 +293,7 @@ class FingerprintServiceSpec : WordSpec({
                     SaveRequestDto(
                         did,
                         SaveRequestFiltersDto(voterId, nationalId),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image, "", 0.0, "XX")
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image, "", 0.0, "XX")
                     )
                 )
             )
@@ -301,7 +321,7 @@ class FingerprintServiceSpec : WordSpec({
         }
 
         "fail to save an base64-encoded image with an unsupported format" {
-            val badImage = "foobar".toByteArray().base64ToString()
+            val badImage = "foobar".toByteArray().toBase64String()
             val fpService = buildFingerprintService()
             val dto = BulkSaveRequestDto(
                 listOf(
@@ -319,7 +339,7 @@ class FingerprintServiceSpec : WordSpec({
         }
 
         "fail to save a fingerprint template that is not actually a fingerprint template" {
-            val badTemplate = "foobar".toByteArray().base64ToString()
+            val badTemplate = "foobar".toByteArray().toBase64String()
             val fpService = buildFingerprintService()
             val dto = BulkSaveRequestDto(
                 listOf(
@@ -386,12 +406,28 @@ class FingerprintServiceSpec : WordSpec({
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
 
-        "be able to match an image against a stored template" {
+        "be able to match a base64 image against a stored template" {
             every { mockFingerprintConfig.maxDids } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
-            val dto = verifyRequestDto.copy(image = image, imageType = DataType.IMAGE)
+            val dto = verifyRequestDto.copy(image = base64Image, imageType = DataType.IMAGE)
+            val fpService = buildFingerprintService()
+            val result = fpService.verify(dto, requestId)
+            result.status shouldBe ResponseStatus.MATCHED
+            result.id shouldBe did
+            result.did shouldBe did
+            result.nationalId shouldBe nationalId
+            result.matchingScore shouldNotBe null
+            result.matchingScore!! shouldBeGreaterThan 0.0
+        }
+
+        "be able to match a hex image against a stored template" {
+            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.matchThreshold } returns 40.0
+            every { mockReplayService.checkIfReplay(any()) } just Runs
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
+            val dto = verifyRequestDto.copy(image = hexImage, imageType = DataType.IMAGE)
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
@@ -422,7 +458,7 @@ class FingerprintServiceSpec : WordSpec({
         }
 
         "fail if provided an improperly formatted template" {
-            val badTemplate = "foobar".toByteArray().base64ToString()
+            val badTemplate = "foobar".toByteArray().toBase64String()
             every { mockFingerprintConfig.maxDids } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
@@ -435,7 +471,7 @@ class FingerprintServiceSpec : WordSpec({
         }
 
         "fail if provided an improperly formatted image" {
-            val badImage = "foobar".toByteArray().base64ToString()
+            val badImage = "foobar".toByteArray().toBase64String()
             every { mockFingerprintConfig.maxDids } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs

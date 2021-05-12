@@ -25,7 +25,7 @@ import org.kiva.bioauthservice.bioanalyzer.dtos.BioanalyzerReponseDto
 import org.kiva.bioauthservice.common.errors.ApiError
 import org.kiva.bioauthservice.common.errors.BioAuthExceptionCode
 import org.kiva.bioauthservice.common.utils.base64ToByte
-import org.kiva.bioauthservice.common.utils.base64ToString
+import org.kiva.bioauthservice.common.utils.toBase64String
 import org.kiva.bioauthservice.db.daos.FingerprintTemplateDao
 import org.kiva.bioauthservice.db.daos.ReplayDao
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
@@ -52,8 +52,8 @@ class FingerprintVerifyRoutesSpec : WordSpec({
     val backend = alphanumericStringGen.next()
     val position = FingerPosition.RIGHT_INDEX
     val template = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
-    val image = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.base64ToString() ?: ""
-    val image2 = this.javaClass.getResource("/images/sample.png")?.readBytes()?.base64ToString() ?: "" // Not the same fingerprint
+    val image = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.toBase64String() ?: ""
+    val image2 = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: "" // Not the same fingerprint
     val sourceAfisTemplate = FingerprintTemplate(template.base64ToByte())
     val appConfig = AppConfig(HoconApplicationConfig(ConfigFactory.load()))
     val bioanalyzerUrl = appConfig.bioanalyzerConfig.baseUrl + appConfig.bioanalyzerConfig.analyzePath

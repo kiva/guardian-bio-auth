@@ -25,7 +25,7 @@ import org.kiva.bioauthservice.app.config.AppConfig
 import org.kiva.bioauthservice.bioanalyzer.dtos.BioanalyzerReponseDto
 import org.kiva.bioauthservice.common.errors.ApiError
 import org.kiva.bioauthservice.common.errors.BioAuthExceptionCode
-import org.kiva.bioauthservice.common.utils.base64ToString
+import org.kiva.bioauthservice.common.utils.toBase64String
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
 import org.kiva.bioauthservice.fingerprint.dtos.BulkSaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto
@@ -50,7 +50,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
 
     // Test fixtures
     val template = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
-    val image = this.javaClass.getResource("/images/sample.png")?.readBytes()?.base64ToString() ?: ""
+    val image = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: ""
     val appConfig = AppConfig(HoconApplicationConfig(ConfigFactory.load()))
     val bioanalyzerUrl = appConfig.bioanalyzerConfig.baseUrl + appConfig.bioanalyzerConfig.analyzePath
     val mockFingerprintTemplateRepository = mockk<FingerprintTemplateRepository>()
