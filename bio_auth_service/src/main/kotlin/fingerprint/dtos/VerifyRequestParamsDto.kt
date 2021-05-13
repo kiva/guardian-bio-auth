@@ -3,6 +3,7 @@ package org.kiva.bioauthservice.fingerprint.dtos
 import kotlinx.serialization.Serializable
 import org.kiva.bioauthservice.common.errors.impl.ImageDecodeException
 import org.kiva.bioauthservice.common.utils.base64ToByte
+import org.kiva.bioauthservice.common.utils.hexToByte
 import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
 import java.lang.Exception
 
@@ -10,7 +11,7 @@ import java.lang.Exception
 data class VerifyRequestParamsDto(
 
     /**
-     * Base64 representation of the fingerprint we should check
+     * Base64 or Hex representation of the fingerprint we should check
      */
     val image: String,
 
@@ -20,8 +21,15 @@ data class VerifyRequestParamsDto(
     val position: FingerPosition
 ) {
     val imageByte: ByteArray = try {
-        image.base64ToByte()
-    } catch (ex: Exception) {
-        throw ImageDecodeException(ex.message)
+        try {
+            // Try to do a hex decoding first
+            image.replace("0x", "").replace("\\x", "").hexToByte()
+        } catch (ex1: Exception) {
+            // If that fails, try to do a base64 decoding
+            image.base64ToByte()
+        }
+    } catch (ex2: Exception) {
+        // If both base64 and hex decoding fails, throw an exception
+        throw ImageDecodeException("Provided fingerprint is neither hexadecimal- nor base64-encoded.")
     }
 }

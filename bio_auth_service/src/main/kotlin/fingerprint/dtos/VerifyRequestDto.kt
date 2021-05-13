@@ -10,7 +10,7 @@ data class VerifyRequestDto(
 
     /**
      * DEPRECATED
-     * Base64 representation of the fingerprint we should check
+     * Base64 or Hex representation of the fingerprint we should check
      */
     val image: String? = null,
 
