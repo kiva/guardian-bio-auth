@@ -13,5 +13,6 @@ data class ApiError(
     val path: String,
     val status: Int,
     val error: String,
+    val code: String,
     val message: String?
 )

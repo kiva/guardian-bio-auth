@@ -142,7 +142,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
-                    responseBody.error shouldBe BioAuthExceptionCode.FingerprintLowQuality.name
+                    responseBody.code shouldBe BioAuthExceptionCode.FingerprintLowQuality.name
                 }
             }
         }
@@ -161,7 +161,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
-                    responseBody.error shouldBe BioAuthExceptionCode.FingerprintNoMatch.name
+                    responseBody.code shouldBe BioAuthExceptionCode.FingerprintNoMatch.name
                 }
             }
         }
@@ -179,7 +179,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
-                    responseBody.error shouldBe BioAuthExceptionCode.FingerprintMissingAmputation.name
+                    responseBody.code shouldBe BioAuthExceptionCode.FingerprintMissingAmputation.name
                 }
             }
         }
@@ -197,7 +197,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
-                    responseBody.error shouldBe BioAuthExceptionCode.InvalidTemplateVersion.name
+                    responseBody.code shouldBe BioAuthExceptionCode.InvalidTemplateVersion.name
                 }
             }
         }

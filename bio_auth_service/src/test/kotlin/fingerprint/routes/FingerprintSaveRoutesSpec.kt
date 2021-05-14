@@ -177,7 +177,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
-                    responseBody.error shouldBe BioAuthExceptionCode.BadRequestError.name
+                    responseBody.code shouldBe BioAuthExceptionCode.BadRequestError.name
                 }
             }
         }
@@ -200,7 +200,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
-                    responseBody.error shouldBe BioAuthExceptionCode.BadRequestError.name
+                    responseBody.code shouldBe BioAuthExceptionCode.BadRequestError.name
                 }
             }
         }
@@ -225,7 +225,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
-                    responseBody.error shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
+                    responseBody.code shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
                 }
             }
         }
@@ -334,7 +334,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
-                    responseBody.error shouldBe BioAuthExceptionCode.BadRequestError.name
+                    responseBody.code shouldBe BioAuthExceptionCode.BadRequestError.name
                 }
             }
         }
@@ -360,7 +360,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
-                    responseBody.error shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
+                    responseBody.code shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
                 }
             }
         }

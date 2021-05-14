@@ -16,6 +16,6 @@ open class BioAuthException(
     @ExperimentalSerializationApi
     fun toApiResponseBody(uri: String): ApiError {
         val now = ZonedDateTime.now(Clock.systemUTC())
-        return ApiError(now, uri, status.value, code.name, reason)
+        return ApiError(now, uri, status.value, status.description, code.name, reason)
     }
 }
