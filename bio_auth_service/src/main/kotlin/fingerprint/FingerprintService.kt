@@ -60,17 +60,16 @@ class FingerprintService(
 
     private fun buildTemplateFromImage(image: ByteArray): FingerprintTemplate {
         val contentType = image.detectContentType()
-        val fpImg = try {
-            if (contentType === "application/octet-stream") {
-                val asWsg = Jnbis.wsq().decode(image)
-                FingerprintImage(asWsg.asBitmap().pixels)
+        try {
+            val bytes = if (contentType === "application/octet-stream") {
+                Jnbis.wsq().decode(image).toJpg().asByteArray()
             } else {
-                FingerprintImage(image)
+                image
             }
+            return FingerprintTemplate(FingerprintImage(bytes))
         } catch (ex: Exception) {
             throw InvalidImageFormatException("Unsupported image format for provided fingerprint image: $contentType")
         }
-        return FingerprintTemplate(fpImg)
     }
 
     @ExperimentalSerializationApi

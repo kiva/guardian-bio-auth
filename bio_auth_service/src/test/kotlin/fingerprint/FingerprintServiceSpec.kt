@@ -64,6 +64,7 @@ class FingerprintServiceSpec : WordSpec({
     val ansi387v2009Template = this.javaClass.getResource("/images/sample_ansi_378_2009_template.txt")?.readText() ?: ""
     val base64Image = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.toBase64String() ?: ""
     val hexImage = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.toHexString() ?: ""
+    val wsqImage = this.javaClass.getResource("/images/sample.wsq")?.readBytes()?.toBase64String() ?: ""
     val wrongImage = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: ""
     val dao = FingerprintTemplateDao(
         1,
@@ -159,6 +160,24 @@ class FingerprintServiceSpec : WordSpec({
                         did,
                         SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, hexImage)
+                    )
+                )
+            )
+            val result = fpService.save(dto, requestId)
+            result shouldBe 1
+            coVerify(exactly = 1) { mockBioanalyzerService.analyze(any(), any(), any()) }
+        }
+
+        "succeed if provided a wsq image" {
+            coEvery { mockBioanalyzerService.analyze(any(), any(), any()) } returns 40.0
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+            val fpService = buildFingerprintService()
+            val dto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        did,
+                        SaveRequestFiltersDto(voterId, nationalId),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, wsqImage)
                     )
                 )
             )
