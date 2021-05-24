@@ -54,6 +54,5 @@ services:
     networks:
       - agency-network
     depends_on:
-      - protocol-identity-service
       - bio-auth-service
     tty: true
