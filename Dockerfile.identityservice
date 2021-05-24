@@ -1,4 +1,4 @@
-FROM adoptopenjdk:11-openj9
+FROM kivaprotocol/kotlin-base:latest
 
 RUN mkdir /app
 WORKDIR /app
