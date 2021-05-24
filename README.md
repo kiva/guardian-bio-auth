@@ -12,14 +12,16 @@ defined by ISO/IEC 29794-1:2016.
 
 For more information, please take a look at [Bioanalyzer Service's README](bioanalyzer_service/README.md). 
 
-## Identity Service
+## Bio Auth Service
 
 The job of this service is to manage access to generified biometric information. At the moment, that means fingerprint
-templates. Given a fingerprint image (or several images), Identity Service will generate templates based on those images
-and store them in `identity_template_db`. Later, when presented with a candidate fingerprint template, Identity Service
-can verify that it does or does not match some fingerprint template that it has previously stored.
+templates. Given a fingerprint image (or several images), Bio Auth Service will generate templates based on those images
+and store them in `identity_template_db`. If provided ANSI-378, ISO-19794-2, or SourceAFIS v3 templates, Bio Auth Service
+will convert them into a SourceAFIS v3 template and store it in `identity_template_db`. Later, when presented with a
+candidate fingerprint template, Bio Auth Service can verify that it does or does not match some fingerprint template that
+it has previously stored.
 
-For more information, please take a look at [Identity Service's README](identity_service/README.md).
+For more information, please take a look at [Identity Service's README](bio_auth_service/README.md).
 
 ## Fingerprint Desktop Tool
 
