@@ -12,12 +12,6 @@ jobs:
           name: Prepare Environment
           command: ./scripts/useDummyEnvFiles.sh --force
       - run:
-          name: build and test identity service
-          command: |
-            cd identity_service
-            ./gradlew clean
-            ./gradlew build
-      - run:
           name: build and test bioanalyzer service
           command: |
             cd bioanalyzer_service
@@ -70,28 +64,6 @@ workflows:
           update-description: true
           dockerfile: ./Dockerfile.bioanalyzerservice
           image: kivaprotocol/bioanalyzer
-          tag: << pipeline.git.tag >>
-      - docker/publish:
-          requires:
-            - build-and-test
-          filters: # only run for semver tagged versions
-            tags:
-              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)/
-            branches:
-              ignore: /.*/
-          after_checkout:
-            - openjdk-install/openjdk:
-                version: 11
-            - run:
-                name: build identity service
-                command: |
-                  ./scripts/useDummyEnvFiles.sh --force
-                  cd identity_service
-                  ./gradlew clean
-                  ./gradlew build
-          update-description: true
-          dockerfile: ./Dockerfile.identityservice
-          image: kivaprotocol/identity
           tag: << pipeline.git.tag >>
       - docker/publish:
           requires:

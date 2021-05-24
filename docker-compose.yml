@@ -12,22 +12,6 @@ networks:
         - subnet: 10.0.0.0/24
 
 services:
-  protocol-identity-service:
-    build:
-      context: .
-      dockerfile: Dockerfile.identityservice
-    image: protocol-identity-service
-    container_name: protocol-identity-service
-    ports:
-      - "8081:8080"
-    env_file:
-      - identity_service/.env
-    networks:
-      - agency-network
-    depends_on:
-      - identity-template-db
-      - identity-intelligence-db
-    tty: true
 
   bio-auth-service:
     build:
@@ -36,7 +20,7 @@ services:
     image: bio-auth-service
     container_name: bio-auth-service
     ports:
-      - "8082:8080"
+      - "8081:8080"
     networks:
       - agency-network
     depends_on:
@@ -50,19 +34,6 @@ services:
     restart: always
     env_file:
       - identity_template_db/.env
-    volumes:
-      - ./logs/postgres:/logs:z
-    networks:
-      - agency-network
-    tty: true
-
-  identity-intelligence-db:
-    command: postgres -c logging_collector=on -c log_destination=stderr -c listen_addresses='*'
-    image: postgres:11
-    container_name: identity-intelligence-db
-    restart: always
-    env_file:
-      - identity_intelligence_db/.env
     volumes:
       - ./logs/postgres:/logs:z
     networks:
