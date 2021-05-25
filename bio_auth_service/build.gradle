@@ -32,6 +32,7 @@ dependencies {
 
     // Logging
     implementation "ch.qos.logback:logback-classic:$logback_version"
+    implementation "com.datadoghq:dd-trace-api:$datadog_trace_version"
 
     // Serialization
     implementation "io.ktor:ktor-serialization:$ktor_version"

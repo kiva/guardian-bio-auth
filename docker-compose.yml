@@ -19,6 +19,8 @@ services:
       dockerfile: Dockerfile.bioauthservice
     image: bio-auth-service
     container_name: bio-auth-service
+    env_file:
+      - bio_auth_service/.env
     ports:
       - "8081:8080"
     networks:
@@ -46,7 +48,6 @@ services:
       dockerfile: Dockerfile.bioanalyzerservice
     image: bioanalyzer-service
     container_name: bioanalyzer-service
-    working_dir: /app
     env_file:
       - bioanalyzer_service/.env
     ports:
