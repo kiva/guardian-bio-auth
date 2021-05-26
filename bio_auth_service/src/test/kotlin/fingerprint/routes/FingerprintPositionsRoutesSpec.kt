@@ -94,4 +94,59 @@ class FingerprintPositionsRoutesSpec : WordSpec({
             }
         }
     }
+
+    "GET /positions/template/{filters}" should {
+
+        "return a single position if the did matches just one template" {
+            val positions = listOf(FingerPosition.RIGHT_INDEX)
+            every { mockFingerprintTemplateRepository.getPositions(any()) } returns positions
+            val did = alphanumericStringGen.next()
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                get("/api/v1/positions/template/dids=$did") {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(ListSerializer(Int.Companion.serializer()), response.content!!)
+                    responseBody shouldHaveSize positions.size
+                    responseBody shouldContain FingerPosition.RIGHT_INDEX.code
+                }
+            }
+        }
+
+        "return multiple positions if the did matches multiple templates" {
+            val positions = listOf(FingerPosition.RIGHT_INDEX, FingerPosition.RIGHT_MIDDLE)
+            every { mockFingerprintTemplateRepository.getPositions(any()) } returns positions
+            val did = alphanumericStringGen.next()
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                get("/api/v1/positions/template/dids=$did") {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(ListSerializer(Int.Companion.serializer()), response.content!!)
+                    responseBody shouldHaveSize positions.size
+                    positions.forEach { responseBody shouldContain it.code }
+                }
+            }
+        }
+
+        "return an empty array if the did matches no template" {
+            every { mockFingerprintTemplateRepository.getPositions(any()) } returns emptyList()
+            val did = alphanumericStringGen.next()
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                get("/api/v1/positions/template/dids=$did") {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(ListSerializer(Int.Companion.serializer()), response.content!!)
+                    responseBody shouldHaveSize 0
+                }
+            }
+        }
+    }
 })

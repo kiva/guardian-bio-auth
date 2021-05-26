@@ -53,3 +53,9 @@ fun TestApplicationEngine.post(url: String, body: String, handleResponse: TestAp
         handleResponse(this)
     }
 }
+
+fun TestApplicationEngine.get(url: String, handleResponse: TestApplicationCall.() -> Unit) {
+    handleRequest(HttpMethod.Get, url).apply {
+        handleResponse(this)
+    }
+}
