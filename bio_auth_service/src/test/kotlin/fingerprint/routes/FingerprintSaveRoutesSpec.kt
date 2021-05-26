@@ -48,7 +48,9 @@ fun BulkSaveRequestDto.serialize(): String {
 class FingerprintSaveRoutesSpec : WordSpec({
 
     // Test fixtures
-    val template = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
+    val sourceAfisTemplate = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
+    val ansi378v2004Template = this.javaClass.getResource("/images/sample_ansi_378_2004_template.txt")?.readText() ?: ""
+    val ansi378v2009Template = this.javaClass.getResource("/images/sample_ansi_378_2009_template")?.readText() ?: ""
     val image = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: ""
     val appConfig = AppConfig(HoconApplicationConfig(ConfigFactory.load()))
     val bioanalyzerUrl = appConfig.bioanalyzerConfig.baseUrl + appConfig.bioanalyzerConfig.analyzePath
@@ -60,16 +62,59 @@ class FingerprintSaveRoutesSpec : WordSpec({
 
     "POST /save" should {
 
-        // TODO: Test to verify it works with foreign templates
         // TODO: Test to verify it works with different image types
         // TODO: Test to verify it fails with invalid image types
 
-        "be able to save a template" {
+        "be able to save a Source AFIS v3 template" {
             val bulkDto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate)
+                    )
+                )
+            )
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/save", bulkDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
+        "be able to save an ANSI-378-2004 template" {
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi378v2004Template)
+                    )
+                )
+            )
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/save", bulkDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
+        "be able to save an ANSI-378-2009 template" {
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi378v2009Template)
                     )
                 )
             )
@@ -181,7 +226,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template, 0.0, "XX")
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate, 0.0, "XX")
                     )
                 )
             )
