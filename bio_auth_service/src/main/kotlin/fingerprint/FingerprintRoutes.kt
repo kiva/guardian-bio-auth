@@ -4,8 +4,6 @@ import common.errors.impl.InvalidFilterException
 import datadog.trace.api.Trace
 import fingerprint.dtos.TemplatizerDto
 import io.ktor.application.call
-import io.ktor.http.HttpHeaders
-import io.ktor.request.header
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -14,6 +12,7 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.ExperimentalSerializationApi
+import org.kiva.bioauthservice.common.utils.requestIdHeader
 import org.kiva.bioauthservice.fingerprint.dtos.BulkSaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.PositionsDto
 import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
@@ -39,9 +38,8 @@ fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
         // TODO: Remove this deprecated route. Use POST /save instead
         post(templatizerPath) @Trace(operationName = templatizerPath) {
             val dtos = call.receive<List<TemplatizerDto>>()
-            val requestId = call.request.header(HttpHeaders.XRequestId) ?: "noRequestId"
             val bulkSaveDto = BulkSaveRequestDto(dtos.map { it.toSaveRequestDto() })
-            val numSaved = fingerprintService.save(bulkSaveDto, requestId)
+            val numSaved = fingerprintService.save(bulkSaveDto, call.requestIdHeader())
             call.respond(numSaved)
         }
 
@@ -63,15 +61,13 @@ fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
 
         post(savePath) @Trace(operationName = savePath) {
             val dto = call.receive<BulkSaveRequestDto>()
-            val requestId = call.request.header(HttpHeaders.XRequestId) ?: "noRequestId"
-            val numSaved = fingerprintService.save(dto, requestId)
+            val numSaved = fingerprintService.save(dto, call.requestIdHeader())
             call.respond(numSaved)
         }
 
         post(verifyPath) @Trace(operationName = verifyPath) {
             val dto = call.receive<VerifyRequestDto>()
-            val requestId = call.request.header(HttpHeaders.XRequestId) ?: "noRequestId"
-            val result = fingerprintService.verify(dto, requestId)
+            val result = fingerprintService.verify(dto, call.requestIdHeader())
             call.respond(result)
         }
 
