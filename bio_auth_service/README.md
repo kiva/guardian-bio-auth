@@ -63,7 +63,7 @@ DEPRECATED:
 - `GET /positions/template/{filter}`: Returns the positions of the best quality fingerprint images for the given filters
 
 Note here the following meanings:
-- filter: query to identify an individual (e.g. nationalId=12345, dids=abcd1234,efgh5678)
+- filter: query to identify an individual (e.g. dids=abcd1234,efgh5678)
 - position: which finger position on the hand is being referred to (e.g. right pinky finger).
 
 ### Finger positions
@@ -93,10 +93,6 @@ Content-Type: application/json
 
 {
     "id": "abcd1234",
-    "filters": {
-        "national_id": "NIN55555",
-        "voter_id": "VID11111"
-    },
     "params": {
         "type_id": 1,
         "capture_date": "2011-12-03T10:15:30+01:00",
@@ -115,10 +111,6 @@ Content-Type: application/json
 
 {
     "id": "abcd1234",
-    "filters": {
-        "national_id": "NIN55555",
-        "voter_id": "VID11111"
-    },
     "params": {
         "type_id": 1,
         "capture_date": "2011-12-03T10:15:30+01:00",

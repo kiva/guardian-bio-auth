@@ -13,11 +13,6 @@ data class SaveRequestDto(
     val id: String,
 
     /**
-     * IDs to uniquely constrain this fingerprint template to.
-     */
-    val filters: SaveRequestFiltersDto,
-
-    /**
      * Details of the fingerprint to save.
      */
     val params: SaveRequestParamsDto

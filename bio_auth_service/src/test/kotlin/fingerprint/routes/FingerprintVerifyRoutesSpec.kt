@@ -47,8 +47,6 @@ class FingerprintVerifyRoutesSpec : WordSpec({
 
     // Test fixtures
     val did = alphanumericStringGen.next()
-    val nationalId = alphanumericStringGen.next()
-    val voterId = alphanumericStringGen.next()
     val backend = alphanumericStringGen.next()
     val position = FingerPosition.RIGHT_INDEX
     val template = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
@@ -61,8 +59,6 @@ class FingerprintVerifyRoutesSpec : WordSpec({
     val mockFingerprintTemplateRepository = mockk<FingerprintTemplateRepository>()
     val dao = FingerprintTemplateDao(
         1,
-        nationalId,
-        voterId,
         did,
         1,
         3,
@@ -87,7 +83,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
         // TODO: Test to verify it fails with invalid image types
 
         "be able to verify an image against an existing template" {
-            val dtoFilters = VerifyRequestFiltersDto(null, null, did)
+            val dtoFilters = VerifyRequestFiltersDto(did)
             val dto = VerifyRequestDto(backend, image, position, dtoFilters)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
@@ -102,13 +98,12 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     responseBody.status shouldBe ResponseStatus.MATCHED
                     responseBody.id shouldBe did
                     responseBody.did shouldBe did
-                    responseBody.nationalId shouldBe nationalId
                 }
             }
         }
 
         "be able to verify a template against an existing template" {
-            val dtoFilters = VerifyRequestFiltersDto(null, null, did)
+            val dtoFilters = VerifyRequestFiltersDto(did)
             val dto = VerifyRequestDto(backend, template, position, dtoFilters, DataType.TEMPLATE)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
@@ -123,13 +118,12 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     responseBody.status shouldBe ResponseStatus.MATCHED
                     responseBody.id shouldBe did
                     responseBody.did shouldBe did
-                    responseBody.nationalId shouldBe nationalId
                 }
             }
         }
 
         "return an error if the images don't verify due to poor image quality" {
-            val dtoFilters = VerifyRequestFiltersDto(null, null, did)
+            val dtoFilters = VerifyRequestFiltersDto(did)
             val dto = VerifyRequestDto(backend, image2, position, dtoFilters)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
@@ -148,7 +142,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
         }
 
         "return an error if the images don't verify in spite of good image quality" {
-            val dtoFilters = VerifyRequestFiltersDto(null, null, did)
+            val dtoFilters = VerifyRequestFiltersDto(did)
             val dto = VerifyRequestDto(backend, image2, position, dtoFilters)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
@@ -167,7 +161,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
         }
 
         "return an error if the stored template has a missing_code" {
-            val dtoFilters = VerifyRequestFiltersDto(null, null, did)
+            val dtoFilters = VerifyRequestFiltersDto(did)
             val dto = VerifyRequestDto(backend, image, position, dtoFilters)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao.copy(template = null, missingCode = "XX"))
@@ -185,7 +179,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
         }
 
         "return an error if the stored template was made with a different version" {
-            val dtoFilters = VerifyRequestFiltersDto(null, null, did)
+            val dtoFilters = VerifyRequestFiltersDto(did)
             val dto = VerifyRequestDto(backend, image, position, dtoFilters)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao.copy(version = 2))

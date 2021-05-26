@@ -106,7 +106,7 @@ class FingerprintService(
     suspend fun verify(dto: VerifyRequestDto, requestId: String): VerifyResponseDto {
 
         // Verify request parameters
-        val dids = dto.filters.dids?.split(",") ?: emptyList()
+        val dids = dto.filters.dids.split(",")
         if (dids.size > fingerprintConfig.maxDids) {
             throw InvalidFilterException("Too many DIDs to match against; the maximum number of DIDs is ${fingerprintConfig.maxDids}")
         }
@@ -143,7 +143,7 @@ class FingerprintService(
                     throw InvalidTemplateVersionException("Template version does not match the version of the stored template")
                 }
                 val matchingScore = matcher.match(it.template)
-                VerifyResponseDto(ResponseStatus.MATCHED, it.did, it.did, it.nationalId, matchingScore)
+                VerifyResponseDto(ResponseStatus.MATCHED, it.did, it.did, matchingScore)
             }
             .filter { it.matchingScore!! >= fingerprintConfig.matchThreshold }
             .sortedBy { it.matchingScore }

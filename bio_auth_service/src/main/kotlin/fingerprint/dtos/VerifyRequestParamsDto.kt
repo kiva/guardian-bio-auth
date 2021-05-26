@@ -16,7 +16,7 @@ data class VerifyRequestParamsDto(
     val image: String,
 
     /**
-     * Position of the finger capture; e.g. left_thumb.
+     * Position of the finger capture; e.g. 1.
      */
     val position: FingerPosition
 ) {

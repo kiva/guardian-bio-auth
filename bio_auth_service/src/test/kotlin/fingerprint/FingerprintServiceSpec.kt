@@ -38,7 +38,6 @@ import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
 import org.kiva.bioauthservice.fingerprint.FingerprintService
 import org.kiva.bioauthservice.fingerprint.dtos.BulkSaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto
-import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestFiltersDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestParamsDto
 import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestFiltersDto
@@ -54,8 +53,6 @@ class FingerprintServiceSpec : WordSpec({
 
     // Test fixtures
     val did = alphanumericStringGen.next()
-    val voterId = alphanumericStringGen.next()
-    val nationalId = alphanumericStringGen.next()
     val requestId = alphanumericStringGen.next()
     val backend = alphanumericStringGen.next()
     val position = FingerPosition.RIGHT_INDEX
@@ -68,8 +65,6 @@ class FingerprintServiceSpec : WordSpec({
     val wrongImage = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: ""
     val dao = FingerprintTemplateDao(
         1,
-        nationalId,
-        voterId,
         did,
         1,
         3,
@@ -87,8 +82,6 @@ class FingerprintServiceSpec : WordSpec({
         sourceAfisTemplate,
         position,
         VerifyRequestFiltersDto(
-            nationalId,
-            voterId,
             did
         ),
         DataType.TEMPLATE
@@ -122,7 +115,6 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", "", 0.0, "XX")
                     )
                 )
@@ -140,7 +132,6 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
                     )
                 )
@@ -158,7 +149,6 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, hexImage)
                     )
                 )
@@ -176,7 +166,6 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, wsqImage)
                     )
                 )
@@ -193,7 +182,6 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate)
                     )
                 )
@@ -210,7 +198,6 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi387v2004Template)
                     )
                 )
@@ -227,7 +214,6 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi387v2009Template)
                     )
                 )
@@ -244,12 +230,10 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate)
                     ),
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", sourceAfisTemplate)
                     )
                 )
@@ -267,12 +251,10 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
                     ),
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, base64Image)
                     )
                 )
@@ -290,12 +272,10 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
                     ),
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", sourceAfisTemplate)
                     )
                 )
@@ -311,7 +291,6 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image, "", 0.0, "XX")
                     )
                 )
@@ -328,7 +307,6 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate, 0.0, "XX")
                     )
                 )
@@ -346,7 +324,6 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, badImage)
                     )
                 )
@@ -364,7 +341,6 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestFiltersDto(voterId, nationalId),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", badTemplate)
                     )
                 )
@@ -388,7 +364,6 @@ class FingerprintServiceSpec : WordSpec({
             result.status shouldBe ResponseStatus.MATCHED
             result.id shouldBe did
             result.did shouldBe did
-            result.nationalId shouldBe nationalId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
@@ -404,7 +379,6 @@ class FingerprintServiceSpec : WordSpec({
             result.status shouldBe ResponseStatus.MATCHED
             result.id shouldBe did
             result.did shouldBe did
-            result.nationalId shouldBe nationalId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
@@ -420,7 +394,6 @@ class FingerprintServiceSpec : WordSpec({
             result.status shouldBe ResponseStatus.MATCHED
             result.id shouldBe did
             result.did shouldBe did
-            result.nationalId shouldBe nationalId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
@@ -436,7 +409,6 @@ class FingerprintServiceSpec : WordSpec({
             result.status shouldBe ResponseStatus.MATCHED
             result.id shouldBe did
             result.did shouldBe did
-            result.nationalId shouldBe nationalId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
@@ -452,7 +424,6 @@ class FingerprintServiceSpec : WordSpec({
             result.status shouldBe ResponseStatus.MATCHED
             result.id shouldBe did
             result.did shouldBe did
-            result.nationalId shouldBe nationalId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
@@ -470,7 +441,7 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintConfig.maxDids } returns 2
             val fpService = buildFingerprintService()
             val dids = "$did,${alphanumericStringGen.next()},${alphanumericStringGen.next()}"
-            val dto = verifyRequestDto.copy(filters = VerifyRequestFiltersDto(null, null, dids))
+            val dto = verifyRequestDto.copy(filters = VerifyRequestFiltersDto(dids))
             shouldThrow<InvalidFilterException> {
                 fpService.verify(dto, requestId)
             }
