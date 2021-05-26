@@ -65,8 +65,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
 
     "POST /save" should {
 
-        // TODO: Test to verify it fails with invalid image types
-
         "be able to save a Source AFIS v3 template" {
             val bulkDto = BulkSaveRequestDto(
                 listOf(
@@ -314,6 +312,28 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 }
             }
         }
+
+        "return an error if an invalid image format is provided" {
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "foobar")
+                    )
+                )
+            )
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/save", bulkDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.BadRequest
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
+                    responseBody.code shouldBe BioAuthExceptionCode.InvalidImageFormat.name
+                }
+            }
+        }
     }
 
     "POST /templatizer/bulk/template" should {
@@ -452,7 +472,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     base64Image
                 )
             )
-            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
 
             withTestApplication({
                 testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
@@ -486,6 +505,30 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
                     responseBody.code shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
+                }
+            }
+        }
+
+        "return an error if an invalid image format is provided" {
+            val templatizerDto = listOf(
+                TemplatizerDto(
+                    alphanumericStringGen.next(),
+                    1,
+                    FingerPosition.RIGHT_INDEX,
+                    null,
+                    ZonedDateTime.now(),
+                    "foobar"
+                )
+            )
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/templatizer/bulk/template", templatizerDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.BadRequest
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
+                    responseBody.code shouldBe BioAuthExceptionCode.InvalidImageFormat.name
                 }
             }
         }
