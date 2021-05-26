@@ -3,6 +3,7 @@ package org.kiva.bioauthservice
 import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
+import io.ktor.features.DefaultHeaders
 import io.ktor.serialization.json
 import io.ktor.server.netty.EngineMain
 import io.ktor.util.KtorExperimentalAPI
@@ -29,6 +30,7 @@ fun Application.module() {
     install(ContentNegotiation) {
         json()
     }
+    install(DefaultHeaders)
     installErrorHandler(appRegistry)
 
     // Http Routes

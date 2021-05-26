@@ -1,10 +1,9 @@
 package org.kiva.bioauthservice.fingerprint
 
 import common.errors.impl.InvalidFilterException
+import datadog.trace.api.Trace
 import fingerprint.dtos.TemplatizerDto
 import io.ktor.application.call
-import io.ktor.http.HttpHeaders
-import io.ktor.request.header
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -13,10 +12,23 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.ExperimentalSerializationApi
+import org.kiva.bioauthservice.common.utils.requestIdHeader
 import org.kiva.bioauthservice.fingerprint.dtos.BulkSaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.PositionsDto
 import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
 
+/*
+ * Statically defined paths for these routes
+ */
+private const val templatizerPath = "/templatizer/bulk/template"
+private const val getPositionsPath = "/positions/template"
+private const val savePath = "/save"
+private const val verifyPath = "/verify"
+private const val positionsPath = "/positions"
+
+/*
+ * Route definitions
+ */
 @ExperimentalSerializationApi
 @KtorExperimentalAPI
 fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
@@ -24,16 +36,15 @@ fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
     route("/api/v1") {
 
         // TODO: Remove this deprecated route. Use POST /save instead
-        post("/templatizer/bulk/template") {
+        post(templatizerPath) @Trace(operationName = templatizerPath) {
             val dtos = call.receive<List<TemplatizerDto>>()
-            val requestId = call.request.header(HttpHeaders.XRequestId) ?: "noRequestId"
             val bulkSaveDto = BulkSaveRequestDto(dtos.map { it.toSaveRequestDto() })
-            val numSaved = fingerprintService.save(bulkSaveDto, requestId)
+            val numSaved = fingerprintService.save(bulkSaveDto, call.requestIdHeader())
             call.respond(numSaved)
         }
 
         // TODO: Remove this deprecated route. Use POST /positions instead
-        get("/positions/template/{filter}") {
+        get("$getPositionsPath/{filter}") @Trace(operationName = getPositionsPath) {
             val filters = call.parameters["filter"]?.split("=") ?: emptyList()
             if (filters.size != 2) {
                 throw InvalidFilterException("One of your filters is invalid or missing. Filter has to be in the format 'national_id=123'")
@@ -48,21 +59,19 @@ fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
             call.respond(result)
         }
 
-        post("/save") {
+        post(savePath) @Trace(operationName = savePath) {
             val dto = call.receive<BulkSaveRequestDto>()
-            val requestId = call.request.header(HttpHeaders.XRequestId) ?: "noRequestId"
-            val numSaved = fingerprintService.save(dto, requestId)
+            val numSaved = fingerprintService.save(dto, call.requestIdHeader())
             call.respond(numSaved)
         }
 
-        post("/verify") {
+        post(verifyPath) @Trace(operationName = verifyPath) {
             val dto = call.receive<VerifyRequestDto>()
-            val requestId = call.request.header(HttpHeaders.XRequestId) ?: "noRequestId"
-            val result = fingerprintService.verify(dto, requestId)
+            val result = fingerprintService.verify(dto, call.requestIdHeader())
             call.respond(result)
         }
 
-        post("/positions") {
+        post(positionsPath) @Trace(operationName = positionsPath) {
             val dto = call.receive<PositionsDto>()
             val result = fingerprintService.positions(dto)
             call.respond(result)

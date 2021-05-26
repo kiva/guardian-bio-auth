@@ -3,6 +3,7 @@ FROM kivaprotocol/kotlin-base:latest
 RUN mkdir /app
 WORKDIR /app
 COPY bio_auth_service/build/libs/bio_auth_service-1.0-SNAPSHOT-all.jar ./app.jar
+COPY bio_auth_service/lib/dd-java-agent.jar .
 RUN adduser --system app
 USER app
-ENTRYPOINT ["java", "-jar", "./app.jar"]
+ENTRYPOINT ["java", "-javaagent:./dd-java-agent.jar", "-Djava.security.egd=file:/dev/./urandom", "-Dagentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000", "-jar", "./app.jar"]
