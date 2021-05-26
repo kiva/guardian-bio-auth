@@ -6,16 +6,18 @@ import io.ktor.response.respondText
 import io.ktor.routing.Route
 import io.ktor.routing.get
 
-/*
- * Statically defined paths for these routes
+/**
+ * Statically defined paths for App routes
  */
-private const val healthzPath = "/healthz"
+private object Paths {
+    const val healthz = "/healthz"
+}
 
 /*
  * Route definitions
  */
 fun Route.appRoutes() {
-    get(healthzPath) @Trace(operationName = healthzPath) {
+    get(Paths.healthz) @Trace(operationName = Paths.healthz) {
         call.respondText("OK")
     }
 }

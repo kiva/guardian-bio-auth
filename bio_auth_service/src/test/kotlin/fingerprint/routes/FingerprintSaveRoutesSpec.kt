@@ -29,7 +29,6 @@ import org.kiva.bioauthservice.common.utils.toBase64String
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
 import org.kiva.bioauthservice.fingerprint.dtos.BulkSaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto
-import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestFiltersDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestParamsDto
 import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
 import java.time.ZonedDateTime
@@ -70,7 +69,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template)
                     )
                 )
@@ -93,7 +91,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
                     )
                 )
@@ -117,7 +114,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
                     )
                 )
@@ -141,7 +137,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", "", 0.0, "XX")
                     )
                 )
@@ -164,7 +159,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image, "", 0.0, "XX")
                     )
                 )
@@ -187,7 +181,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template, 0.0, "XX")
                     )
                 )
@@ -210,7 +203,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestFiltersDto(alphanumericStringGen.next(), alphanumericStringGen.next()),
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
                     )
                 )
@@ -237,8 +229,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
             val templatizerDto = listOf(
                 TemplatizerDto(
                     alphanumericStringGen.next(),
-                    alphanumericStringGen.next(),
-                    alphanumericStringGen.next(),
                     1,
                     FingerPosition.RIGHT_INDEX,
                     null,
@@ -263,8 +253,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
         "be able to save a low quality image" {
             val templatizerDto = listOf(
                 TemplatizerDto(
-                    alphanumericStringGen.next(),
-                    alphanumericStringGen.next(),
                     alphanumericStringGen.next(),
                     1,
                     FingerPosition.RIGHT_INDEX,
@@ -291,8 +279,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
             val templatizerDto = listOf(
                 TemplatizerDto(
                     alphanumericStringGen.next(),
-                    alphanumericStringGen.next(),
-                    alphanumericStringGen.next(),
                     1,
                     FingerPosition.RIGHT_INDEX,
                     "XX",
@@ -315,8 +301,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
         "return an error if both an image and a missing code is provided" {
             val templatizerDto = listOf(
                 TemplatizerDto(
-                    alphanumericStringGen.next(),
-                    alphanumericStringGen.next(),
                     alphanumericStringGen.next(),
                     1,
                     FingerPosition.RIGHT_INDEX,
@@ -342,8 +326,6 @@ class FingerprintSaveRoutesSpec : WordSpec({
         "return an error on saving an image if bioanalyzer returns an error" {
             val templatizerDto = listOf(
                 TemplatizerDto(
-                    alphanumericStringGen.next(),
-                    alphanumericStringGen.next(),
                     alphanumericStringGen.next(),
                     1,
                     FingerPosition.RIGHT_INDEX,

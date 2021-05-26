@@ -40,7 +40,7 @@ fun Application.registerDB(appRegistry: AppRegistry): DbRegistry {
 
     // Set up Repositories
     val replayRepository = ReplayRepository(jdbi, logger)
-    val fingerprintTemplateRepository = FingerprintTemplateRepository(jdbi, dbConfig, logger)
+    val fingerprintTemplateRepository = FingerprintTemplateRepository(jdbi, logger)
 
     return DbRegistry(replayRepository, fingerprintTemplateRepository)
 }

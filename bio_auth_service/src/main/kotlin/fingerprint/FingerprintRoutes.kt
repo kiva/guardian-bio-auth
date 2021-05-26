@@ -17,14 +17,17 @@ import org.kiva.bioauthservice.fingerprint.dtos.BulkSaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.PositionsDto
 import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
 
-/*
- * Statically defined paths for these routes
+/**
+ * Statically defined paths for Fingerprint routes
  */
-private const val templatizerPath = "/templatizer/bulk/template"
-private const val getPositionsPath = "/positions/template"
-private const val savePath = "/save"
-private const val verifyPath = "/verify"
-private const val positionsPath = "/positions"
+private object Paths {
+    const val apiV1 = "/api/v1"
+    const val templatizer = "/templatizer/bulk/template"
+    const val getPositions = "/positions/template"
+    const val save = "/save"
+    const val verify = "/verify"
+    const val positions = "/positions"
+}
 
 /*
  * Route definitions
@@ -33,10 +36,10 @@ private const val positionsPath = "/positions"
 @KtorExperimentalAPI
 fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
 
-    route("/api/v1") {
+    route(Paths.apiV1) {
 
         // TODO: Remove this deprecated route. Use POST /save instead
-        post(templatizerPath) @Trace(operationName = templatizerPath) {
+        post(Paths.templatizer) @Trace(operationName = Paths.templatizer) {
             val dtos = call.receive<List<TemplatizerDto>>()
             val bulkSaveDto = BulkSaveRequestDto(dtos.map { it.toSaveRequestDto() })
             val numSaved = fingerprintService.save(bulkSaveDto, call.requestIdHeader())
@@ -44,34 +47,32 @@ fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
         }
 
         // TODO: Remove this deprecated route. Use POST /positions instead
-        get("$getPositionsPath/{filter}") @Trace(operationName = getPositionsPath) {
+        get("${Paths.getPositions}/{filter}") @Trace(operationName = Paths.getPositions) {
             val filters = call.parameters["filter"]?.split("=") ?: emptyList()
             if (filters.size != 2) {
-                throw InvalidFilterException("One of your filters is invalid or missing. Filter has to be in the format 'national_id=123'")
+                throw InvalidFilterException("One of your filters is invalid or missing. Filter has to be in the format 'dids=123,abc'")
             }
-            val dto = when (filters[0]) {
-                "nationalId" -> PositionsDto(filters[1])
-                "voterId" -> PositionsDto(null, filters[1])
-                "dids" -> PositionsDto(null, null, filters[1])
-                else -> throw InvalidFilterException("${filters[0]} is an invalid filter type")
+            if (filters[0] !== "dids") {
+                throw InvalidFilterException("${filters[0]} is an invalid filter type")
             }
+            val dto = PositionsDto(filters[1])
             val result = fingerprintService.positions(dto)
             call.respond(result)
         }
 
-        post(savePath) @Trace(operationName = savePath) {
+        post(Paths.save) @Trace(operationName = Paths.save) {
             val dto = call.receive<BulkSaveRequestDto>()
             val numSaved = fingerprintService.save(dto, call.requestIdHeader())
             call.respond(numSaved)
         }
 
-        post(verifyPath) @Trace(operationName = verifyPath) {
+        post(Paths.verify) @Trace(operationName = Paths.verify) {
             val dto = call.receive<VerifyRequestDto>()
             val result = fingerprintService.verify(dto, call.requestIdHeader())
             call.respond(result)
         }
 
-        post(positionsPath) @Trace(operationName = positionsPath) {
+        post(Paths.positions) @Trace(operationName = Paths.positions) {
             val dto = call.receive<PositionsDto>()
             val result = fingerprintService.positions(dto)
             call.respond(result)
