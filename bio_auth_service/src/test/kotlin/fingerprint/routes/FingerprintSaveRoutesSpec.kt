@@ -305,7 +305,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 testFingerprintRoutes(appConfig, httpClient, mockk(), mockFingerprintTemplateRepository)
             }) {
                 post("/api/v1/save", bulkDto.serialize()) {
-                    response shouldHaveStatus HttpStatusCode.BadRequest
+                    response shouldHaveStatus HttpStatusCode.InternalServerError
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
                     responseBody.code shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
@@ -501,7 +501,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
             }) {
                 post("/api/v1/templatizer/bulk/template", templatizerDto.serialize()) {
-                    response shouldHaveStatus HttpStatusCode.BadRequest
+                    response shouldHaveStatus HttpStatusCode.InternalServerError
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
                     responseBody.code shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
