@@ -26,6 +26,7 @@ import org.kiva.bioauthservice.bioanalyzer.dtos.BioanalyzerReponseDto
 import org.kiva.bioauthservice.common.errors.ApiError
 import org.kiva.bioauthservice.common.errors.BioAuthExceptionCode
 import org.kiva.bioauthservice.common.utils.toBase64String
+import org.kiva.bioauthservice.common.utils.toHexString
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
 import org.kiva.bioauthservice.fingerprint.dtos.BulkSaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto
@@ -48,8 +49,12 @@ fun BulkSaveRequestDto.serialize(): String {
 class FingerprintSaveRoutesSpec : WordSpec({
 
     // Test fixtures
-    val template = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
-    val image = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: ""
+    val sourceAfisTemplate = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
+    val ansi378v2004Template = this.javaClass.getResource("/images/sample_ansi_378_2004_template.txt")?.readText() ?: ""
+    val ansi378v2009Template = this.javaClass.getResource("/images/sample_ansi_378_2009_template.txt")?.readText() ?: ""
+    val base64Image = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: ""
+    val hexImage = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.toHexString() ?: ""
+    val wsqImage = this.javaClass.getResource("/images/sample.wsq")?.readBytes()?.toBase64String() ?: ""
     val appConfig = AppConfig(HoconApplicationConfig(ConfigFactory.load()))
     val bioanalyzerUrl = appConfig.bioanalyzerConfig.baseUrl + appConfig.bioanalyzerConfig.analyzePath
     val mockFingerprintTemplateRepository = mockk<FingerprintTemplateRepository>()
@@ -60,16 +65,56 @@ class FingerprintSaveRoutesSpec : WordSpec({
 
     "POST /save" should {
 
-        // TODO: Test to verify it works with foreign templates
-        // TODO: Test to verify it works with different image types
-        // TODO: Test to verify it fails with invalid image types
-
-        "be able to save a template" {
+        "be able to save a Source AFIS v3 template" {
             val bulkDto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate)
+                    )
+                )
+            )
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/save", bulkDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
+        "be able to save an ANSI-378-2004 template" {
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi378v2004Template)
+                    )
+                )
+            )
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/save", bulkDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
+        "be able to save an ANSI-378-2009 template" {
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi378v2009Template)
                     )
                 )
             )
@@ -91,7 +136,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
                     )
                 )
             )
@@ -114,12 +159,58 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
                     )
                 )
             )
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(1.0)))
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, httpClient, mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/save", bulkDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
+        "be able to save a hex-encoded image" {
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, hexImage)
+                    )
+                )
+            )
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+            val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(99.0)))
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, httpClient, mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/save", bulkDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
+        "be able to save a .wsq image" {
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, wsqImage)
+                    )
+                )
+            )
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+            val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(99.0)))
 
             withTestApplication({
                 testFingerprintRoutes(appConfig, httpClient, mockk(), mockFingerprintTemplateRepository)
@@ -159,7 +250,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image, "", 0.0, "XX")
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image, "", 0.0, "XX")
                     )
                 )
             )
@@ -181,7 +272,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", template, 0.0, "XX")
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate, 0.0, "XX")
                     )
                 )
             )
@@ -203,7 +294,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         alphanumericStringGen.next(),
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, image)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
                     )
                 )
             )
@@ -214,10 +305,32 @@ class FingerprintSaveRoutesSpec : WordSpec({
                 testFingerprintRoutes(appConfig, httpClient, mockk(), mockFingerprintTemplateRepository)
             }) {
                 post("/api/v1/save", bulkDto.serialize()) {
-                    response shouldHaveStatus HttpStatusCode.BadRequest
+                    response shouldHaveStatus HttpStatusCode.InternalServerError
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
                     responseBody.code shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
+                }
+            }
+        }
+
+        "return an error if an invalid image format is provided" {
+            val bulkDto = BulkSaveRequestDto(
+                listOf(
+                    SaveRequestDto(
+                        alphanumericStringGen.next(),
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "foobar")
+                    )
+                )
+            )
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/save", bulkDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.BadRequest
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
+                    responseBody.code shouldBe BioAuthExceptionCode.InvalidImageFormat.name
                 }
             }
         }
@@ -233,7 +346,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     FingerPosition.RIGHT_INDEX,
                     null,
                     ZonedDateTime.now(),
-                    image
+                    base64Image
                 )
             )
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
@@ -258,11 +371,61 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     FingerPosition.RIGHT_INDEX,
                     null,
                     ZonedDateTime.now(),
-                    image
+                    base64Image
                 )
             )
             every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
             val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(1.0)))
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, httpClient, mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/templatizer/bulk/template", templatizerDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
+        "be able to save a hex-encoded image" {
+            val templatizerDto = listOf(
+                TemplatizerDto(
+                    alphanumericStringGen.next(),
+                    1,
+                    FingerPosition.RIGHT_INDEX,
+                    null,
+                    ZonedDateTime.now(),
+                    hexImage
+                )
+            )
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+            val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(99.0)))
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, httpClient, mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/templatizer/bulk/template", templatizerDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
+        "be able to save a .wsq image" {
+            val templatizerDto = listOf(
+                TemplatizerDto(
+                    alphanumericStringGen.next(),
+                    1,
+                    FingerPosition.RIGHT_INDEX,
+                    null,
+                    ZonedDateTime.now(),
+                    wsqImage
+                )
+            )
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+            val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(99.0)))
 
             withTestApplication({
                 testFingerprintRoutes(appConfig, httpClient, mockk(), mockFingerprintTemplateRepository)
@@ -306,10 +469,9 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     FingerPosition.RIGHT_INDEX,
                     "XX",
                     ZonedDateTime.now(),
-                    image
+                    base64Image
                 )
             )
-            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
 
             withTestApplication({
                 testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
@@ -331,7 +493,31 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     FingerPosition.RIGHT_INDEX,
                     null,
                     ZonedDateTime.now(),
-                    image
+                    base64Image
+                )
+            )
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/templatizer/bulk/template", templatizerDto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.InternalServerError
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
+                    responseBody.code shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
+                }
+            }
+        }
+
+        "return an error if an invalid image format is provided" {
+            val templatizerDto = listOf(
+                TemplatizerDto(
+                    alphanumericStringGen.next(),
+                    1,
+                    FingerPosition.RIGHT_INDEX,
+                    null,
+                    ZonedDateTime.now(),
+                    "foobar"
                 )
             )
 
@@ -342,7 +528,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
                     response shouldHaveStatus HttpStatusCode.BadRequest
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
-                    responseBody.code shouldBe BioAuthExceptionCode.BioanalyzerServerError.name
+                    responseBody.code shouldBe BioAuthExceptionCode.InvalidImageFormat.name
                 }
             }
         }

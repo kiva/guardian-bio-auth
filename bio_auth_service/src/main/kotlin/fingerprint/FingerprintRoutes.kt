@@ -52,7 +52,7 @@ fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
             if (filters.size != 2) {
                 throw InvalidFilterException("One of your filters is invalid or missing. Filter has to be in the format 'dids=123,abc'")
             }
-            if (filters[0] !== "dids") {
+            if (filters[0] != "dids") {
                 throw InvalidFilterException("${filters[0]} is an invalid filter type")
             }
             val dto = PositionsDto(filters[1])

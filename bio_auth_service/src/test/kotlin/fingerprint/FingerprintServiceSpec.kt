@@ -57,8 +57,8 @@ class FingerprintServiceSpec : WordSpec({
     val backend = alphanumericStringGen.next()
     val position = FingerPosition.RIGHT_INDEX
     val sourceAfisTemplate = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
-    val ansi387v2004Template = this.javaClass.getResource("/images/sample_ansi_378_2004_template.txt")?.readText() ?: ""
-    val ansi387v2009Template = this.javaClass.getResource("/images/sample_ansi_378_2009_template.txt")?.readText() ?: ""
+    val ansi378v2004Template = this.javaClass.getResource("/images/sample_ansi_378_2004_template.txt")?.readText() ?: ""
+    val ansi378v2009Template = this.javaClass.getResource("/images/sample_ansi_378_2009_template.txt")?.readText() ?: ""
     val base64Image = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.toBase64String() ?: ""
     val hexImage = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.toHexString() ?: ""
     val wsqImage = this.javaClass.getResource("/images/sample.wsq")?.readBytes()?.toBase64String() ?: ""
@@ -198,7 +198,7 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi387v2004Template)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi378v2004Template)
                     )
                 )
             )
@@ -214,7 +214,7 @@ class FingerprintServiceSpec : WordSpec({
                 listOf(
                     SaveRequestDto(
                         did,
-                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi387v2009Template)
+                        SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi378v2009Template)
                     )
                 )
             )
@@ -373,7 +373,7 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
-            val dto = verifyRequestDto.copy(image = ansi387v2004Template)
+            val dto = verifyRequestDto.copy(image = ansi378v2004Template)
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
@@ -388,7 +388,7 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
-            val dto = verifyRequestDto.copy(image = ansi387v2009Template)
+            val dto = verifyRequestDto.copy(image = ansi378v2009Template)
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED

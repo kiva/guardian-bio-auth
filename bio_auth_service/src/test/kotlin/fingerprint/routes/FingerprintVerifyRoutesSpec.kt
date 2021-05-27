@@ -26,6 +26,7 @@ import org.kiva.bioauthservice.common.errors.ApiError
 import org.kiva.bioauthservice.common.errors.BioAuthExceptionCode
 import org.kiva.bioauthservice.common.utils.base64ToByte
 import org.kiva.bioauthservice.common.utils.toBase64String
+import org.kiva.bioauthservice.common.utils.toHexString
 import org.kiva.bioauthservice.db.daos.FingerprintTemplateDao
 import org.kiva.bioauthservice.db.daos.ReplayDao
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
@@ -49,10 +50,14 @@ class FingerprintVerifyRoutesSpec : WordSpec({
     val did = alphanumericStringGen.next()
     val backend = alphanumericStringGen.next()
     val position = FingerPosition.RIGHT_INDEX
-    val template = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
-    val image = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.toBase64String() ?: ""
-    val image2 = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: "" // Not the same fingerprint
-    val sourceAfisTemplate = FingerprintTemplate(template.base64ToByte())
+    val sourceAfisTemplateString = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
+    val ansi378v2004Template = this.javaClass.getResource("/images/sample_ansi_378_2004_template.txt")?.readText() ?: ""
+    val ansi378v2009Template = this.javaClass.getResource("/images/sample_ansi_378_2009_template.txt")?.readText() ?: ""
+    val base64Image = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.toBase64String() ?: ""
+    val hexImage = this.javaClass.getResource("/images/sample.jpg")?.readBytes()?.toHexString() ?: ""
+    val gifImage = this.javaClass.getResource("/images/sample.gif")?.readBytes()?.toBase64String() ?: ""
+    val otherImage = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: "" // Not the same fingerprint
+    val sourceAfisTemplate = FingerprintTemplate(sourceAfisTemplateString.base64ToByte())
     val appConfig = AppConfig(HoconApplicationConfig(ConfigFactory.load()))
     val bioanalyzerUrl = appConfig.bioanalyzerConfig.baseUrl + appConfig.bioanalyzerConfig.analyzePath
     val mockReplayRepository = mockk<ReplayRepository>()
@@ -78,13 +83,9 @@ class FingerprintVerifyRoutesSpec : WordSpec({
 
     "POST /verify" should {
 
-        // TODO: Test to verify it works with foreign templates
-        // TODO: Test to verify it works with different image types
-        // TODO: Test to verify it fails with invalid image types
-
-        "be able to verify an image against an existing template" {
+        "be able to verify a base64-encoded image against an existing template" {
             val dtoFilters = VerifyRequestFiltersDto(did)
-            val dto = VerifyRequestDto(backend, image, position, dtoFilters)
+            val dto = VerifyRequestDto(backend, base64Image, position, dtoFilters)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
 
@@ -102,9 +103,9 @@ class FingerprintVerifyRoutesSpec : WordSpec({
             }
         }
 
-        "be able to verify a template against an existing template" {
+        "be able to verify a hex-encoded image against an existing template" {
             val dtoFilters = VerifyRequestFiltersDto(did)
-            val dto = VerifyRequestDto(backend, template, position, dtoFilters, DataType.TEMPLATE)
+            val dto = VerifyRequestDto(backend, hexImage, position, dtoFilters)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
 
@@ -122,9 +123,105 @@ class FingerprintVerifyRoutesSpec : WordSpec({
             }
         }
 
-        "return an error if the images don't verify due to poor image quality" {
+        "be able to verify a .gif image against an existing template" {
             val dtoFilters = VerifyRequestFiltersDto(did)
-            val dto = VerifyRequestDto(backend, image2, position, dtoFilters)
+            val dto = VerifyRequestDto(backend, gifImage, position, dtoFilters)
+            every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockReplayRepository, mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/verify", dto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(VerifyResponseDto.serializer(), response.content!!)
+                    responseBody.status shouldBe ResponseStatus.MATCHED
+                    responseBody.id shouldBe did
+                    responseBody.did shouldBe did
+                }
+            }
+        }
+
+        "be able to verify a Source AFIS v3 template against an existing template" {
+            val dtoFilters = VerifyRequestFiltersDto(did)
+            val dto = VerifyRequestDto(backend, sourceAfisTemplateString, position, dtoFilters, DataType.TEMPLATE)
+            every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockReplayRepository, mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/verify", dto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(VerifyResponseDto.serializer(), response.content!!)
+                    responseBody.status shouldBe ResponseStatus.MATCHED
+                    responseBody.id shouldBe did
+                    responseBody.did shouldBe did
+                }
+            }
+        }
+
+        "be able to verify an ANSI-378-2004 template against an existing template" {
+            val dtoFilters = VerifyRequestFiltersDto(did)
+            val dto = VerifyRequestDto(backend, ansi378v2004Template, position, dtoFilters, DataType.TEMPLATE)
+            every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockReplayRepository, mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/verify", dto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(VerifyResponseDto.serializer(), response.content!!)
+                    responseBody.status shouldBe ResponseStatus.MATCHED
+                    responseBody.id shouldBe did
+                    responseBody.did shouldBe did
+                }
+            }
+        }
+
+        "be able to verify an ANSI-378-2009 template against an existing template" {
+            val dtoFilters = VerifyRequestFiltersDto(did)
+            val dto = VerifyRequestDto(backend, ansi378v2009Template, position, dtoFilters, DataType.TEMPLATE)
+            every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
+            every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockReplayRepository, mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/verify", dto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(VerifyResponseDto.serializer(), response.content!!)
+                    responseBody.status shouldBe ResponseStatus.MATCHED
+                    responseBody.id shouldBe did
+                    responseBody.did shouldBe did
+                }
+            }
+        }
+
+        "return an error if the image doesn't verify due to not being an image (improper image format)" {
+            val dtoFilters = VerifyRequestFiltersDto(did)
+            val dto = VerifyRequestDto(backend, "foobar", position, dtoFilters)
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockReplayRepository, mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/verify", dto.serialize()) {
+                    response shouldHaveStatus HttpStatusCode.BadRequest
+                    response.content shouldNotBe null
+                    val responseBody = Json.decodeFromString(ApiError.serializer(), response.content!!)
+                    responseBody.code shouldBe BioAuthExceptionCode.InvalidImageFormat.name
+                }
+            }
+        }
+
+        "return an error if the image doesn't verify due to poor image quality" {
+            val dtoFilters = VerifyRequestFiltersDto(did)
+            val dto = VerifyRequestDto(backend, otherImage, position, dtoFilters)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
             val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(1.0)))
@@ -141,9 +238,9 @@ class FingerprintVerifyRoutesSpec : WordSpec({
             }
         }
 
-        "return an error if the images don't verify in spite of good image quality" {
+        "return an error if the image doesn't verify in spite of good image quality" {
             val dtoFilters = VerifyRequestFiltersDto(did)
-            val dto = VerifyRequestDto(backend, image2, position, dtoFilters)
+            val dto = VerifyRequestDto(backend, otherImage, position, dtoFilters)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
             val httpClient = mockHttpClient(BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(99.0)))
@@ -162,7 +259,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
 
         "return an error if the stored template has a missing_code" {
             val dtoFilters = VerifyRequestFiltersDto(did)
-            val dto = VerifyRequestDto(backend, image, position, dtoFilters)
+            val dto = VerifyRequestDto(backend, base64Image, position, dtoFilters)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao.copy(template = null, missingCode = "XX"))
 
@@ -180,7 +277,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
 
         "return an error if the stored template was made with a different version" {
             val dtoFilters = VerifyRequestFiltersDto(did)
-            val dto = VerifyRequestDto(backend, image, position, dtoFilters)
+            val dto = VerifyRequestDto(backend, base64Image, position, dtoFilters)
             every { mockReplayRepository.addReplay(any()) } returns ReplayDao(1, "foo", ZonedDateTime.now(), 1)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao.copy(version = 2))
 

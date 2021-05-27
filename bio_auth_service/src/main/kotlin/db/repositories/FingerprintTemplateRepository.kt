@@ -110,6 +110,7 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val logger: 
             SELECT position FROM kiva_biometric_template AS kbt
             WHERE missing_code IS NULL
             AND kbt.did IN (<dids>)
+            ORDER BY kbt.quality_score DESC
             LIMIT 1000
             """.trimIndent()
     }
