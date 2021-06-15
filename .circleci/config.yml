@@ -64,7 +64,7 @@ workflows:
           update-description: true
           dockerfile: ./Dockerfile.bioanalyzerservice
           image: kivaprotocol/bioanalyzer
-          tag: << pipeline.git.tag >>
+          tag: << pipeline.git.tag >>,latest
       - docker/publish:
           requires:
             - build-and-test
@@ -86,7 +86,7 @@ workflows:
           update-description: true
           dockerfile: ./Dockerfile.bioauthservice
           image: kivaprotocol/bioauth
-          tag: << pipeline.git.tag >>
+          tag: << pipeline.git.tag >>,latest
 
 orbs:
   docker: circleci/docker@1.3.0
