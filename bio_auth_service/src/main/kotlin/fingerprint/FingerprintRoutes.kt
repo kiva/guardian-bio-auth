@@ -2,7 +2,6 @@ package org.kiva.bioauthservice.fingerprint
 
 import common.errors.impl.InvalidFilterException
 import datadog.trace.api.Trace
-import fingerprint.dtos.TemplatizerDto
 import io.ktor.application.call
 import io.ktor.request.receive
 import io.ktor.response.respond
@@ -22,7 +21,6 @@ import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
  */
 private object Paths {
     const val apiV1 = "/api/v1"
-    const val templatizer = "/templatizer/bulk/template"
     const val getPositions = "/positions/template"
     const val save = "/save"
     const val verify = "/verify"
@@ -37,14 +35,6 @@ private object Paths {
 fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
 
     route(Paths.apiV1) {
-
-        // TODO: Remove this deprecated route. Use POST /save instead
-        post(Paths.templatizer) @Trace(operationName = Paths.templatizer) {
-            val dtos = call.receive<List<TemplatizerDto>>()
-            val bulkSaveDto = BulkSaveRequestDto(dtos.map { it.toSaveRequestDto() })
-            val numSaved = fingerprintService.save(bulkSaveDto, call.requestIdHeader())
-            call.respond(numSaved)
-        }
 
         // TODO: Remove this deprecated route. Use POST /positions instead
         get("${Paths.getPositions}/{filter}") @Trace(operationName = Paths.getPositions) {
