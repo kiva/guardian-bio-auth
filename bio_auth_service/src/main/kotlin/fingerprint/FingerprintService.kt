@@ -77,11 +77,11 @@ class FingerprintService(
 
         // Verify a missing code is not provided at the same time that an image or template is provided. These are mutually exclusive.
         bulkDto.fingerprints.forEach { dto: SaveRequestDto ->
-            if ((dto.params.image.isNotBlank() || dto.params.template.isNotBlank()) && !dto.params.missing_code.isNullOrBlank()) {
+            if ((!dto.params.image.isNullOrBlank() || !dto.params.template.isNullOrBlank()) && !dto.params.missing_code.isNullOrBlank()) {
                 throw FingerprintTemplateGenerationException(
                     dto.id,
                     dto.params.position,
-                    "Either fingerprint image or missing code should be present for each fingerprint."
+                    "Only one of fingerprint image, template, or missing code should be present for each fingerprint."
                 )
             }
         }
@@ -97,7 +97,7 @@ class FingerprintService(
             } else {
                 // If exception thrown here while processing the image, we will not send the cross-service request to Bioanalyzer Service
                 val template = buildTemplateFromImage(dto.params.fingerprintBytes)
-                val score = bioanalyzerService.analyze(dto.params.image, false, requestId)
+                val score = bioanalyzerService.analyze(dto.params.image ?: "", false, requestId)
                 templateRepository.insertTemplate(dto, template, score)
             }
         }

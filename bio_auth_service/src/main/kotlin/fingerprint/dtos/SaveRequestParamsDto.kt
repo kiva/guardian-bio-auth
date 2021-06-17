@@ -31,12 +31,12 @@ data class SaveRequestParamsDto(
     /**
      * Base64 or Hex representation of the fingerprint image to save a template of
      */
-    val image: String = "",
+    val image: String? = null,
 
     /**
      * Base 64 or Hex representation of the fingerprint template to save
      */
-    val template: String = "",
+    val template: String? = null,
 
     /**
      * Quality score of the template, if a template is provided.
@@ -45,9 +45,9 @@ data class SaveRequestParamsDto(
 
     val missing_code: String? = null
 ) {
-    val type: DataType = if (template.isNotBlank()) DataType.TEMPLATE else DataType.IMAGE
+    val type: DataType = if (!template.isNullOrBlank()) DataType.TEMPLATE else DataType.IMAGE
     val fingerprintBytes: ByteArray = try {
-        val target = if (type == DataType.TEMPLATE) template else image
+        val target = (if (type == DataType.TEMPLATE) template else image) ?: ""
         try {
             // Try to do a hex decoding first
             target.replace("0x", "").replace("\\x", "").hexToByte()

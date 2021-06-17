@@ -27,10 +27,8 @@ data class TemplatizerDto(
                 type_id,
                 capture_date,
                 position,
-                image ?: "",
-                "",
-                0.0,
-                missing_code
+                image,
+                missing_code = missing_code
             )
         )
     }

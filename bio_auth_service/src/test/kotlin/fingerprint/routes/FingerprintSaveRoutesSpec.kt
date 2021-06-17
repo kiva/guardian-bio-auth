@@ -245,6 +245,34 @@ class FingerprintSaveRoutesSpec : WordSpec({
             }
         }
 
+        "be able to save a fingerprint with a missing code, even if provided a null value for an image" {
+            val bulkDto = """
+                {
+                    "fingerprints": [{
+                        "id": "${alphanumericStringGen.next()}",
+                        "params": {
+                            "type_id": 1,
+                            "capture_date": "2011-12-03T10:15:30+01:00",
+                            "position": "3",
+                            "missing_code": "XX",
+                            "image": null
+                        }
+                    }]
+                }
+            """.trimIndent()
+            every { mockFingerprintTemplateRepository.insertTemplate(any(), any(), any()) } returns true
+
+            withTestApplication({
+                testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
+            }) {
+                post("/api/v1/save", bulkDto) {
+                    response shouldHaveStatus HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content!!.toInt() shouldBe 1
+                }
+            }
+        }
+
         "return an error if both an image and a missing code is provided" {
             val bulkDto = BulkSaveRequestDto(
                 listOf(
