@@ -59,7 +59,6 @@ Informational:
 - `POST /positions`: Returns the positions of the best quality fingerprint images for the given filters
 
 DEPRECATED:
-- `POST /templatizer/bulk/template`: Create & store fingerprint templates in bulk
 - `GET /positions/template/{filter}`: Returns the positions of the best quality fingerprint images for the given filters
 
 Note here the following meanings:
