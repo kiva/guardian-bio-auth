@@ -7,7 +7,7 @@ import java.time.ZonedDateTime
 
 data class FingerprintTemplateDao(
     val id: Int,
-    val did: String,
+    @ColumnName("agent_id") val agentId: String,
     @ColumnName("type_id") val typeId: Int,
     val version: Int,
     val position: FingerPosition,

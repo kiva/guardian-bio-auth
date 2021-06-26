@@ -1,0 +1,5 @@
+ALTER TABLE kiva_biometric_template
+RENAME COLUMN did TO agent_id;
+
+ALTER TABLE kiva_biometric_template
+RENAME CONSTRAINT unique_did_postion_template_constraint TO unique_agent_id_position_template_constraint;

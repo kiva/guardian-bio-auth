@@ -30,7 +30,7 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val logger: 
     ): Boolean {
         val count = jdbi.withHandle<Int, Exception> {
             it.createUpdate(insertTemplateQuery)
-                .bind("did", dto.id)
+                .bind("agentId", dto.id)
                 .bind("position", dto.params.position.code)
                 .bind("templateType", templateType)
                 .bind("typeId", dto.params.type_id)
@@ -46,14 +46,14 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val logger: 
     }
 
     fun getTemplates(filters: VerifyRequestFiltersDto, position: FingerPosition): List<FingerprintTemplateDao> {
-        val dids = filters.dids.split(',')
+        val agentIds = filters.dids.split(',')
         val result = jdbi
             .registerColumnMapper(FingerprintTemplateColumnMapper())
             .registerColumnMapper(FingerPositionColumnMapper())
             .withHandle<List<FingerprintTemplateDao>, Exception> {
                 it.createQuery(getTemplatesQuery)
                     .bind("position", position.code)
-                    .bindList(EmptyHandling.NULL_KEYWORD, "dids", dids)
+                    .bindList(EmptyHandling.NULL_KEYWORD, "agentIds", agentIds)
                     .mapTo<FingerprintTemplateDao>()
                     .list()
             }
@@ -62,12 +62,12 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val logger: 
     }
 
     fun getPositions(dto: PositionsDto): List<FingerPosition> {
-        val dids = dto.dids.split(',')
+        val agentIds = dto.dids.split(',')
         val result = jdbi
             .registerColumnMapper(FingerPositionColumnMapper())
             .withHandle<List<FingerPosition>, Exception> {
                 it.createQuery(getPositionsQuery)
-                    .bindList(EmptyHandling.NULL_KEYWORD, "dids", dids)
+                    .bindList(EmptyHandling.NULL_KEYWORD, "agentIds", agentIds)
                     .mapTo<FingerPosition>()
                     .list()
             }
@@ -91,9 +91,9 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val logger: 
 
         private val insertTemplateQuery =
             """
-            INSERT INTO kiva_biometric_template (did,position,template_type,type_id,version,capture_date,missing_code,template,quality_score)
-            VALUES (:did, :position,:templateType,:typeId,:version,:captureDate,:missingCode,:template,:qualityScore)
-            ON CONFLICT ON CONSTRAINT unique_did_postion_template_constraint DO UPDATE
+            INSERT INTO kiva_biometric_template (agent_id,position,template_type,type_id,version,capture_date,missing_code,template,quality_score)
+            VALUES (:agentId, :position,:templateType,:typeId,:version,:captureDate,:missingCode,:template,:qualityScore)
+            ON CONFLICT ON CONSTRAINT unique_agent_id_position_template_constraint DO UPDATE
             SET version=:version,capture_date=:captureDate,missing_code=:missingCode,template=:template,quality_score=:qualityScore
             """.trimIndent()
 
@@ -101,7 +101,7 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val logger: 
             """
             SELECT * FROM kiva_biometric_template AS kbt
             WHERE kbt.position=:position
-            AND kbt.did IN (<dids>)
+            AND kbt.agent_id IN (<agentIds>)
             LIMIT 1000
             """.trimIndent()
 
@@ -109,7 +109,7 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val logger: 
             """
             SELECT position FROM kiva_biometric_template AS kbt
             WHERE missing_code IS NULL
-            AND kbt.did IN (<dids>)
+            AND kbt.agent_id IN (<agentIds>)
             ORDER BY kbt.quality_score DESC
             LIMIT 1000
             """.trimIndent()

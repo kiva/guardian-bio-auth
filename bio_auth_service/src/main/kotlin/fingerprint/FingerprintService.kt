@@ -143,7 +143,7 @@ class FingerprintService(
                     throw InvalidTemplateVersionException("Template version does not match the version of the stored template")
                 }
                 val matchingScore = matcher.match(it.template)
-                VerifyResponseDto(ResponseStatus.MATCHED, it.did, it.did, matchingScore)
+                VerifyResponseDto(ResponseStatus.MATCHED, it.agentId, it.agentId, matchingScore)
             }
             .filter { it.matchingScore!! >= fingerprintConfig.matchThreshold }
             .sortedBy { it.matchingScore }
