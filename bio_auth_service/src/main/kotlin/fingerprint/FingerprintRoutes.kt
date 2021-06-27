@@ -1,6 +1,5 @@
 package org.kiva.bioauthservice.fingerprint
 
-import common.errors.impl.InvalidFilterException
 import datadog.trace.api.Trace
 import io.ktor.application.call
 import io.ktor.request.receive
@@ -35,20 +34,6 @@ private object Paths {
 fun Route.fingerprintRoutes(fingerprintService: FingerprintService) {
 
     route(Paths.apiV1) {
-
-        // TODO: Remove this deprecated route. Use POST /positions instead
-        get("${Paths.getPositions}/{filter}") @Trace(operationName = Paths.getPositions) {
-            val filters = call.parameters["filter"]?.split("=") ?: emptyList()
-            if (filters.size != 2) {
-                throw InvalidFilterException("One of your filters is invalid or missing. Filter has to be in the format 'agentIds=123,abc'")
-            }
-            if (filters[0] != "dids" && filters[0] != "agentIds") {
-                throw InvalidFilterException("${filters[0]} is an invalid filter type")
-            }
-            val dto = PositionsDto(filters[1])
-            val result = fingerprintService.positions(dto)
-            call.respond(result)
-        }
 
         post(Paths.save) @Trace(operationName = Paths.save) {
             val dto = call.receive<BulkSaveRequestDto>()

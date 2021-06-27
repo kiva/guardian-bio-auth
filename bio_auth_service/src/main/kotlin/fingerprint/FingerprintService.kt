@@ -106,7 +106,7 @@ class FingerprintService(
     suspend fun verify(dto: VerifyRequestDto, requestId: String): VerifyResponseDto {
 
         // Verify request parameters
-        val agentIds = dto.filters.agentIds?.split(',') ?: emptyList()
+        val agentIds = dto.filters.agentIds.split(',')
         if (agentIds.size > fingerprintConfig.maxTargets) {
             throw InvalidFilterException("Too many Agent Ids to match against; the maximum number is ${fingerprintConfig.maxTargets}")
         }
@@ -158,7 +158,7 @@ class FingerprintService(
     }
 
     fun positions(positionsDto: PositionsDto): List<FingerPosition> {
-        val agentIds = positionsDto.agentIds?.split(',') ?: emptyList()
+        val agentIds = positionsDto.agentIds.split(',')
         return templateRepository.getPositions(agentIds)
     }
 }
