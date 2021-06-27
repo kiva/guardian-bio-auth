@@ -362,7 +362,7 @@ class FingerprintServiceSpec : WordSpec({
             val fpService = buildFingerprintService()
             val result = fpService.verify(verifyRequestDto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
-            result.id shouldBe agentId
+            result.agentId shouldBe agentId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
@@ -376,7 +376,7 @@ class FingerprintServiceSpec : WordSpec({
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
-            result.id shouldBe agentId
+            result.agentId shouldBe agentId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
@@ -390,7 +390,7 @@ class FingerprintServiceSpec : WordSpec({
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
-            result.id shouldBe agentId
+            result.agentId shouldBe agentId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
@@ -404,7 +404,7 @@ class FingerprintServiceSpec : WordSpec({
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
-            result.id shouldBe agentId
+            result.agentId shouldBe agentId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
@@ -418,7 +418,7 @@ class FingerprintServiceSpec : WordSpec({
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
-            result.id shouldBe agentId
+            result.agentId shouldBe agentId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }

@@ -97,7 +97,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(VerifyResponseDto.serializer(), response.content!!)
                     responseBody.status shouldBe ResponseStatus.MATCHED
-                    responseBody.id shouldBe agentId
+                    responseBody.agentId shouldBe agentId
                 }
             }
         }
@@ -116,7 +116,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(VerifyResponseDto.serializer(), response.content!!)
                     responseBody.status shouldBe ResponseStatus.MATCHED
-                    responseBody.id shouldBe agentId
+                    responseBody.agentId shouldBe agentId
                 }
             }
         }
@@ -135,7 +135,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(VerifyResponseDto.serializer(), response.content!!)
                     responseBody.status shouldBe ResponseStatus.MATCHED
-                    responseBody.id shouldBe agentId
+                    responseBody.agentId shouldBe agentId
                 }
             }
         }
@@ -154,7 +154,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(VerifyResponseDto.serializer(), response.content!!)
                     responseBody.status shouldBe ResponseStatus.MATCHED
-                    responseBody.id shouldBe agentId
+                    responseBody.agentId shouldBe agentId
                 }
             }
         }
@@ -173,7 +173,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(VerifyResponseDto.serializer(), response.content!!)
                     responseBody.status shouldBe ResponseStatus.MATCHED
-                    responseBody.id shouldBe agentId
+                    responseBody.agentId shouldBe agentId
                 }
             }
         }
@@ -192,7 +192,7 @@ class FingerprintVerifyRoutesSpec : WordSpec({
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(VerifyResponseDto.serializer(), response.content!!)
                     responseBody.status shouldBe ResponseStatus.MATCHED
-                    responseBody.id shouldBe agentId
+                    responseBody.agentId shouldBe agentId
                 }
             }
         }
