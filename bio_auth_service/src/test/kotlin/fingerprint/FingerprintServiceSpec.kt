@@ -52,7 +52,7 @@ import java.time.ZonedDateTime
 class FingerprintServiceSpec : WordSpec({
 
     // Test fixtures
-    val did = alphanumericStringGen.next()
+    val agentId = alphanumericStringGen.next()
     val requestId = alphanumericStringGen.next()
     val backend = alphanumericStringGen.next()
     val position = FingerPosition.RIGHT_INDEX
@@ -65,7 +65,7 @@ class FingerprintServiceSpec : WordSpec({
     val wrongImage = this.javaClass.getResource("/images/sample.png")?.readBytes()?.toBase64String() ?: ""
     val dao = FingerprintTemplateDao(
         1,
-        did,
+        agentId,
         1,
         3,
         position,
@@ -82,7 +82,7 @@ class FingerprintServiceSpec : WordSpec({
         sourceAfisTemplate,
         position,
         VerifyRequestFiltersDto(
-            did
+            agentId
         ),
         DataType.TEMPLATE
     )
@@ -114,7 +114,7 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", "", 0.0, "XX")
                     )
                 )
@@ -131,7 +131,7 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
                     )
                 )
@@ -148,7 +148,7 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, hexImage)
                     )
                 )
@@ -165,7 +165,7 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, wsqImage)
                     )
                 )
@@ -181,7 +181,7 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate)
                     )
                 )
@@ -197,7 +197,7 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi378v2004Template)
                     )
                 )
@@ -213,7 +213,7 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", ansi378v2009Template)
                     )
                 )
@@ -229,11 +229,11 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate)
                     ),
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", sourceAfisTemplate)
                     )
                 )
@@ -250,11 +250,11 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
                     ),
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, base64Image)
                     )
                 )
@@ -271,11 +271,11 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image)
                     ),
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.LEFT_INDEX, "", sourceAfisTemplate)
                     )
                 )
@@ -290,7 +290,7 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, base64Image, "", 0.0, "XX")
                     )
                 )
@@ -306,7 +306,7 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", sourceAfisTemplate, 0.0, "XX")
                     )
                 )
@@ -323,7 +323,7 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, badImage)
                     )
                 )
@@ -340,7 +340,7 @@ class FingerprintServiceSpec : WordSpec({
             val dto = BulkSaveRequestDto(
                 listOf(
                     SaveRequestDto(
-                        did,
+                        agentId,
                         SaveRequestParamsDto(1, ZonedDateTime.now(), FingerPosition.RIGHT_INDEX, "", badTemplate)
                     )
                 )
@@ -355,21 +355,20 @@ class FingerprintServiceSpec : WordSpec({
     "verify()" should {
 
         "be able to match a Source AFIS template against a stored template" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
             val fpService = buildFingerprintService()
             val result = fpService.verify(verifyRequestDto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
-            result.id shouldBe did
-            result.did shouldBe did
+            result.id shouldBe agentId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
 
         "be able to match an ANSI 378-2004 template against a stored template" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
@@ -377,14 +376,13 @@ class FingerprintServiceSpec : WordSpec({
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
-            result.id shouldBe did
-            result.did shouldBe did
+            result.id shouldBe agentId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
 
         "be able to match an ANSI 378-2009 template against a stored template" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
@@ -392,14 +390,13 @@ class FingerprintServiceSpec : WordSpec({
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
-            result.id shouldBe did
-            result.did shouldBe did
+            result.id shouldBe agentId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
 
         "be able to match a base64 image against a stored template" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
@@ -407,14 +404,13 @@ class FingerprintServiceSpec : WordSpec({
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
-            result.id shouldBe did
-            result.did shouldBe did
+            result.id shouldBe agentId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
 
         "be able to match a hex image against a stored template" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
@@ -422,14 +418,13 @@ class FingerprintServiceSpec : WordSpec({
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
-            result.id shouldBe did
-            result.did shouldBe did
+            result.id shouldBe agentId
             result.matchingScore shouldNotBe null
             result.matchingScore!! shouldBeGreaterThan 0.0
         }
 
         "fail if not provided an image or template to match against" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             val fpService = buildFingerprintService()
             val dto = verifyRequestDto.copy(image = "")
             shouldThrow<InvalidParamsException> {
@@ -437,11 +432,11 @@ class FingerprintServiceSpec : WordSpec({
             }
         }
 
-        "fail if too many DIDs are provided to match against" {
-            every { mockFingerprintConfig.maxDids } returns 2
+        "fail if too many AgentIds are provided to match against" {
+            every { mockFingerprintConfig.maxTargets } returns 2
             val fpService = buildFingerprintService()
-            val dids = "$did,${alphanumericStringGen.next()},${alphanumericStringGen.next()}"
-            val dto = verifyRequestDto.copy(filters = VerifyRequestFiltersDto(dids))
+            val agentIds = "$agentId,${alphanumericStringGen.next()},${alphanumericStringGen.next()}"
+            val dto = verifyRequestDto.copy(filters = VerifyRequestFiltersDto(agentIds))
             shouldThrow<InvalidFilterException> {
                 fpService.verify(dto, requestId)
             }
@@ -449,7 +444,7 @@ class FingerprintServiceSpec : WordSpec({
 
         "fail if provided an improperly formatted template" {
             val badTemplate = "foobar".toByteArray().toBase64String()
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
@@ -462,7 +457,7 @@ class FingerprintServiceSpec : WordSpec({
 
         "fail if provided an improperly formatted image" {
             val badImage = "foobar".toByteArray().toBase64String()
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
@@ -474,7 +469,7 @@ class FingerprintServiceSpec : WordSpec({
         }
 
         "fail to match a high-quality image that doesn't correspond to the stored template" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
@@ -487,7 +482,7 @@ class FingerprintServiceSpec : WordSpec({
         }
 
         "fail with an Amputation exception if the stored template has an XX missing code" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockReplayService.checkIfReplay(any()) } just Runs
             val missingCodeDao = dao.copy(template = null, missingCode = "XX")
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(missingCodeDao)
@@ -498,7 +493,7 @@ class FingerprintServiceSpec : WordSpec({
         }
 
         "fail with a NotCaptured exception if the stored template has an NA missing code" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockReplayService.checkIfReplay(any()) } just Runs
             val missingCodeDao = dao.copy(template = null, missingCode = "NA")
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(missingCodeDao)
@@ -509,7 +504,7 @@ class FingerprintServiceSpec : WordSpec({
         }
 
         "fail with an UnableToPrint exception if the stored template has a UP missing code" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockReplayService.checkIfReplay(any()) } just Runs
             val missingCodeDao = dao.copy(template = null, missingCode = "UP")
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(missingCodeDao)
@@ -520,7 +515,7 @@ class FingerprintServiceSpec : WordSpec({
         }
 
         "fail with a NotCaptured exception if the stored template has an unexpected missing code" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockReplayService.checkIfReplay(any()) } just Runs
             val missingCodeDao = dao.copy(template = null, missingCode = "AA")
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(missingCodeDao)
@@ -531,7 +526,7 @@ class FingerprintServiceSpec : WordSpec({
         }
 
         "fail with an InvalidTemplateVersion exception if the stored template comes from a different SourceAFIS version" {
-            every { mockFingerprintConfig.maxDids } returns 2
+            every { mockFingerprintConfig.maxTargets } returns 2
             every { mockReplayService.checkIfReplay(any()) } just Runs
             val missingCodeDao = dao.copy(version = 2)
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(missingCodeDao)

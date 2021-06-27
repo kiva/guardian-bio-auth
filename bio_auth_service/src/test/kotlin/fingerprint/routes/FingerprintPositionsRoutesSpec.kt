@@ -42,7 +42,7 @@ class FingerprintPositionsRoutesSpec : WordSpec({
 
     "POST /positions" should {
 
-        "return a single position if the did matches just one template" {
+        "return a single position if the agentId matches just one template" {
             val positions = listOf(FingerPosition.RIGHT_INDEX)
             every { mockFingerprintTemplateRepository.getPositions(any()) } returns positions
             val dto = PositionsDto(alphanumericStringGen.next())
@@ -60,7 +60,7 @@ class FingerprintPositionsRoutesSpec : WordSpec({
             }
         }
 
-        "return multiple positions if the did matches multiple templates" {
+        "return multiple positions if the agentId matches multiple templates" {
             val positions = listOf(FingerPosition.RIGHT_INDEX, FingerPosition.RIGHT_MIDDLE)
             every { mockFingerprintTemplateRepository.getPositions(any()) } returns positions
             val dto = PositionsDto(alphanumericStringGen.next())
@@ -78,7 +78,7 @@ class FingerprintPositionsRoutesSpec : WordSpec({
             }
         }
 
-        "return an empty array if the did matches no template" {
+        "return an empty array if the agentId matches no template" {
             every { mockFingerprintTemplateRepository.getPositions(any()) } returns emptyList()
             val dto = PositionsDto(alphanumericStringGen.next())
 
@@ -97,15 +97,15 @@ class FingerprintPositionsRoutesSpec : WordSpec({
 
     "GET /positions/template/{filters}" should {
 
-        "return a single position if the did matches just one template" {
+        "return a single position if the agentId matches just one template" {
             val positions = listOf(FingerPosition.RIGHT_INDEX)
             every { mockFingerprintTemplateRepository.getPositions(any()) } returns positions
-            val did = alphanumericStringGen.next()
+            val agentId = alphanumericStringGen.next()
 
             withTestApplication({
                 testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
             }) {
-                get("/api/v1/positions/template/dids=$did") {
+                get("/api/v1/positions/template/agentIds=$agentId") {
                     response shouldHaveStatus HttpStatusCode.OK
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ListSerializer(Int.Companion.serializer()), response.content!!)
@@ -115,15 +115,15 @@ class FingerprintPositionsRoutesSpec : WordSpec({
             }
         }
 
-        "return multiple positions if the did matches multiple templates" {
+        "return multiple positions if the agentId matches multiple templates" {
             val positions = listOf(FingerPosition.RIGHT_INDEX, FingerPosition.RIGHT_MIDDLE)
             every { mockFingerprintTemplateRepository.getPositions(any()) } returns positions
-            val did = alphanumericStringGen.next()
+            val agentId = alphanumericStringGen.next()
 
             withTestApplication({
                 testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
             }) {
-                get("/api/v1/positions/template/dids=$did") {
+                get("/api/v1/positions/template/agentIds=$agentId") {
                     response shouldHaveStatus HttpStatusCode.OK
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ListSerializer(Int.Companion.serializer()), response.content!!)
@@ -133,14 +133,14 @@ class FingerprintPositionsRoutesSpec : WordSpec({
             }
         }
 
-        "return an empty array if the did matches no template" {
+        "return an empty array if the agentId matches no template" {
             every { mockFingerprintTemplateRepository.getPositions(any()) } returns emptyList()
-            val did = alphanumericStringGen.next()
+            val agentId = alphanumericStringGen.next()
 
             withTestApplication({
                 testFingerprintRoutes(appConfig, mockk(), mockk(), mockFingerprintTemplateRepository)
             }) {
-                get("/api/v1/positions/template/dids=$did") {
+                get("/api/v1/positions/template/agentIds=$agentId") {
                     response shouldHaveStatus HttpStatusCode.OK
                     response.content shouldNotBe null
                     val responseBody = Json.decodeFromString(ListSerializer(Int.Companion.serializer()), response.content!!)

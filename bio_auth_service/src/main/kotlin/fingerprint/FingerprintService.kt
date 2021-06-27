@@ -106,9 +106,9 @@ class FingerprintService(
     suspend fun verify(dto: VerifyRequestDto, requestId: String): VerifyResponseDto {
 
         // Verify request parameters
-        val dids = dto.filters.dids.split(",")
-        if (dids.size > fingerprintConfig.maxDids) {
-            throw InvalidFilterException("Too many DIDs to match against; the maximum number of DIDs is ${fingerprintConfig.maxDids}")
+        val agentIds = dto.filters.agentIds?.split(',') ?: emptyList()
+        if (agentIds.size > fingerprintConfig.maxTargets) {
+            throw InvalidFilterException("Too many Agent Ids to match against; the maximum number is ${fingerprintConfig.maxTargets}")
         }
         if (dto.params.image.isBlank()) {
             throw InvalidParamsException("Image must be a non-empty string")
@@ -126,7 +126,6 @@ class FingerprintService(
 
         // Find all candidates that do not have a missing code and have a match score >= matchThreshold
         val matcher = FingerprintMatcher(targetTemplate)
-        val agentIds = dto.filters.dids.split(',')
         val matches = templateRepository
             .getTemplates(agentIds, dto.params.position)
             .map {
@@ -144,7 +143,7 @@ class FingerprintService(
                     throw InvalidTemplateVersionException("Template version does not match the version of the stored template")
                 }
                 val matchingScore = matcher.match(it.template)
-                VerifyResponseDto(ResponseStatus.MATCHED, it.agentId, it.agentId, matchingScore)
+                VerifyResponseDto(ResponseStatus.MATCHED, it.agentId, matchingScore)
             }
             .filter { it.matchingScore!! >= fingerprintConfig.matchThreshold }
             .sortedBy { it.matchingScore }
@@ -159,7 +158,7 @@ class FingerprintService(
     }
 
     fun positions(positionsDto: PositionsDto): List<FingerPosition> {
-        val agentIds = positionsDto.dids.split(',')
+        val agentIds = positionsDto.agentIds?.split(',') ?: emptyList()
         return templateRepository.getPositions(agentIds)
     }
 }

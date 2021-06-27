@@ -4,5 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class VerifyRequestFiltersDto(
-    val dids: String // Comma-separated list of DIDs
-)
+    @Deprecated("Prefer agentIds over dids")
+    val dids: String? = null // Comma-separated list of DIDs
+) {
+    val agentIds: String? = dids
+}

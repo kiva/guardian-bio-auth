@@ -9,15 +9,15 @@ data class VerifyRequestDto(
     val backend: String,
 
     /**
-     * DEPRECATED
      * Base64 or Hex representation of the fingerprint we should check
      */
+    @Deprecated("Use params.image instead")
     val image: String? = null,
 
     /**
-     * DEPRECATED
      * Position of the finger capture; e.g. 1.
      */
+    @Deprecated("Use params.position instead")
     val position: FingerPosition? = null,
 
     /**

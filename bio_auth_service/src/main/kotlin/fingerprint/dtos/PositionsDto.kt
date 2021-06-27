@@ -4,5 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PositionsDto(
-    val dids: String
-)
+    @Deprecated("Prefer agentIds over dids")
+    val dids: String? = null
+) {
+    val agentIds: String? = dids
+}
