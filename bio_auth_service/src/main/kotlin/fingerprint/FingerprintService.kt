@@ -126,8 +126,9 @@ class FingerprintService(
 
         // Find all candidates that do not have a missing code and have a match score >= matchThreshold
         val matcher = FingerprintMatcher(targetTemplate)
+        val agentIds = dto.filters.dids.split(',')
         val matches = templateRepository
-            .getTemplates(dto.filters, dto.params.position)
+            .getTemplates(agentIds, dto.params.position)
             .map {
                 // Throw if template is empty
                 if (!it.missingCode.isNullOrBlank() || it.template == null) {
@@ -158,6 +159,7 @@ class FingerprintService(
     }
 
     fun positions(positionsDto: PositionsDto): List<FingerPosition> {
-        return templateRepository.getPositions(positionsDto)
+        val agentIds = positionsDto.dids.split(',')
+        return templateRepository.getPositions(agentIds)
     }
 }
