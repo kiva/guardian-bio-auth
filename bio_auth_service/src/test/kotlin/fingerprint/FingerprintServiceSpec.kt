@@ -41,6 +41,7 @@ import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestParamsDto
 import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestFiltersDto
+import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestParamsDto
 import org.kiva.bioauthservice.fingerprint.enums.DataType
 import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
 import org.kiva.bioauthservice.fingerprint.enums.ResponseStatus
@@ -54,7 +55,6 @@ class FingerprintServiceSpec : WordSpec({
     // Test fixtures
     val agentId = alphanumericStringGen.next()
     val requestId = alphanumericStringGen.next()
-    val backend = alphanumericStringGen.next()
     val position = FingerPosition.RIGHT_INDEX
     val sourceAfisTemplate = this.javaClass.getResource("/images/sample_source_afis_template.txt")?.readText() ?: ""
     val ansi378v2004Template = this.javaClass.getResource("/images/sample_ansi_378_2004_template.txt")?.readText() ?: ""
@@ -78,11 +78,12 @@ class FingerprintServiceSpec : WordSpec({
         ZonedDateTime.now()
     )
     val verifyRequestDto = VerifyRequestDto(
-        backend,
-        sourceAfisTemplate,
-        position,
         VerifyRequestFiltersDto(
             agentId
+        ),
+        VerifyRequestParamsDto(
+            sourceAfisTemplate,
+            position
         ),
         DataType.TEMPLATE
     )
@@ -372,7 +373,7 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
-            val dto = verifyRequestDto.copy(image = ansi378v2004Template)
+            val dto = verifyRequestDto.copy(params = verifyRequestDto.params.copy(image = ansi378v2004Template))
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
@@ -386,7 +387,7 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
-            val dto = verifyRequestDto.copy(image = ansi378v2009Template)
+            val dto = verifyRequestDto.copy(params = verifyRequestDto.params.copy(image = ansi378v2009Template))
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
@@ -400,7 +401,7 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
-            val dto = verifyRequestDto.copy(image = base64Image, imageType = DataType.IMAGE)
+            val dto = verifyRequestDto.copy(params = verifyRequestDto.params.copy(image = base64Image), imageType = DataType.IMAGE)
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
@@ -414,7 +415,7 @@ class FingerprintServiceSpec : WordSpec({
             every { mockFingerprintConfig.matchThreshold } returns 40.0
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
-            val dto = verifyRequestDto.copy(image = hexImage, imageType = DataType.IMAGE)
+            val dto = verifyRequestDto.copy(params = verifyRequestDto.params.copy(image = hexImage), imageType = DataType.IMAGE)
             val fpService = buildFingerprintService()
             val result = fpService.verify(dto, requestId)
             result.status shouldBe ResponseStatus.MATCHED
@@ -426,7 +427,7 @@ class FingerprintServiceSpec : WordSpec({
         "fail if not provided an image or template to match against" {
             every { mockFingerprintConfig.maxTargets } returns 2
             val fpService = buildFingerprintService()
-            val dto = verifyRequestDto.copy(image = "")
+            val dto = verifyRequestDto.copy(params = verifyRequestDto.params.copy(image = ""))
             shouldThrow<InvalidParamsException> {
                 fpService.verify(dto, requestId)
             }
@@ -449,7 +450,7 @@ class FingerprintServiceSpec : WordSpec({
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
             val fpService = buildFingerprintService()
-            val dto = verifyRequestDto.copy(image = badTemplate)
+            val dto = verifyRequestDto.copy(params = verifyRequestDto.params.copy(image = badTemplate))
             shouldThrow<InvalidTemplateException> {
                 fpService.verify(dto, requestId)
             }
@@ -462,7 +463,7 @@ class FingerprintServiceSpec : WordSpec({
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
             val fpService = buildFingerprintService()
-            val dto = verifyRequestDto.copy(image = badImage, imageType = DataType.IMAGE)
+            val dto = verifyRequestDto.copy(params = verifyRequestDto.params.copy(image = badImage), imageType = DataType.IMAGE)
             shouldThrow<InvalidImageFormatException> {
                 fpService.verify(dto, requestId)
             }
@@ -474,7 +475,7 @@ class FingerprintServiceSpec : WordSpec({
             every { mockReplayService.checkIfReplay(any()) } just Runs
             every { mockFingerprintTemplateRepository.getTemplates(any(), any()) } returns listOf(dao)
             coEvery { mockBioanalyzerService.analyze(any(), any(), any()) } returns 99.9
-            val dto = verifyRequestDto.copy(image = wrongImage, imageType = DataType.IMAGE)
+            val dto = verifyRequestDto.copy(params = verifyRequestDto.params.copy(image = wrongImage), imageType = DataType.IMAGE)
             val fpService = buildFingerprintService()
             shouldThrow<FingerprintNoMatchException> {
                 fpService.verify(dto, requestId)
