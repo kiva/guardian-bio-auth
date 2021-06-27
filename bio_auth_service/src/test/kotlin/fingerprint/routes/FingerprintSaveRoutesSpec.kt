@@ -242,7 +242,7 @@ class FingerprintSaveRoutesSpec : WordSpec({
             val bulkDto = """
                 {
                     "fingerprints": [{
-                        "id": "${alphanumericStringGen.next()}",
+                        "agentId": "${alphanumericStringGen.next()}",
                         "params": {
                             "type_id": 1,
                             "capture_date": "2011-12-03T10:15:30+01:00",
