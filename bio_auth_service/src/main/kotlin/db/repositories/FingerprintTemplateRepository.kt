@@ -28,7 +28,7 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val logger: 
     ): Boolean {
         val count = jdbi.withHandle<Int, Exception> {
             it.createUpdate(insertTemplateQuery)
-                .bind("agentId", dto.id)
+                .bind("agentId", dto.agentId)
                 .bind("position", dto.params.position.code)
                 .bind("templateType", templateType)
                 .bind("typeId", dto.params.type_id)

@@ -79,7 +79,7 @@ class FingerprintService(
         bulkDto.fingerprints.forEach { dto: SaveRequestDto ->
             if ((!dto.params.image.isNullOrBlank() || !dto.params.template.isNullOrBlank()) && !dto.params.missing_code.isNullOrBlank()) {
                 throw FingerprintTemplateGenerationException(
-                    dto.id,
+                    dto.agentId,
                     dto.params.position,
                     "Only one of fingerprint image, template, or missing code should be present for each fingerprint."
                 )
