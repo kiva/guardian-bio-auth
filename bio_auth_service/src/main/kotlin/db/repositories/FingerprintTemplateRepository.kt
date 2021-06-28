@@ -9,9 +9,7 @@ import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.statement.EmptyHandling
 import org.jdbi.v3.core.statement.StatementContext
 import org.kiva.bioauthservice.db.daos.FingerprintTemplateDao
-import org.kiva.bioauthservice.fingerprint.dtos.PositionsDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto
-import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestFiltersDto
 import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
 import org.slf4j.Logger
 import java.sql.ResultSet
@@ -30,7 +28,7 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val logger: 
     ): Boolean {
         val count = jdbi.withHandle<Int, Exception> {
             it.createUpdate(insertTemplateQuery)
-                .bind("agentId", dto.id)
+                .bind("agentId", dto.agentId)
                 .bind("position", dto.params.position.code)
                 .bind("templateType", templateType)
                 .bind("typeId", dto.params.type_id)
@@ -45,8 +43,7 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val logger: 
         return count > 0
     }
 
-    fun getTemplates(filters: VerifyRequestFiltersDto, position: FingerPosition): List<FingerprintTemplateDao> {
-        val agentIds = filters.dids.split(',')
+    fun getTemplates(agentIds: List<String>, position: FingerPosition): List<FingerprintTemplateDao> {
         val result = jdbi
             .registerColumnMapper(FingerprintTemplateColumnMapper())
             .registerColumnMapper(FingerPositionColumnMapper())
@@ -61,8 +58,7 @@ class FingerprintTemplateRepository(private val jdbi: Jdbi, private val logger: 
         return result
     }
 
-    fun getPositions(dto: PositionsDto): List<FingerPosition> {
-        val agentIds = dto.dids.split(',')
+    fun getPositions(agentIds: List<String>): List<FingerPosition> {
         val result = jdbi
             .registerColumnMapper(FingerPositionColumnMapper())
             .withHandle<List<FingerPosition>, Exception> {

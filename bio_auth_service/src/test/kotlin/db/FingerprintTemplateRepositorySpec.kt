@@ -15,10 +15,8 @@ import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
 import org.kiva.bioauthservice.common.utils.base64ToByte
 import org.kiva.bioauthservice.db.repositories.FingerprintTemplateRepository
-import org.kiva.bioauthservice.fingerprint.dtos.PositionsDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestDto
 import org.kiva.bioauthservice.fingerprint.dtos.SaveRequestParamsDto
-import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestFiltersDto
 import org.kiva.bioauthservice.fingerprint.enums.FingerPosition
 import org.slf4j.LoggerFactory
 import java.time.ZonedDateTime
@@ -90,13 +88,12 @@ class FingerprintTemplateRepositorySpec : StringSpec({
      */
 
     "should retrieve no templates if the filters match nothing" {
-        val result = repo.getTemplates(VerifyRequestFiltersDto("foobar"), position)
+        val result = repo.getTemplates(listOf("foobar"), position)
         result.size shouldBe 0
     }
 
     "should be able to retrieve a single inserted template for an agentId" {
-        val filters = VerifyRequestFiltersDto(dids = agentId1)
-        val result = repo.getTemplates(filters, position)
+        val result = repo.getTemplates(listOf(agentId1), position)
         result shouldHaveSize 1
         val dao = result.first()
         dao.id shouldBe 1
@@ -104,8 +101,7 @@ class FingerprintTemplateRepositorySpec : StringSpec({
     }
 
     "should be able to return multiple templates if there are matches for multiple agentIds" {
-        val filters = VerifyRequestFiltersDto(dids = "$agentId1,$agentId3")
-        val result = repo.getTemplates(filters, position)
+        val result = repo.getTemplates(listOf(agentId1, agentId3), position)
         result shouldHaveSize 2
     }
 
@@ -114,33 +110,29 @@ class FingerprintTemplateRepositorySpec : StringSpec({
      */
 
     "should be able to get a single position matching a single agentId" {
-        val dto = PositionsDto(dids = agentId1)
-        val result = repo.getPositions(dto)
+        val result = repo.getPositions(listOf(agentId1))
         result shouldHaveSize 1
         result shouldContain FingerPosition.RIGHT_INDEX
     }
 
     "should be able to get multiple positions matching a single agentId, sorted by quality_score" {
-        val dto = PositionsDto(dids = agentId2)
-        val result = repo.getPositions(dto)
+        val result = repo.getPositions(listOf(agentId2))
         result shouldHaveSize 2
         result shouldContainInOrder listOf(FingerPosition.RIGHT_INDEX, FingerPosition.RIGHT_MIDDLE)
     }
 
     "should be able to get multiple positions matching multiple agentIds" {
-        val dto = PositionsDto(dids = "$agentId1,$agentId2")
-        val result = repo.getPositions(dto)
+        val result = repo.getPositions(listOf(agentId1, agentId2))
         result shouldHaveSize 3
     }
 
     "should retrieve no positions if the only valid results have a missing_code" {
-        val dto = PositionsDto(dids = agentId3)
-        val result = repo.getPositions(dto)
+        val result = repo.getPositions(listOf(agentId3))
         result shouldHaveSize 0
     }
 
     "should retrieve no positions if the filters match nothing" {
-        val result = repo.getPositions(PositionsDto("foobar"))
+        val result = repo.getPositions(listOf("foobar"))
         result shouldHaveSize 0
     }
 })

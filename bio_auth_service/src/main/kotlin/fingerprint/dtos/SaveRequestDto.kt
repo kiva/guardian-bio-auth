@@ -10,7 +10,7 @@ data class SaveRequestDto(
     /**
      * ID of the agent the fingerprint template grants access to.
      */
-    val id: String,
+    val agentId: String,
 
     /**
      * Details of the fingerprint to save.

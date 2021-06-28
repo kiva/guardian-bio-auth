@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PositionsDto(
-    val dids: String
+    val agentIds: String
 )
