@@ -70,11 +70,11 @@ class BioanalyzerService(
 
             // let's ensure that quality is what we want (if not provided, autofail by setting quality to a negative value)
             val fingerprintQuality = responseBody[requestId]?.quality ?: -1.0
-            if (fingerprintQuality < bioanalyzerConfig.qualityThreshold && throwException) {
+            if (fingerprintQuality < bioanalyzerConfig.qualityThreshold) {
                 val msg =
                     "Low image quality! Min threshold is ${bioanalyzerConfig.qualityThreshold}, whereas computed quality is $fingerprintQuality"
                 logger.warn(msg)
-                throw FingerprintLowQualityException(msg)
+                if (throwException) throw FingerprintLowQualityException(msg)
             }
 
             // return quality
