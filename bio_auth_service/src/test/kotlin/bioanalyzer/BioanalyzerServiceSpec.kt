@@ -10,6 +10,8 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
 import mockHttpClient
 import org.kiva.bioauthservice.app.config.BioanalyzerConfig
 import org.kiva.bioauthservice.bioanalyzer.BioanalyzerService
@@ -64,21 +66,31 @@ class BioanalyzerServiceSpec : StringSpec({
     }
 
     "should not throw an error if an image has low quality, but throwException is false" {
+        val spiedLogger = spyk(logger)
         val qualityScore = 1.0
         val route = BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(qualityScore))
         val httpClient = mockHttpClient(route)
-        val bioanalyzerService = BioanalyzerService(logger, config, httpClient)
+        val bioanalyzerService = BioanalyzerService(spiedLogger, config, httpClient)
         val result = bioanalyzerService.analyze(image, false, requestId)
         result shouldBe qualityScore
+
+        verify(exactly = 1) {
+            spiedLogger.warn(any())
+        }
     }
 
     "should throw an error if an image has low quality and throwException is true" {
+        val spiedLogger = spyk(logger)
         val qualityScore = 1.0
         val route = BioAnalyzerRoute(bioanalyzerUrl, BioanalyzerReponseDto(qualityScore))
         val httpClient = mockHttpClient(route)
-        val bioanalyzerService = BioanalyzerService(logger, config, httpClient)
+        val bioanalyzerService = BioanalyzerService(spiedLogger, config, httpClient)
         shouldThrow<FingerprintLowQualityException> {
             bioanalyzerService.analyze(image, true, requestId)
+        }
+
+        verify(exactly = 1) {
+            spiedLogger.warn(any())
         }
     }
 
