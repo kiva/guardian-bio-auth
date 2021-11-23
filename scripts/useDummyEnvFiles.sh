@@ -29,7 +29,6 @@ elif [[ "$FORCE" == true || "$PWD" == */guardian-bio-auth ]]
 then
   cp bioanalyzer_service/dummy.env bioanalyzer_service/.env
   cp bio_auth_service/dummy.env bio_auth_service/.env
-  cp identity_template_db/dummy.env identity_template_db/.env
   echo "Success"
   exit 0
 else

@@ -1,0 +1,45 @@
+# Default values for helm-config.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: kivaprotocol/bioauth
+  tag: latest # leave this as latest. CICD will set a specific version tag.
+  pullPolicy: Always
+  imagePullSecrets:
+    - name: "regcred"
+
+nameOverride: "protocol-bio-auth-service"
+fullnameOverride: "protocol-bio-auth-service"
+secrets: "protocol-bio-auth-service-secrets"
+
+strategy:
+  type: "RollingUpdate"
+
+service:
+  type: ClusterIP
+  port: 3005
+  containerPort: 8080
+  targetPort: 3005
+  portName: "bioAuthServicePort"
+
+resources:
+  limits:
+    cpu: 1100m
+    memory: 2671629701
+  requests:
+    cpu: 1100m
+    memory: 2671629701
+
+#affinity: {}
+#
+#tolerations:
+#  - effect: NoSchedule
+#    key: crypto
+#    operator: Equal
+#    value: "true"
+#
+#nodeSelector:
+#    dedicated: crypto
