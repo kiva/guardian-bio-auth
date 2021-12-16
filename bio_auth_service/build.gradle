@@ -10,12 +10,8 @@ group = 'org.kiva.bioauthservice'
 version = "1.0-SNAPSHOT"
 sourceCompatibility = '11'
 
-// TODO: jcenter and bintray are going to be shutdown Feb 2022. https://blog.gradle.org/jcenter-shutdown
 repositories {
-    jcenter()
     mavenCentral()
-    maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
-    maven { url 'https://dl.bintray.com/kotlin/ktor' }
 }
 
 dependencies {
