@@ -16,6 +16,7 @@ import io.ktor.server.testing.setBody
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.kiva.bioauthservice.app.AppRegistry
+import org.kiva.bioauthservice.app.AppService
 import org.kiva.bioauthservice.app.config.AppConfig
 import org.kiva.bioauthservice.bioanalyzer.registerBioanalyzer
 import org.kiva.bioauthservice.common.errors.installErrorHandler
@@ -33,7 +34,8 @@ fun Application.testFingerprintRoutes(
     replayRepository: ReplayRepository,
     fingerprintTemplateRepository: FingerprintTemplateRepository
 ) {
-    val appRegistry = AppRegistry(this, appConfig, this.log, httpClient)
+    val appService = AppService(appConfig)
+    val appRegistry = AppRegistry(this, appService, appConfig, this.log, httpClient)
     val dbRegistry = DbRegistry(replayRepository, fingerprintTemplateRepository)
     val replayRegistry = this.registerReplay(appRegistry, dbRegistry)
     val bioanalyzerRegistry = this.registerBioanalyzer(appRegistry)

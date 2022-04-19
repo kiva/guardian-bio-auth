@@ -5,7 +5,6 @@ import io.ktor.application.call
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
-import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
@@ -20,7 +19,6 @@ import org.kiva.bioauthservice.fingerprint.dtos.VerifyRequestDto
  */
 private object Paths {
     const val apiV1 = "/api/v1"
-    const val getPositions = "/positions/template"
     const val save = "/save"
     const val verify = "/verify"
     const val positions = "/positions"

@@ -35,15 +35,24 @@ fun Application.registerApp(): AppRegistry {
         }
     }
 
+    // Setup Service
+    val appService = AppService(appConfig)
+
     // Done
-    return AppRegistry(this, appConfig, log, httpClient)
+    return AppRegistry(this, appService, appConfig, log, httpClient)
 }
 
 @KtorExperimentalAPI
-data class AppRegistry(private val application: Application, val appConfig: AppConfig, val logger: Logger, val httpClient: HttpClient) {
+data class AppRegistry(
+    private val application: Application,
+    private val appService: AppService,
+    val appConfig: AppConfig,
+    val logger: Logger,
+    val httpClient: HttpClient
+) {
     fun installRoutes() {
         application.routing {
-            appRoutes()
+            appRoutes(appService)
         }
     }
 }
